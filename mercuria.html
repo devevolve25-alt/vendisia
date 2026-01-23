@@ -240,6 +240,19 @@
     </main>
 
     <script>
+    // Função para gerenciar o ID exclusivo do visitante
+    function getVisitorId() {
+        let vid = localStorage.getItem('vendisia_visitor_id');
+        if (!vid) {
+            // Gera um ID único e armazena no navegador do cliente
+            vid = 'v_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+            localStorage.setItem('vendisia_visitor_id', vid);
+        }
+        return vid;
+    }
+
+    const LEAD_ID = getVisitorId();
+
     async function sendMessage() {
         const inputField = document.getElementById('user-input');
         const msgText = inputField.value.trim();
@@ -249,34 +262,28 @@
         inputField.value = "";
 
         try {
-            // A URL do seu n8n (Mantenha a de produção se o fluxo estiver ATIVO)
             const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria";
 
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
-                mode: 'cors', // Agora com domínio próprio, o CORS deve passar
+                mode: 'cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: msgText,
+                    leadId: LEAD_ID, // Enviando o ID único
                     origin: "https://vendisia.ia.br",
                     entity: "MercurIA"
                 })
             });
 
             const raw = await response.text();
-            
             if (raw) {
                 const data = JSON.parse(raw);
-                // Busca a resposta no campo 'output' que o n8n gera
-                const botReply = data.output || data.message || "A conexão está ativa, mas a resposta veio em formato inesperado.";
-                appendMessage(botReply, 'bot');
-            } else {
-                appendMessage("O sinal foi enviado, mas a MercurIA está em silêncio. Verifique o nó de resposta no n8n.", 'bot');
+                appendMessage(data.output || data.message, 'bot');
             }
-
         } catch (error) {
-            console.error("Erro na conexão:", error);
-            appendMessage("Falha na conexão com o Panteão. Tente atualizar a página.", 'bot');
+            console.error("Erro:", error);
+            appendMessage("Falha na conexão com o Panteão.", 'bot');
         }
     }
 

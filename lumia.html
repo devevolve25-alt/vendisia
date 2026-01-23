@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VENDISIA | LumIA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0c1320; 
+            --gold-solid: #d4af37;
+            --gold-light: rgba(212, 175, 55, 0.2);
+        }
+        body { background-color: var(--bg-color); color: #fff; font-family: 'Montserrat', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 40px 20px; }
+        
+        .header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
+        .brand-logo { width: 85px; margin-bottom: 10px; filter: drop-shadow(0 0 10px var(--gold-light)); }
+        .brand-name { font-family: 'Bebas Neue'; letter-spacing: 5px; color: var(--gold-solid); }
+
+        .creation-container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1100px; width: 100%; margin-top: 20px; }
+        
+        .intro-section { text-align: left; }
+        h1 { font-family: 'Bebas Neue'; font-size: 3.2rem; line-height: 1; margin-bottom: 20px; }
+        .intro-text { font-weight: 200; color: #94a3b8; line-height: 1.8; margin-bottom: 20px; }
+        .punchline { font-family: 'Bebas Neue'; font-size: 1.8rem; border-left: 3px solid var(--gold-solid); padding-left: 20px; }
+
+        .chat-sandbox { 
+            background: rgba(255,255,255,0.02); border: 1px solid var(--gold-light); 
+            border-radius: 12px; height: 550px; display: flex; flex-direction: column; 
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.05);
+        }
+        .chat-header { padding: 15px 20px; border-bottom: 1px solid var(--gold-light); font-family: 'Bebas Neue'; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; color: var(--gold-solid); }
+        .status-dot { width: 8px; height: 8px; background: #d4af37; border-radius: 50%; box-shadow: 0 0 10px #d4af37; }
+        
+        .chat-messages { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .message { max-width: 85%; padding: 15px 20px; border-radius: 8px; font-size: 0.9rem; }
+        .message.bot { background: rgba(255,255,255,0.05); align-self: flex-start; border-left: 2px solid var(--gold-solid); }
+        .message.user { background: #fff; color: #0c1320; align-self: flex-end; font-weight: 600; }
+
+        .chat-input-area { padding: 25px; background: rgba(0,0,0,0.3); display: flex; gap: 15px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+        input { flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--gold-light); color: white; outline: none; }
+        button { background: var(--gold-solid); color: #0c1320; border: none; padding: 10px 25px; font-family: 'Bebas Neue'; cursor: pointer; border-radius: 4px; }
+
+        @media (max-width: 900px) { .creation-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="merc_face.png" alt="LumIA" class="brand-logo">
+        <span class="brand-name">VENDISIA ECOSYSTEM</span>
+    </header>
+
+    <main class="creation-container">
+        <section class="intro-section">
+            <div id="content">
+                <h1>Eu sou LumIA.</h1>
+                <p class="intro-text">Estou aqui para iluminar o potencial da sua marca. Juntos, daremos luz à consciência comercial que o seu negócio merece. Não estamos apenas configurando um código, estamos esculpindo a sua nova entidade de vendas de elite.</p>
+                <div class="punchline">Sua essência, automatizada.</div>
+            </div>
+        </section>
+
+        <section class="chat-wrapper">
+            <div class="chat-sandbox">
+                <div class="chat-header"><div class="status-dot"></div>LABORATÓRIO DE PERSONAS | LUMIA</div>
+                <div class="chat-messages" id="chat-box">
+                    <div class="message bot">
+                        Seja bem-vindo ao meu laboratório. Sou LumIA e guiarei o nascimento do seu agente. Para começar o processo de criação: Qual é o nome da sua empresa e como você descreveria a alma do seu atendimento?
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="user-input" placeholder="Responda a LumIA..." autocomplete="off">
+                    <button onclick="sendMessage()">CRIAR</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            if (!input.value.trim()) return;
+            const msg = input.value;
+            appendMessage(msg, 'user');
+            input.value = "";
+            try {
+                const response = await fetch('https://powerfulkiwi-n8n.cloudfy.live/webhook/3104bc4c-7758-41ef-9573-3d2f1e596d51', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, entity: 'LumIA' })
+                });
+                const data = await response.json();
+                appendMessage(data.output || data.text || "Sua criação está ganhando forma...", 'bot');
+            } catch (e) { appendMessage('A luz oscilou. Tente novamente.', 'bot'); }
+        }
+        function appendMessage(text, side) {
+            const div = document.createElement('div');
+            div.className = `message ${side}`;
+            div.innerHTML = text.replace(/\n/g, '<br>');
+            document.getElementById('chat-box').appendChild(div);
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -258,38 +258,39 @@
         input.value = "";
 
         try {
-            // Ajustado para a URL correta da MercurIA que você forneceu
             const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria";
             
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 mode: 'cors',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    message: msgText, // Enviando o texto, não o elemento HTML
+                    message: msgText,
                     entity: "MercurIA",
                     leadId: "teste_criador_01",
-                    context: {
-                        page: "mercuria.html",
-                        timestamp: new Date().toISOString()
-                    }
+                    context: { page: "mercuria.html", timestamp: new Date().toISOString() }
                 })
             });
 
-            if (!response.ok) throw new Error('Erro na resposta do servidor');
-
-            const data = await response.json();
+            // Verifica se o servidor respondeu algo antes de tentar ler o JSON
+            const textData = await response.text(); 
             
-            // Exibe a resposta da IA (ajuste 'data.output' se o seu n8n usar outro nome)
+            if (!textData) {
+                appendMessage("A MercurIA está processando, mas o oráculo respondeu vazio.", 'bot');
+                return;
+            }
+
+            const data = JSON.parse(textData);
+            
             if (data.output || data.message) {
                 appendMessage(data.output || data.message, 'bot');
+            } else {
+                appendMessage("Resposta recebida, mas em formato desconhecido.", 'bot');
             }
 
         } catch (error) {
             console.error("Erro na conexão:", error);
-            appendMessage("Falha na conexão com o Panteão. Tente novamente.", 'bot');
+            appendMessage("Falha na conexão com o Panteão. Verifique o nó de resposta no n8n.", 'bot');
         }
     }
 

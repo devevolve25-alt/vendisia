@@ -258,17 +258,22 @@
             input.value = "";
 
             try {
-                const response = await fetch('https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: msgText, entity: 'MercurIA' })
-                });
-                const data = await response.json();
-                appendMessage(data.output || data.text || "MercurIA está processando...", 'bot');
-            } catch (error) {
-                appendMessage('Falha na conexão com o Panteão. Tente novamente.', 'bot');
-            }
+                const response = await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'cors', // Garante que ele tente a comunicação cruzada
+    headers: { 
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ 
+        message: input,
+        entity: "MercurIA",
+        leadId: "teste_criador_01", // Ou sua lógica de ID
+        context: {
+            page: "mercuria.html",
+            timestamp: new Date().toISOString()
         }
+    })
+});
 
         document.getElementById('user-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();

@@ -258,6 +258,7 @@
             input.value = "";
 
             try {
+                const WEBHOOK_URL_CRIARIA = "https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria";
                 const response = await fetch(WEBHOOK_URL, {
     method: 'POST',
     mode: 'cors', // Garante que ele tente a comunicação cruzada

@@ -240,6 +240,46 @@
     </main>
 
     <script>
+    async function sendMessage() {
+        const inputField = document.getElementById('user-input');
+        const msgText = inputField.value.trim();
+        if (!msgText) return;
+
+        appendMessage(msgText, 'user');
+        inputField.value = "";
+
+        try {
+            // A URL do seu n8n (Mantenha a de produção se o fluxo estiver ATIVO)
+            const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria";
+
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'cors', // Agora com domínio próprio, o CORS deve passar
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    message: msgText,
+                    origin: "https://vendisia.ia.br",
+                    entity: "MercurIA"
+                })
+            });
+
+            const raw = await response.text();
+            
+            if (raw) {
+                const data = JSON.parse(raw);
+                // Busca a resposta no campo 'output' que o n8n gera
+                const botReply = data.output || data.message || "A conexão está ativa, mas a resposta veio em formato inesperado.";
+                appendMessage(botReply, 'bot');
+            } else {
+                appendMessage("O sinal foi enviado, mas a MercurIA está em silêncio. Verifique o nó de resposta no n8n.", 'bot');
+            }
+
+        } catch (error) {
+            console.error("Erro na conexão:", error);
+            appendMessage("Falha na conexão com o Panteão. Tente atualizar a página.", 'bot');
+        }
+    }
+
     function appendMessage(text, side) {
         const chatBox = document.getElementById('chat-box');
         const msgDiv = document.createElement('div');
@@ -249,53 +289,6 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    async function sendMessage() {
-        const input = document.getElementById('user-input');
-        const msgText = input.value.trim();
-        if (!msgText) return;
-
-        appendMessage(msgText, 'user');
-        input.value = "";
-
-        try {
-            const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria";
-            
-            const response = await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: msgText,
-                    entity: "MercurIA",
-                    leadId: "teste_criador_01",
-                    context: { page: "mercuria.html", timestamp: new Date().toISOString() }
-                })
-            });
-
-            // Verifica se o servidor respondeu algo antes de tentar ler o JSON
-            const textData = await response.text(); 
-            
-            if (!textData) {
-                appendMessage("A MercurIA está processando, mas o oráculo respondeu vazio.", 'bot');
-                return;
-            }
-
-            const data = JSON.parse(textData);
-            
-            if (data.output || data.message) {
-                appendMessage(data.output || data.message, 'bot');
-            } else {
-                appendMessage("Resposta recebida, mas em formato desconhecido.", 'bot');
-            }
-
-        } catch (error) {
-            console.error("Erro na conexão:", error);
-            appendMessage("Falha na conexão com o Panteão. Verifique o nó de resposta no n8n.", 'bot');
-        }
-    }
-        
-
-    // Listener para o Enter
     document.getElementById('user-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });

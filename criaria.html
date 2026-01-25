@@ -104,6 +104,48 @@
 }
 
 /* Ajuste do Papel da Proposta (Lado Direito) */
+/* Lado Direito: Preview (Onde ficam as abas) */
+.preview-column {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.preview-tabs {
+    display: flex;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    overflow-x: auto;
+}
+
+/* Os botões do menu */
+.tab {
+    padding: 12px 20px;
+    font-family: 'Bebas Neue';
+    font-size: 1.1rem; /* Restaurado o tamanho */
+    cursor: pointer;
+    opacity: 0.5;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    color: #fff; /* Garante visibilidade */
+    border-bottom: 2px solid transparent;
+}
+
+/* Onde a CriarIA está trabalhando no momento */
+.tab.active { 
+    opacity: 1; 
+    color: var(--creative-color); 
+    border-bottom: 2px solid var(--creative-color);
+    background: rgba(165, 94, 234, 0.1);
+}
+
+.tab:hover {
+    opacity: 0.8;
+    background: rgba(255,255,255,0.05);
+}
 .proposal-paper {
     background: #fff;
     color: #333;

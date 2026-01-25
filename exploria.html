@@ -244,11 +244,15 @@
             });
 
             const data = await response.json();
+            let rawOutput = data.output || "Varredura concluída. Dados processados.";
+
+            // --- NOVO: CONVERSOR DE LINK MARKDOWN PARA BOTÃO HTML ---
+            // Transforma [Texto](Link) em <a href="Link">Texto</a>
+            const formattedOutput = rawOutput.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2">$1</a>');
 
             const bMsgResult = document.createElement('div');
             bMsgResult.className = 'msg-bot';
-            // innerHTML permite que o link enviado pelo n8n vire um botão clicável
-            bMsgResult.innerHTML = `<b>[STATUS]:</b> ${data.output || "Varredura concluída. Dados processados."}`;
+            bMsgResult.innerHTML = `<b>[STATUS]:</b> ${formattedOutput}`;
             chat.appendChild(bMsgResult);
 
         } catch (error) {

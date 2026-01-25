@@ -192,6 +192,26 @@
             transform: translateY(-1px);
         }
 
+        /* Transforma links específicos em botões dentro do chat */
+.chat-messages a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: var(--creative-color); /* Ou a cor específica da Mercúria/Explória */
+    color: #000 !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-family: 'Bebas Neue';
+    font-size: 1.1rem;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.chat-messages a:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
         /* Scrollbar Estilizada */
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 10px; }

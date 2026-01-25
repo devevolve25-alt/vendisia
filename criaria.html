@@ -44,143 +44,85 @@
         .brand-tagline { font-family: 'Bebas Neue'; font-size: 0.9rem; color: #fff; letter-spacing: 3px; margin-top: 3px; }
         .header-headline { font-family: 'Bebas Neue'; font-size: 1.2rem; text-align: center; color: #fff; opacity: 0.8; }
 
-        /* Estrutura de Estúdio */
-        .studio-container {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-            max-width: 1400px;
-            width: 100%;
-            margin: 0 auto;
-            min-height: 0;
-        }
+       /* Estrutura de Estúdio - Ajustada para flexibilidade */
+.studio-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 20px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    min-height: 0;
+    height: 85vh; /* Define uma altura fixa para o grid não esticar a página toda */
+}
 
-        /* Lado Esquerdo: Chat */
-        .chat-column {
-            background: var(--chat-bg);
-            border: 1px solid rgba(165, 94, 234, 0.3);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+/* Lado Esquerdo: Chat */
+.chat-column {
+    background: var(--chat-bg);
+    border: 1px solid rgba(165, 94, 234, 0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Mantém o container firme */
+}
 
-        .chat-header {
-            padding: 12px;
-            background: rgba(165, 94, 234, 0.1);
-            border-bottom: 1px solid rgba(165, 94, 234, 0.2);
-            font-family: 'Bebas Neue';
-            font-size: 1.1rem;
-            color: var(--creative-color);
-            text-align: center;
-        }
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto; /* Habilita scroll interno para mensagens longas */
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    scrollbar-width: thin; /* Barra de rolagem discreta */
+}
 
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            font-size: 0.85rem;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+/* Estilização das Mensagens da CriarIA (Bot) */
+.msg-bot { 
+    border-left: 3px solid var(--creative-color); 
+    padding: 10px 12px; 
+    color: #cbd5e1; 
+    background: rgba(165, 94, 234, 0.05);
+    border-radius: 0 8px 8px 0;
+    line-height: 1.6;
+    word-wrap: break-word;      /* Evita quebra de layout com links/palavras longas */
+    overflow-wrap: break-word;
+    white-space: pre-wrap;      /* PRESERVA FORMATAÇÃO E PARÁGRAFOS */
+}
 
-        .msg-bot { border-left: 2px solid var(--creative-color); padding-left: 10px; color: #cbd5e1; margin-bottom: 5px; }
-        .msg-user { color: var(--creative-color); font-weight: 600; text-align: right; margin-bottom: 5px; }
+/* Estilização das Mensagens do Criador (User) */
+.msg-user { 
+    color: var(--creative-color); 
+    font-weight: 600; 
+    text-align: right; 
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 12px;
+    border-radius: 8px;
+    align-self: flex-end;
+    max-width: 90%;
+}
 
-        .input-area {
-            padding: 12px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+/* Ajuste do Papel da Proposta (Lado Direito) */
+.proposal-paper {
+    background: #fff;
+    color: #333;
+    width: 100%;
+    max-width: 800px;
+    /* Retirado min-height fixo para permitir crescimento orgânico */
+    padding: 60px; /* Mais respiro para parecer documento oficial */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.8;
+    border-radius: 4px;
+    word-wrap: break-word;
+    white-space: normal; /* No papel, o texto flui como documento */
+}
 
-        textarea {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(165, 94, 234, 0.2);
-            border-radius: 4px;
-            padding: 10px;
-            color: white;
-            font-family: 'Montserrat';
-            resize: none;
-            height: 70px;
-            outline: none;
-        }
-
-        .btn-generate {
-            background: var(--creative-color);
-            color: #000;
-            border: none;
-            padding: 10px;
-            font-family: 'Bebas Neue';
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        /* Lado Direito: Preview */
-        .preview-column {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .preview-tabs {
-            display: flex;
-            background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            overflow-x: auto; /* Permite scroll das abas se necessário no mobile */
-        }
-
-        .tab {
-            padding: 12px 20px;
-            font-family: 'Bebas Neue';
-            cursor: pointer;
-            opacity: 0.5;
-            white-space: nowrap;
-        }
-
-        .tab.active { opacity: 1; color: var(--creative-color); border-bottom: 2px solid var(--creative-color); }
-
-        .display-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            justify-content: center;
-        }
-
-        .proposal-paper {
-            background: #fff;
-            color: #333;
-            width: 100%;
-            max-width: 800px;
-            min-height: 800px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-family: 'Montserrat', serif;
-            line-height: 1.6;
-            border-radius: 2px;
-            overflow-wrap: break-word;
-        }
-
-        .image-preview {
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1 / 1;
-            background: #1a1a1a;
-            border: 1px solid var(--creative-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
+/* Formatação Markdown dentro da Resposta */
+.msg-bot h3 { color: var(--creative-color); margin-top: 10px; font-family: 'Bebas Neue'; }
+.msg-bot strong { color: #fff; }
+.msg-bot ul { margin-left: 20px; }
 
         /* RESPONSIVIDADE MOBILE */
         @media (max-width: 1000px) {

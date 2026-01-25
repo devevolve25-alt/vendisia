@@ -57,50 +57,88 @@
     height: 85vh; /* Define uma altura fixa para o grid não esticar a página toda */
 }
 
-/* Lado Esquerdo: Chat */
+/* Lado Esquerdo: Estrutura Completa do Chat */
 .chat-column {
     background: var(--chat-bg);
     border: 1px solid rgba(165, 94, 234, 0.3);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Mantém o container firme */
+    overflow: hidden; /* Mantém o cabeçalho e input fixos */
 }
 
+/* Título: Comandos Criativos */
+.chat-header {
+    padding: 15px;
+    background: rgba(165, 94, 234, 0.1);
+    border-bottom: 1px solid rgba(165, 94, 234, 0.2);
+    font-family: 'Bebas Neue';
+    font-size: 1.2rem;
+    color: var(--creative-color);
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+/* Área de Mensagens (Onde o texto agora é elástico) */
 .chat-messages {
     flex: 1;
     padding: 15px;
-    overflow-y: auto; /* Habilita scroll interno para mensagens longas */
-    font-size: 0.9rem;
+    overflow-y: auto; /* Scroll apenas aqui dentro */
     display: flex;
     flex-direction: column;
     gap: 15px;
-    scrollbar-width: thin; /* Barra de rolagem discreta */
+    scrollbar-width: thin;
 }
 
-/* Estilização das Mensagens da CriarIA (Bot) */
-.msg-bot { 
-    border-left: 3px solid var(--creative-color); 
-    padding: 10px 12px; 
-    color: #cbd5e1; 
-    background: rgba(165, 94, 234, 0.05);
-    border-radius: 0 8px 8px 0;
-    line-height: 1.6;
-    word-wrap: break-word;      /* Evita quebra de layout com links/palavras longas */
-    overflow-wrap: break-word;
-    white-space: pre-wrap;      /* PRESERVA FORMATAÇÃO E PARÁGRAFOS */
+/* Área de Input (Onde o usuário escreve) */
+.input-area {
+    padding: 15px;
+    border-top: 1px solid rgba(165, 94, 234, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-/* Estilização das Mensagens do Criador (User) */
-.msg-user { 
-    color: var(--creative-color); 
-    font-weight: 600; 
-    text-align: right; 
-    background: rgba(255, 255, 255, 0.03);
-    padding: 8px 12px;
-    border-radius: 8px;
-    align-self: flex-end;
-    max-width: 90%;
+textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(165, 94, 234, 0.3);
+    border-radius: 6px;
+    padding: 12px;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    resize: none;
+    height: 80px;
+    outline: none;
+    transition: border 0.3s ease;
+}
+
+textarea:focus {
+    border-color: var(--creative-color);
+}
+
+/* Botão Gerar Conteúdo */
+.btn-generate {
+    background: var(--creative-color);
+    color: #000;
+    border: none;
+    padding: 12px;
+    font-family: 'Bebas Neue';
+    font-size: 1.3rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    text-transform: uppercase;
+}
+
+.btn-generate:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-generate:active {
+    transform: translateY(0);
 }
 
 /* Ajuste do Papel da Proposta (Lado Direito) */

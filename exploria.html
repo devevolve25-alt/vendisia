@@ -73,26 +73,29 @@
             opacity: 0.3;
             animation: rotate 4s linear infinite;
             display: none;
+        }
 
-            /* Transforma links específicos em botões dentro do chat */
-.chat-messages a {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 10px 20px;
-    background: var(--creative-color); /* Ou a cor específica da Mercúria/Explória */
-    color: #000 !important;
-    text-decoration: none;
-    border-radius: 6px;
-    font-family: 'Bebas Neue';
-    font-size: 1.1rem;
-    text-align: center;
-    transition: transform 0.2s ease;
-}
+        /* ESTILIZAÇÃO DOS LINKS COMO BOTÕES */
+        .msg-bot a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: var(--prospect-color);
+            color: #000 !important;
+            text-decoration: none;
+            border-radius: 6px;
+            font-family: 'Bebas Neue';
+            font-size: 1.1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
 
-.chat-messages a:hover {
-    transform: scale(1.05);
-    filter: brightness(1.1);
-}
+        .msg-bot a:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+            box-shadow: 0 0 15px var(--accent-glow);
         }
 
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -213,10 +216,8 @@
 
         if (!target) return;
 
-        // 1. Inicia o efeito visual
         sweep.style.display = "block";
 
-        // 2. Exibe a mensagem do usuário no chat
         const uMsg = document.createElement('div');
         uMsg.className = 'msg-user';
         uMsg.innerText = "Analisar: " + target;
@@ -224,17 +225,13 @@
         document.getElementById('user-target').value = "";
         chat.scrollTop = chat.scrollHeight;
 
-        // 3. Mensagem de processamento inicial
         const bMsgLoading = document.createElement('div');
         bMsgLoading.className = 'msg-bot';
         bMsgLoading.innerHTML = "<b>[EXPLORIA]:</b> Alvo identificado. Acessando infraestrutura digital... Analisando latência e funil de conversão.";
         chat.appendChild(bMsgLoading);
 
         try {
-            // ---------------------------------------------------------
-            // COLE SUA URL DO WEBHOOK DO N8N ABAIXO:
             const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/21abc95d-7b3c-4cc6-b2b8-e33a696d6f96"; 
-            // ---------------------------------------------------------
 
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
@@ -248,10 +245,9 @@
 
             const data = await response.json();
 
-            // 4. Exibe a resposta real vinda do n8n
             const bMsgResult = document.createElement('div');
             bMsgResult.className = 'msg-bot';
-            // Assume que o n8n retorna { "output": "texto" }
+            // innerHTML permite que o link enviado pelo n8n vire um botão clicável
             bMsgResult.innerHTML = `<b>[STATUS]:</b> ${data.output || "Varredura concluída. Dados processados."}`;
             chat.appendChild(bMsgResult);
 

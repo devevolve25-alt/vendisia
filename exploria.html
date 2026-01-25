@@ -208,7 +208,7 @@
         </section>
     </main>
 
-    <script>
+   <script>
     async function processAudit() {
         const target = document.getElementById('user-target').value;
         const chat = document.getElementById('chat-output');
@@ -246,9 +246,9 @@
             const data = await response.json();
             let rawOutput = data.output || "Varredura concluída. Dados processados.";
 
-            // --- NOVO: CONVERSOR DE LINK MARKDOWN PARA BOTÃO HTML ---
-            // Transforma [Texto](Link) em <a href="Link">Texto</a>
-            const formattedOutput = rawOutput.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2">$1</a>');
+            // --- CONVERSOR UNIVERSAL DE BOTÃO ---
+            // Detecta o formato [Texto](Link) e converte para botão HTML
+            const formattedOutput = rawOutput.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self">$1</a>');
 
             const bMsgResult = document.createElement('div');
             bMsgResult.className = 'msg-bot';

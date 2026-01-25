@@ -311,7 +311,7 @@
         const chatBox = document.getElementById('chat-box');
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${side}`;
-        msgDiv.innerText = text;
+        messageDiv.innerHTML = data.response;
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     }

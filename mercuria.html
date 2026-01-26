@@ -264,7 +264,6 @@
     function getVisitorId() {
         let vid = localStorage.getItem('vendisia_visitor_id');
         if (!vid) {
-            // Gera um ID único e armazena no navegador do cliente
             vid = 'v_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
             localStorage.setItem('vendisia_visitor_id', vid);
         }
@@ -290,7 +289,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: msgText,
-                    leadId: LEAD_ID, // Enviando o ID único
+                    leadId: LEAD_ID,
                     origin: "https://vendisia.ia.br",
                     entity: "MercurIA"
                 })
@@ -299,7 +298,16 @@
             const raw = await response.text();
             if (raw) {
                 const data = JSON.parse(raw);
-                appendMessage(data.output || data.message, 'bot');
+                let output = data.output || data.message || "Processando...";
+
+                // --- SEGURANÇA E CONVERSÃO DE BOTÃO ---
+                // 1. Força o domínio correto
+                output = output.replace("https://vendisia.com/exploria.html", "https://vendisia.ia.br/exploria.html");
+                
+                // 2. Transforma [Texto](Link) em botão HTML
+                output = output.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self" class="btn-ia-portal">$1</a>');
+
+                appendMessage(output, 'bot');
             }
         } catch (error) {
             console.error("Erro:", error);
@@ -311,7 +319,10 @@
         const chatBox = document.getElementById('chat-box');
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${side}`;
-        messageDiv.innerHTML = data.response;
+        
+        // innerHTML é o que permite o link virar um botão clicável
+        msgDiv.innerHTML = text; 
+        
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     }

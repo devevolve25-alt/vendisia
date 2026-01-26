@@ -281,7 +281,7 @@
     </main>
 
     <script>
-    // 1. Gerador de ID exclusivo do visitante
+    // Função para gerenciar o ID exclusivo do visitante
     function getVisitorId() {
         let vid = localStorage.getItem('vendisia_visitor_id');
         if (!vid) {
@@ -293,17 +293,11 @@
 
     const LEAD_ID = getVisitorId();
 
-    // 2. FUNÇÃO QUE ENVIA A MENSAGEM (Acionada pelo botão e pelo Enter)
     async function sendMessage() {
-        // Captura o campo de texto e a área de chat (testa vários IDs possíveis)
-        const inputField = document.getElementById('user-input') || document.getElementById('user-query') || document.querySelector('.user-input');
-        const chatBox = document.getElementById('chat-box') || document.getElementById('chat-output');
-        
-        if (!inputField) return;
+        const inputField = document.getElementById('user-input');
         const msgText = inputField.value.trim();
         if (!msgText) return;
 
-        // Exibe mensagem do usuário
         appendMessage(msgText, 'user');
         inputField.value = "";
 
@@ -312,54 +306,51 @@
 
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: msgText,
-                    leadId: LEAD_ID,
-                    entity: "MercurIA",
-                    origin: "https://vendisia.ia.br"
+                    leadId: LEAD_ID, 
+                    origin: "https://vendisia.ia.br",
+                    entity: "MercurIA"
                 })
             });
 
-            const data = await response.json();
-            let output = data.output || data.message || "Processando...";
+            const raw = await response.text();
+            if (raw) {
+                const data = JSON.parse(raw);
+                let output = data.output || data.message;
 
-            // CORREÇÃO DE LINK E CONVERSÃO EM BOTÃO
-            output = output.replace("https://vendisia.com/exploria.html", "https://vendisia.ia.br/exploria.html");
-            output = output.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self">$1</a>');
+                // --- ALTERAÇÕES SOLICITADAS: CONVERSÃO DE LINK E SEGURANÇA ---
+                // Força o link correto caso a IA mande o domínio antigo
+                output = output.replace("https://vendisia.com/exploria.html", "https://vendisia.ia.br/exploria.html");
+                
+                // Converte [Texto](Link) em Botão HTML
+                output = output.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self">$1</a>');
 
-            appendMessage(output, 'bot');
-
+                appendMessage(output, 'bot');
+            }
         } catch (error) {
-            appendMessage("Falha na conexão com o núcleo da Mercúria.", 'bot');
+            console.error("Erro:", error);
+            appendMessage("Falha na conexão com o Panteão.", 'bot');
         }
     }
 
-    // 3. FUNÇÃO PARA RENDERIZAR MENSAGENS
     function appendMessage(text, side) {
-        const chatBox = document.getElementById('chat-box') || document.getElementById('chat-output');
-        if (!chatBox) return;
-
+        const chatBox = document.getElementById('chat-box');
         const msgDiv = document.createElement('div');
-        // Define a classe conforme o lado (user ou bot)
-        msgDiv.className = side === 'bot' ? 'msg-bot' : 'msg-user';
+        msgDiv.className = `message ${side}`;
         
-        // innerHTML permite o botão aparecer
+        // innerHTML é necessário para que o link apareça como botão
         msgDiv.innerHTML = text; 
         
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // 4. ATIVAÇÃO DOS GATILHOS (Ao carregar a página)
-    window.onload = function() {
-        const inputField = document.getElementById('user-input') || document.getElementById('user-query') || document.querySelector('.user-input');
-        if(inputField) {
-            inputField.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
-        }
-    };
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
 </script>
 </body>
 </html>

@@ -192,6 +192,27 @@
             transform: translateY(-1px);
         }
 
+        /* Botão de Navegação da MercurIA */
+.msg-bot a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 12px 24px;
+    background-color: #ff9f43 !important; /* Cor Laranja/Dourada */
+    color: #000 !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.msg-bot a:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 159, 67, 0.3);
+}
+
         /* Transforma links específicos em botões dentro do chat */
 .chat-messages a {
     display: inline-block;
@@ -260,76 +281,67 @@
     </main>
 
     <script>
-    // Função para gerenciar o ID exclusivo do visitante
-    function getVisitorId() {
-        let vid = localStorage.getItem('vendisia_visitor_id');
-        if (!vid) {
-            vid = 'v_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-            localStorage.setItem('vendisia_visitor_id', vid);
-        }
-        return vid;
-    }
+    async function processAudit() {
+        const target = document.getElementById('user-target').value;
+        const chat = document.getElementById('chat-output');
+        const sweep = document.getElementById('sweep');
 
-    const LEAD_ID = getVisitorId();
+        if (!target) return;
 
-    async function sendMessage() {
-        const inputField = document.getElementById('user-input');
-        const msgText = inputField.value.trim();
-        if (!msgText) return;
+        sweep.style.display = "block";
 
-        appendMessage(msgText, 'user');
-        inputField.value = "";
+        const uMsg = document.createElement('div');
+        uMsg.className = 'msg-user';
+        uMsg.innerText = "Analisar: " + target;
+        chat.appendChild(uMsg);
+        document.getElementById('user-target').value = "";
+        chat.scrollTop = chat.scrollHeight;
+
+        const bMsgLoading = document.createElement('div');
+        bMsgLoading.className = 'msg-bot';
+        bMsgLoading.innerHTML = "<b>[EXPLORIA]:</b> Alvo identificado. Acessando infraestrutura digital...";
+        chat.appendChild(bMsgLoading);
 
         try {
-            const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria";
+            const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/21abc95d-7b3c-4cc6-b2b8-e33a696d6f96"; 
 
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
-                mode: 'cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
                 body: JSON.stringify({ 
-                    message: msgText,
-                    leadId: LEAD_ID,
-                    origin: "https://vendisia.ia.br",
-                    entity: "MercurIA"
+                    target: target, 
+                    entity: "ExplorIA", 
+                    timestamp: new Date().toISOString() 
                 })
             });
 
-            const raw = await response.text();
-            if (raw) {
-                const data = JSON.parse(raw);
-                let output = data.output || data.message || "Processando...";
+            const data = await response.json();
+            let rawOutput = data.output || "Varredura concluída.";
 
-                // --- SEGURANÇA E CONVERSÃO DE BOTÃO ---
-                // 1. Força o domínio correto
-                output = output.replace("https://vendisia.com/exploria.html", "https://vendisia.ia.br/exploria.html");
-                
-                // 2. Transforma [Texto](Link) em botão HTML
-                output = output.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self" class="btn-ia-portal">$1</a>');
+            // --- CORREÇÃO DE SEGURANÇA ---
+            rawOutput = rawOutput.replace("https://vendisia.com/mercuria.html", "https://vendisia.ia.br/mercuria.html");
 
-                appendMessage(output, 'bot');
-            }
+            // --- CONVERSOR DE BOTÃO (VERSÃO BLINDADA) ---
+            const formattedOutput = rawOutput.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, (match, text, url) => {
+                return `<a href="${url}" target="_self">${text}</a>`;
+            });
+
+            const bMsgResult = document.createElement('div');
+            bMsgResult.className = 'msg-bot';
+            bMsgResult.innerHTML = `<b>[STATUS]:</b> ${formattedOutput}`;
+            chat.appendChild(bMsgResult);
+
         } catch (error) {
             console.error("Erro:", error);
-            appendMessage("Falha na conexão com o Panteão.", 'bot');
+            const eMsg = document.createElement('div');
+            eMsg.className = 'msg-bot';
+            eMsg.innerText = "[ERRO]: Falha na conexão.";
+            chat.appendChild(eMsg);
+        } finally {
+            sweep.style.display = "none";
+            chat.scrollTop = chat.scrollHeight;
         }
     }
-
-    function appendMessage(text, side) {
-        const chatBox = document.getElementById('chat-box');
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${side}`;
-        
-        // innerHTML é o que permite o link virar um botão clicável
-        msgDiv.innerHTML = text; 
-        
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    document.getElementById('user-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
 </script>
 </body>
 </html>

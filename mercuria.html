@@ -281,7 +281,6 @@
     </main>
 
     <script>
-    // Função para gerenciar o ID exclusivo do visitante
     function getVisitorId() {
         let vid = localStorage.getItem('vendisia_visitor_id');
         if (!vid) {
@@ -295,6 +294,7 @@
 
     async function sendMessage() {
         const inputField = document.getElementById('user-input');
+        if (!inputField) return;
         const msgText = inputField.value.trim();
         if (!msgText) return;
 
@@ -316,20 +316,14 @@
                 })
             });
 
-            const raw = await response.text();
-            if (raw) {
-                const data = JSON.parse(raw);
-                let output = data.output || data.message;
+            const data = await response.json();
+            let output = data.output || data.message || "Processando...";
 
-                // --- ALTERAÇÕES SOLICITADAS: CONVERSÃO DE LINK E SEGURANÇA ---
-                // Força o link correto caso a IA mande o domínio antigo
-                output = output.replace("https://vendisia.com/exploria.html", "https://vendisia.ia.br/exploria.html");
-                
-                // Converte [Texto](Link) em Botão HTML
-                output = output.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self">$1</a>');
+            // CORREÇÃO DE LINK E CONVERSÃO EM BOTÃO
+            output = output.replace("https://vendisia.com/exploria.html", "https://vendisia.ia.br/exploria.html");
+            output = output.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self" class="btn-mercuria-portal">$1</a>');
 
-                appendMessage(output, 'bot');
-            }
+            appendMessage(output, 'bot');
         } catch (error) {
             console.error("Erro:", error);
             appendMessage("Falha na conexão com o Panteão.", 'bot');
@@ -338,10 +332,11 @@
 
     function appendMessage(text, side) {
         const chatBox = document.getElementById('chat-box');
+        if (!chatBox) return;
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${side}`;
         
-        // innerHTML é necessário para que o link apareça como botão
+        // innerHTML limpo para evitar vazamento de texto
         msgDiv.innerHTML = text; 
         
         chatBox.appendChild(msgDiv);

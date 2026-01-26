@@ -281,67 +281,85 @@
     </main>
 
     <script>
-    async function processAudit() {
-        const target = document.getElementById('user-target').value;
-        const chat = document.getElementById('chat-output');
-        const sweep = document.getElementById('sweep');
+    // 1. Gerador de ID exclusivo do visitante
+    function getVisitorId() {
+        let vid = localStorage.getItem('vendisia_visitor_id');
+        if (!vid) {
+            vid = 'v_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+            localStorage.setItem('vendisia_visitor_id', vid);
+        }
+        return vid;
+    }
 
-        if (!target) return;
+    const LEAD_ID = getVisitorId();
 
-        sweep.style.display = "block";
+    // 2. FUNÇÃO QUE ENVIA A MENSAGEM (Acionada pelo botão e pelo Enter)
+    async function sendMessage() {
+        // Captura o campo de texto e a área de chat (testa vários IDs possíveis)
+        const inputField = document.getElementById('user-input') || document.getElementById('user-query') || document.querySelector('.user-input');
+        const chatBox = document.getElementById('chat-box') || document.getElementById('chat-output');
+        
+        if (!inputField) return;
+        const msgText = inputField.value.trim();
+        if (!msgText) return;
 
-        const uMsg = document.createElement('div');
-        uMsg.className = 'msg-user';
-        uMsg.innerText = "Analisar: " + target;
-        chat.appendChild(uMsg);
-        document.getElementById('user-target').value = "";
-        chat.scrollTop = chat.scrollHeight;
-
-        const bMsgLoading = document.createElement('div');
-        bMsgLoading.className = 'msg-bot';
-        bMsgLoading.innerHTML = "<b>[EXPLORIA]:</b> Alvo identificado. Acessando infraestrutura digital...";
-        chat.appendChild(bMsgLoading);
+        // Exibe mensagem do usuário
+        appendMessage(msgText, 'user');
+        inputField.value = "";
 
         try {
-            const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/21abc95d-7b3c-4cc6-b2b8-e33a696d6f96"; 
+            const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria";
 
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
                 body: JSON.stringify({ 
-                    target: target, 
-                    entity: "ExplorIA", 
-                    timestamp: new Date().toISOString() 
+                    message: msgText,
+                    leadId: LEAD_ID,
+                    entity: "MercurIA",
+                    origin: "https://vendisia.ia.br"
                 })
             });
 
             const data = await response.json();
-            let rawOutput = data.output || "Varredura concluída.";
+            let output = data.output || data.message || "Processando...";
 
-            // --- CORREÇÃO DE SEGURANÇA ---
-            rawOutput = rawOutput.replace("https://vendisia.com/mercuria.html", "https://vendisia.ia.br/mercuria.html");
+            // CORREÇÃO DE LINK E CONVERSÃO EM BOTÃO
+            output = output.replace("https://vendisia.com/exploria.html", "https://vendisia.ia.br/exploria.html");
+            output = output.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self">$1</a>');
 
-            // --- CONVERSOR DE BOTÃO (VERSÃO BLINDADA) ---
-            const formattedOutput = rawOutput.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, (match, text, url) => {
-                return `<a href="${url}" target="_self">${text}</a>`;
-            });
-
-            const bMsgResult = document.createElement('div');
-            bMsgResult.className = 'msg-bot';
-            bMsgResult.innerHTML = `<b>[STATUS]:</b> ${formattedOutput}`;
-            chat.appendChild(bMsgResult);
+            appendMessage(output, 'bot');
 
         } catch (error) {
-            console.error("Erro:", error);
-            const eMsg = document.createElement('div');
-            eMsg.className = 'msg-bot';
-            eMsg.innerText = "[ERRO]: Falha na conexão.";
-            chat.appendChild(eMsg);
-        } finally {
-            sweep.style.display = "none";
-            chat.scrollTop = chat.scrollHeight;
+            appendMessage("Falha na conexão com o núcleo da Mercúria.", 'bot');
         }
     }
+
+    // 3. FUNÇÃO PARA RENDERIZAR MENSAGENS
+    function appendMessage(text, side) {
+        const chatBox = document.getElementById('chat-box') || document.getElementById('chat-output');
+        if (!chatBox) return;
+
+        const msgDiv = document.createElement('div');
+        // Define a classe conforme o lado (user ou bot)
+        msgDiv.className = side === 'bot' ? 'msg-bot' : 'msg-user';
+        
+        // innerHTML permite o botão aparecer
+        msgDiv.innerHTML = text; 
+        
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // 4. ATIVAÇÃO DOS GATILHOS (Ao carregar a página)
+    window.onload = function() {
+        const inputField = document.getElementById('user-input') || document.getElementById('user-query') || document.querySelector('.user-input');
+        if(inputField) {
+            inputField.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        }
+    };
 </script>
 </body>
 </html>

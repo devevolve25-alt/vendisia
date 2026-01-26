@@ -132,4 +132,142 @@
         .msg-bot { margin-bottom: 20px; border-left: 2px solid var(--prospect-color); padding-left: 15px; }
         .msg-user { color: var(--prospect-color); font-weight: 600; text-align: right; margin-bottom: 20px; }
 
-        .chat-
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .url-input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(50, 255, 126, 0.2);
+            border-radius: 6px;
+            padding: 15px;
+            color: #fff;
+            font-family: 'Montserrat';
+            text-align: center;
+            outline: none;
+        }
+
+        .btn-scan {
+            background: var(--prospect-color);
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-family: 'Bebas Neue';
+            font-size: 1.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .btn-scan:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        @media (max-width: 600px) {
+            .radar-bg { width: 300px; height: 300px; }
+            .central-chat { width: 95%; }
+            .brand-name { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <div class="brand-block">
+            <img src="merc_face.png" alt="Logo" class="brand-logo">
+            <div class="brand-text-wrapper">
+                <span class="brand-name">VENDISIA</span>
+                <span class="brand-tagline">IA ECOSYSTEM</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-stage">
+        <div class="radar-bg">
+            <div class="radar-sweep" id="sweep"></div>
+        </div>
+
+        <section class="central-chat">
+            <div class="chat-header">
+                <h1>EU SOU EXPLORIA</h1>
+            </div>
+            
+            <div class="chat-display" id="chat-output">
+                <div class="msg-bot">Iniciando protocolo de análise técnica. Forneça o url do site ou @ do instragram.</div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" class="url-input" id="user-target" placeholder="Ex: @clinicaestetica ou www.site.com.br">
+                <button class="btn-scan" onclick="processAudit()">EXECUTAR VARREDURA</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        async function processAudit() {
+            const target = document.getElementById('user-target').value;
+            const chat = document.getElementById('chat-output');
+            const sweep = document.getElementById('sweep');
+
+            if (!target) return;
+
+            sweep.style.display = "block";
+
+            const uMsg = document.createElement('div');
+            uMsg.className = 'msg-user';
+            uMsg.innerText = "Analisar: " + target;
+            chat.appendChild(uMsg);
+            document.getElementById('user-target').value = "";
+            chat.scrollTop = chat.scrollHeight;
+
+            const bMsgLoading = document.createElement('div');
+            bMsgLoading.className = 'msg-bot';
+            bMsgLoading.innerHTML = "<b>[EXPLORIA]:</b> Alvo identificado. Acessando infraestrutura digital...";
+            chat.appendChild(bMsgLoading);
+
+            try {
+                const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/21abc95d-7b3c-4cc6-b2b8-e33a696d6f96"; 
+
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify({ 
+                        target: target,
+                        entity: "ExplorIA",
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                const data = await response.json();
+                let output = data.output || "Varredura concluída. Dados processados.";
+
+                // CORREÇÃO DE DOMÍNIO E CONVERSÃO EM BOTÃO
+                output = output.replace(/https:\/\/vendisia\.com\/mercuria\.html/g, "https://vendisia.ia.br/mercuria.html");
+                output = output.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self">$1</a>');
+
+                const bMsgResult = document.createElement('div');
+                bMsgResult.className = 'msg-bot';
+                bMsgResult.innerHTML = `<b>[STATUS]:</b> ${output}`;
+                chat.appendChild(bMsgResult);
+
+            } catch (error) {
+                console.error("Erro na perícia:", error);
+                const eMsg = document.createElement('div');
+                eMsg.className = 'msg-bot';
+                eMsg.style.color = "#ff4d4d";
+                eMsg.innerText = "[ERRO]: Falha na conexão com o núcleo de processamento.";
+                chat.appendChild(eMsg);
+            } finally {
+                sweep.style.display = "none";
+                chat.scrollTop = chat.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

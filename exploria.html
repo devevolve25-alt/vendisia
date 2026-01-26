@@ -208,16 +208,17 @@
         </section>
     </main>
 
-   <script>
-    async function processAudit() {
+   async function processAudit() {
         const target = document.getElementById('user-target').value;
         const chat = document.getElementById('chat-output');
         const sweep = document.getElementById('sweep');
 
         if (!target) return;
 
+        // 1. Inicia o efeito visual
         sweep.style.display = "block";
 
+        // 2. Exibe a mensagem do usuário no chat
         const uMsg = document.createElement('div');
         uMsg.className = 'msg-user';
         uMsg.innerText = "Analisar: " + target;
@@ -225,17 +226,22 @@
         document.getElementById('user-target').value = "";
         chat.scrollTop = chat.scrollHeight;
 
+        // 3. Mensagem de processamento inicial
         const bMsgLoading = document.createElement('div');
         bMsgLoading.className = 'msg-bot';
         bMsgLoading.innerHTML = "<b>[EXPLORIA]:</b> Alvo identificado. Acessando infraestrutura digital... Analisando latência e funil de conversão.";
         chat.appendChild(bMsgLoading);
 
         try {
+            // URL do Webhook com cache desativado para forçar atualização
             const WEBHOOK_URL = "https://powerfulkiwi-n8n.cloudfy.live/webhook/21abc95d-7b3c-4cc6-b2b8-e33a696d6f96"; 
 
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
                 body: JSON.stringify({ 
                     target: target,
                     entity: "ExplorIA",
@@ -244,12 +250,21 @@
             });
 
             const data = await response.json();
+            
+            // Pega a resposta da IA
             let rawOutput = data.output || "Varredura concluída. Dados processados.";
 
-            // --- CONVERSOR UNIVERSAL DE BOTÃO ---
-            // Detecta o formato [Texto](Link) e converte para botão HTML
-            const formattedOutput = rawOutput.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_self">$1</a>');
+            // --- CORREÇÃO DE SEGURANÇA (HARDCODE) ---
+            // Se o n8n enviar o link antigo ou errado, este código troca automaticamente pelo correto
+            rawOutput = rawOutput.replace("https://vendisia.com/mercuria.html", "https://vendisia.ia.br/mercuria.html");
 
+            // --- CONVERSOR DE MARKDOWN PARA BOTÃO ---
+            // Transforma [Texto](Link) em <a href="Link">Texto</a>
+            const formattedOutput = rawOutput.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, (match, text, url) => {
+                return `<a href="${url}" target="_self">${text}</a>`;
+            });
+
+            // 4. Exibe a resposta real final
             const bMsgResult = document.createElement('div');
             bMsgResult.className = 'msg-bot';
             bMsgResult.innerHTML = `<b>[STATUS]:</b> ${formattedOutput}`;
@@ -267,6 +282,5 @@
             chat.scrollTop = chat.scrollHeight;
         }
     }
-</script>
 </body>
 </html>

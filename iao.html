@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VENDISIA | iao</title>
+    <title>VENDISIA | IAO</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #000000;
             --chat-bg: #0c1320;
-            --creative-color: #a55eea; /* Violeta Elétrico */
-            --creative-accent: #fd79a8;
-            --gold-border: #d4af37;
+            --iao-color: #a55eea; /* Violeta Elétrico */
+            --terminal-green: #00ff41;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,11 +39,10 @@
         .brand-block { display: flex; align-items: center; gap: 12px; }
         .brand-logo { width: 45px; height: auto; }
         .brand-text-wrapper { display: flex; flex-direction: column; }
-        .brand-name { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--creative-color); line-height: 0.9; letter-spacing: 2px; }
+        .brand-name { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--iao-color); line-height: 0.9; letter-spacing: 2px; }
         .brand-tagline { font-family: 'Bebas Neue'; font-size: 0.9rem; color: #fff; letter-spacing: 3px; margin-top: 3px; }
         .header-headline { font-family: 'Bebas Neue'; font-size: 1.2rem; text-align: center; color: #fff; opacity: 0.8; }
 
-        /* Estrutura de Estúdio */
         .studio-container {
             flex: 1;
             display: grid;
@@ -56,7 +54,7 @@
             min-height: 0;
         }
 
-        /* Lado Esquerdo: Chat */
+        /* Coluna de Chat */
         .chat-column {
             background: var(--chat-bg);
             border: 1px solid rgba(165, 94, 234, 0.3);
@@ -72,7 +70,7 @@
             border-bottom: 1px solid rgba(165, 94, 234, 0.2);
             font-family: 'Bebas Neue';
             font-size: 1.1rem;
-            color: var(--creative-color);
+            color: var(--iao-color);
             text-align: center;
         }
 
@@ -86,8 +84,8 @@
             gap: 12px;
         }
 
-        .msg-bot { border-left: 2px solid var(--creative-color); padding-left: 10px; color: #cbd5e1; margin-bottom: 5px; }
-        .msg-user { color: var(--creative-color); font-weight: 600; text-align: right; margin-bottom: 5px; }
+        .msg-bot { border-left: 2px solid var(--iao-color); padding-left: 10px; color: #cbd5e1; }
+        .msg-user { color: var(--iao-color); font-weight: 600; text-align: right; }
 
         .input-area {
             padding: 12px;
@@ -110,7 +108,7 @@
         }
 
         .btn-generate {
-            background: var(--creative-color);
+            background: var(--iao-color);
             color: #000;
             border: none;
             padding: 10px;
@@ -118,11 +116,9 @@
             font-size: 1.2rem;
             cursor: pointer;
             border-radius: 4px;
-            transition: 0.3s;
         }
-        .btn-generate:hover { opacity: 0.8; }
 
-        /* Lado Direito: Preview */
+        /* Coluna de Preview Técnico */
         .preview-column {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.05);
@@ -141,18 +137,17 @@
             padding: 0 15px;
         }
 
-        .tab {
+        .tab-active {
             padding: 12px 20px;
             font-family: 'Bebas Neue';
-            color: var(--creative-color);
-            border-bottom: 2px solid var(--creative-color);
-            white-space: nowrap;
+            color: var(--iao-color);
+            border-bottom: 2px solid var(--iao-color);
         }
 
         .btn-download {
             background: transparent;
-            border: 1px solid var(--creative-color);
-            color: var(--creative-color);
+            border: 1px solid var(--iao-color);
+            color: var(--iao-color);
             padding: 5px 15px;
             font-family: 'Bebas Neue';
             cursor: pointer;
@@ -160,7 +155,7 @@
             font-size: 0.9rem;
             transition: 0.3s;
         }
-        .btn-download:hover { background: var(--creative-color); color: #000; }
+        .btn-download:hover { background: var(--iao-color); color: #000; }
 
         .display-area {
             flex: 1;
@@ -168,33 +163,28 @@
             overflow-y: auto;
             background: #050505;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
         }
 
-        /* Área de visualização de texto puro (txt) */
-        .proposal-txt-area {
-            background: #111;
-            color: #00ff41; /* Verde Matrix/Terminal para facilitar leitura técnica */
+        /* Visualizador de Código/Texto Puro */
+        .iao-terminal {
+            background: #0a0a0a;
+            color: var(--terminal-green);
             width: 100%;
             max-width: 900px;
-            min-height: 80vh;
             padding: 30px;
-            border: 1px solid #333;
+            border: 1px solid #222;
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.95rem;
             line-height: 1.5;
-            white-space: pre-wrap; /* Mantém quebras de linha e espaços */
+            white-space: pre-wrap;
             word-wrap: break-word;
             border-radius: 4px;
         }
 
-        /* RESPONSIVIDADE MOBILE */
         @media (max-width: 1000px) {
             body { overflow-y: auto; height: auto; }
-            .page-header { grid-template-columns: 1fr; text-align: center; gap: 10px; }
-            .brand-block { justify-content: center; }
-            .studio-container { grid-template-columns: 1fr; display: flex; flex-direction: column; }
+            .studio-container { grid-template-columns: 1fr; }
             .chat-column { height: 400px; }
             .preview-column { min-height: 500px; margin-top: 10px; }
         }
@@ -210,129 +200,121 @@
                 <span class="brand-tagline">IA ECOSYSTEM</span>
             </div>
         </div>
-        <h2 class="header-headline">Laboratório de Criação I.A.O.</h2>
+        <h2 class="header-headline">Laboratório de Operações IAO</h2>
         <div class="spacer"></div>
     </header>
 
     <main class="studio-container">
         <section class="chat-column">
-            <div class="chat-header">COMANDOS CRIATIVOS</div>
-            <div class="chat-messages" id="chat-criar">
-                <div class="msg-bot">Olá, sou I.A.O.. envie os parâmetros de codificação.</div>
+            <div class="chat-header">TERMINAL OPERACIONAL</div>
+            <div class="chat-messages" id="chat-iao">
+                <div class="msg-bot">Sistemas ativos. Sou IAO. Insira os parâmetros para codificação ou análise técnica.</div>
             </div>
             <div class="input-area">
-                <textarea id="cmd-input" placeholder="O que deseja criar?"></textarea>
-                <button class="btn-generate" onclick="generateContent()">GERAR CÓDIGO</button>
+                <textarea id="cmd-input" placeholder="Insira o comando técnico..."></textarea>
+                <button class="btn-generate" id="btn-submit">EXECUTAR COMANDO</button>
             </div>
         </section>
 
         <section class="preview-column">
             <div class="preview-tabs">
-                <div class="tab">DOCUMENTOS TÉCNICOS (.TXT)</div>
-                <button class="btn-download" onclick="downloadTxt()">BAIXAR ARQUIVO .TXT</button>
+                <div class="tab-active">SAÍDA TÉCNICA (.TXT)</div>
+                <button class="btn-download" onclick="downloadTxt()">BAIXAR CÓDIGO (.TXT)</button>
             </div>
             
-            <div class="display-area" id="display-content">
-                <pre class="proposal-txt-area" id="text-view">
-Aguardando comandos para gerar o código...
-                </pre>
+            <div class="display-area">
+                <pre class="iao-terminal" id="text-view">Aguardando processamento de dados...</pre>
             </div>
         </section>
     </main>
 
     <script>
-    // Garante que o script só rode após o carregamento total da página
-    document.addEventListener("DOMContentLoaded", function() {
-        console.log("CriarIA: Sistemas prontos.");
-    });
+        document.addEventListener("DOMContentLoaded", function() {
+            const btn = document.getElementById('btn-submit');
+            const inputField = document.getElementById('cmd-input');
 
-    async function generateContent() {
-        const inputField = document.getElementById('cmd-input');
-        const input = inputField.value.trim();
-        const chat = document.getElementById('chat-criar');
-        const textView = document.getElementById('text-view');
+            // Evento de Click
+            btn.addEventListener('click', generateContent);
 
-        if(!input) {
-            console.warn("Input vazio detectado.");
-            return;
-        }
-
-        // 1. Exibe a mensagem do usuário
-        const userDiv = document.createElement('div');
-        userDiv.className = 'msg-user';
-        userDiv.innerText = input;
-        chat.appendChild(userDiv);
-        
-        // Limpa o campo imediatamente
-        inputField.value = "";
-        chat.scrollTop = chat.scrollHeight;
-
-        // 2. Mensagem de processamento
-        const botDivLoading = document.createElement('div');
-        botDivLoading.className = 'msg-bot';
-        botDivLoading.innerText = "[CriarIA]: Processando e formatando texto puro... Veja no painel.";
-        chat.appendChild(botDivLoading);
-
-        try {
-            const WEBHOOK_URL_IAO = "https://powerfulkiwi-n8n.cloudfy.live/webhook/web_programing"; 
-
-            const response = await fetch(WEBHOOK_URL_IAO, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: input,
-                    entity: "CriarIA",
-                    timestamp: new Date().toISOString()
-                })
+            // Evento de Enter
+            inputField.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    generateContent();
+                }
             });
+        });
 
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        async function generateContent() {
+            const inputField = document.getElementById('cmd-input');
+            const input = inputField.value.trim();
+            const chat = document.getElementById('chat-iao');
+            const textView = document.getElementById('text-view');
 
-            const data = await response.json();
+            if(!input) return;
 
-            // 3. Sucesso
-            const botDivSuccess = document.createElement('div');
-            botDivSuccess.className = 'msg-bot';
-            botDivSuccess.innerText = "[CriarIA]: Código/Texto gerado com sucesso.";
-            chat.appendChild(botDivSuccess);
-
-            // 4. Inserção no Visualizador (Preservando texto puro)
-            if (data.output) {
-                textView.innerText = data.output;
-            } else if (data.message) { // Fallback caso o n8n retorne 'message' em vez de 'output'
-                textView.innerText = data.message;
-            }
-
-        } catch (error) {
-            console.error("Erro na criação:", error);
-            const eDiv = document.createElement('div');
-            eDiv.className = 'msg-bot';
-            eDiv.style.color = "#ff4d4d";
-            eDiv.innerText = "[ERRO]: Falha na conexão com o laboratório. Verifique o console.";
-            chat.appendChild(eDiv);
-        } finally {
+            // Log de usuário
+            const userDiv = document.createElement('div');
+            userDiv.className = 'msg-user';
+            userDiv.innerText = input;
+            chat.appendChild(userDiv);
+            
+            inputField.value = "";
             chat.scrollTop = chat.scrollHeight;
-        }
-    }
 
-    // Atalho: Enviar com a tecla Enter
-    document.getElementById('cmd-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            generateContent();
-        }
-    });
+            const botDivLoading = document.createElement('div');
+            botDivLoading.className = 'msg-bot';
+            botDivLoading.innerText = "[IAO]: Processando requisição técnica e gerando saída limpa...";
+            chat.appendChild(botDivLoading);
 
-    function downloadTxt() {
-        const content = document.getElementById('text-view').innerText;
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'criaria_documento_' + new Date().getTime() + '.txt';
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
-</script>
+            try {
+                const WEBHOOK_URL_IAO = "https://powerfulkiwi-n8n.cloudfy.live/webhook/web_programing"; 
+
+                const response = await fetch(WEBHOOK_URL_IAO, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: input,
+                        entity: "IAO",
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                const data = await response.json();
+
+                const botDivSuccess = document.createElement('div');
+                botDivSuccess.className = 'msg-bot';
+                botDivSuccess.innerText = "[IAO]: Operação concluída. Código disponível no terminal.";
+                chat.appendChild(botDivSuccess);
+
+                // Exibe como innerText para preservar a pureza do código
+                if (data.output) {
+                    textView.innerText = data.output;
+                } else if (data.message) {
+                    textView.innerText = data.message;
+                }
+
+            } catch (error) {
+                const eDiv = document.createElement('div');
+                eDiv.className = 'msg-bot';
+                eDiv.style.color = "#ff4d4d";
+                eDiv.innerText = "[ERRO]: Falha na comunicação com o núcleo operacional.";
+                chat.appendChild(eDiv);
+            } finally {
+                chat.scrollTop = chat.scrollHeight;
+            }
+        }
+
+        function downloadTxt() {
+            const content = document.getElementById('text-view').innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'iao_output_' + new Date().getTime() + '.txt';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
 </body>
 </html>

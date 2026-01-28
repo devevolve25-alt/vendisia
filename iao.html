@@ -241,48 +241,66 @@ Aguardando comandos para gerar o código...
     </main>
 
     <script>
+    // Garante que o script só rode após o carregamento total da página
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("CriarIA: Sistemas prontos.");
+    });
+
     async function generateContent() {
-        const input = document.getElementById('cmd-input').value;
+        const inputField = document.getElementById('cmd-input');
+        const input = inputField.value.trim();
         const chat = document.getElementById('chat-criar');
         const textView = document.getElementById('text-view');
 
-        if(!input) return;
+        if(!input) {
+            console.warn("Input vazio detectado.");
+            return;
+        }
 
+        // 1. Exibe a mensagem do usuário
         const userDiv = document.createElement('div');
         userDiv.className = 'msg-user';
         userDiv.innerText = input;
         chat.appendChild(userDiv);
-        document.getElementById('cmd-input').value = "";
+        
+        // Limpa o campo imediatamente
+        inputField.value = "";
         chat.scrollTop = chat.scrollHeight;
 
+        // 2. Mensagem de processamento
         const botDivLoading = document.createElement('div');
         botDivLoading.className = 'msg-bot';
-        botDivLoading.innerText = "[I.A.O.]: Processando e formatando texto puro... Veja no painel.";
+        botDivLoading.innerText = "[CriarIA]: Processando e formatando texto puro... Veja no painel.";
         chat.appendChild(botDivLoading);
 
         try {
-            const WEBHOOK_URL_I.A.O. = "https://powerfulkiwi-n8n.cloudfy.live/webhook/web_programing"; 
+            const WEBHOOK_URL_CRIARIA = "https://powerfulkiwi-n8n.cloudfy.live/webhook/e6e02f08-0cfd-4759-b93a-ee9cc4465d5b"; 
 
-            const response = await fetch(WEBHOOK_URL_I.A.O., {
+            const response = await fetch(WEBHOOK_URL_CRIARIA, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: input,
-                    entity: "I.A.O.",
+                    entity: "CriarIA",
                     timestamp: new Date().toISOString()
                 })
             });
 
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+
             const data = await response.json();
 
+            // 3. Sucesso
             const botDivSuccess = document.createElement('div');
             botDivSuccess.className = 'msg-bot';
-            botDivSuccess.innerText = "[I.A.O.]: Código/Texto gerado com sucesso.";
+            botDivSuccess.innerText = "[CriarIA]: Código/Texto gerado com sucesso.";
             chat.appendChild(botDivSuccess);
 
-            // Inserimos como innerText para NÃO renderizar HTML e manter como .txt puro
+            // 4. Inserção no Visualizador (Preservando texto puro)
             if (data.output) {
                 textView.innerText = data.output;
+            } else if (data.message) { // Fallback caso o n8n retorne 'message' em vez de 'output'
+                textView.innerText = data.message;
             }
 
         } catch (error) {
@@ -290,21 +308,28 @@ Aguardando comandos para gerar o código...
             const eDiv = document.createElement('div');
             eDiv.className = 'msg-bot';
             eDiv.style.color = "#ff4d4d";
-            eDiv.innerText = "[ERRO]: Falha na conexão com o laboratório.";
+            eDiv.innerText = "[ERRO]: Falha na conexão com o laboratório. Verifique o console.";
             chat.appendChild(eDiv);
         } finally {
             chat.scrollTop = chat.scrollHeight;
         }
     }
 
-    // Função para baixar o conteúdo do visualizador como um arquivo .txt real
+    // Atalho: Enviar com a tecla Enter
+    document.getElementById('cmd-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            generateContent();
+        }
+    });
+
     function downloadTxt() {
         const content = document.getElementById('text-view').innerText;
         const blob = new Blob([content], { type: 'text/plain' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'I.A.O._documento_' + new Date().getTime() + '.txt';
+        a.download = 'criaria_documento_' + new Date().getTime() + '.txt';
         a.click();
         window.URL.revokeObjectURL(url);
     }

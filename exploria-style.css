@@ -172,7 +172,7 @@ body {
 }
 
 .btn-mercuria:hover {
-    background: #ffffff !important;
+    background: #32ff7e !important;
     transform: scale(1.05);
     box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3) !important;
 }

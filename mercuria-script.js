@@ -55,7 +55,7 @@ async function sendMessage() {
     input.style.height = 'auto';
 
     try {
-        const response = await fetch('https://powerfulkiwi-n8n.cloudfy.live/webhook/02600645-55d0-49a8-9a66-db4d86aaa1e5', {
+        const response = await fetch('https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

@@ -104,3 +104,48 @@ body {
     .header-brand-wrapper { flex-direction: column; text-align: center; }
     .header-tagline { text-align: center; border: none; padding: 0; margin-top: 20px; font-size: 1.8rem; }
 }
+
+/* --- BOTÃO DE EXPERIÊNCIA VENDISIA --- */
+.cta-wrapper {
+    margin: 10px 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-experience {
+    display: inline-block;
+    background: #d4af37; /* Gold */
+    color: #000000 !important;
+    text-decoration: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    padding: 12px 30px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    letter-spacing: 2px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+    text-transform: uppercase;
+}
+
+.btn-experience:hover {
+    background: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+}
+
+/* Ajuste fino para o card-back comportar o botão sem apertar o texto */
+.card-back {
+    padding: 25px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.pas-content p {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}

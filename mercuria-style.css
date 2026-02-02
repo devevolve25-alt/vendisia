@@ -4,6 +4,7 @@
     --cyan-color: #00ffff;
     --gold-border: #d4af37;
     --text-white: #ffffff;
+    --error-red: #ff4d4d;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,14 +24,14 @@ body {
     width: 100%;
     max-width: 1400px;
     margin: 0 auto 30px auto;
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
 }
 
 .brand-block { display: flex; align-items: center; gap: 15px; }
 .brand-logo { width: 70px; height: auto; }
-.brand-text-wrapper { display: flex; flex-direction: column; } /* Força a pilha vertical */
+.brand-text-wrapper { display: flex; flex-direction: column; }
 
 .brand-name { 
     font-family: 'Bebas Neue'; 
@@ -56,7 +57,7 @@ body {
     letter-spacing: 1px;
 }
 
-/* Restante do layout mantido e ampliado */
+/* Layout Central */
 .main-content {
     flex: 1;
     display: flex;
@@ -77,6 +78,7 @@ body {
     line-height: 1.6;
 }
 
+/* Container do Chat */
 .chat-sandbox {
     width: 100%;
     max-width: 950px; 
@@ -99,12 +101,25 @@ body {
     gap: 20px;
 }
 
+/* Scrollbar Customizada */
+.chat-messages::-webkit-scrollbar { width: 6px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 10px; }
+
+/* Mensagens */
 .message {
     max-width: 80%;
     padding: 18px 22px;
     border-radius: 18px;
     font-size: 1.05rem;
     line-height: 1.5;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .message.bot {
@@ -120,6 +135,27 @@ body {
     font-weight: 600;
 }
 
+/* ESTADOS ESPECIAIS: LOADING E ERROR */
+.message.loading {
+    opacity: 0.6;
+    font-style: italic;
+    border-left-color: var(--gold-border);
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.4; }
+}
+
+.message.error {
+    border-left: 5px solid var(--error-red);
+    color: var(--error-red);
+    background: rgba(255, 77, 77, 0.05);
+}
+
+/* Área de Input */
 .chat-input-area {
     padding: 30px;
     background: rgba(0, 0, 0, 0.5);
@@ -158,12 +194,7 @@ body {
 
 .send-button:hover { filter: brightness(1.2); transform: translateY(-3px); }
 
-@media (max-width: 900px) {
-    .page-header { grid-template-columns: 1fr; gap: 20px; }
-    .brand-block { justify-content: center; }
-}
-
-/* Estilização de Links/Botões dentro do Chat */
+/* Links/Botões Gerados pela IA */
 .chat-link-button {
     display: inline-block;
     margin-top: 15px;
@@ -179,12 +210,9 @@ body {
     letter-spacing: 1px;
 }
 
-.chat-link-button:hover {
-    filter: brightness(1.2);
-    transform: scale(1.05);
-}
+.chat-link-button:hover { filter: brightness(1.2); transform: scale(1.05); }
 
-/* Caso seja o botão da ExplorIA, podemos usar o verde */
-.exploria .chat-link-button {
-    background: var(--prospect-color);
+@media (max-width: 900px) {
+    .page-header { flex-direction: column; gap: 20px; text-align: center; }
+    .brand-block { justify-content: center; }
 }

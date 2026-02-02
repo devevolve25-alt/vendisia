@@ -1,11 +1,7 @@
-// Cole sua URL real aqui entre as aspas
 const WEBHOOK_URL = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt'; 
 
 async function sendMessage(event) {
-    // IMPORTANTE: Previne que o formulário recarregue a página via GET
-    if (event) {
-        event.preventDefault();
-    }
+    if (event) event.preventDefault();
 
     const input = document.getElementById('user-input');
     const message = input.value.trim();
@@ -14,15 +10,14 @@ async function sendMessage(event) {
     addMessage(message, 'user');
     input.value = '';
 
-    const loadingId = addMessage("Typing...", 'bot loading');
+    // Feedback visual
+    const loadingId = addMessage("MercurIA is thinking...", 'bot loading');
 
     try {
         const response = await fetch(WEBHOOK_URL, {
-            method: 'POST', // Forçando explicitamente o POST
-            headers: { 
-                'Content-Type': 'application/json' 
-            },
-            mode: 'cors', // Garante que o navegador lide com cross-origin
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            mode: 'cors',
             body: JSON.stringify({ 
                 content: message,
                 user_name: new URLSearchParams(window.location.search).get('nome') || 'Guest',
@@ -35,8 +30,9 @@ async function sendMessage(event) {
         const data = await response.json();
         removeMessage(loadingId);
 
+        // Busca multicampo para garantir que a resposta apareça
         const botReply = data.output || data.message || data.text || data.reply || 
-                         (typeof data === 'string' ? data : "Check response format.");
+                         (typeof data === 'string' ? data : "Success, but no text response found.");
         
         addMessage(botReply, 'bot');
 
@@ -47,15 +43,19 @@ async function sendMessage(event) {
     }
 }
 
-// Garanta que o evento seja passado para a função
+// Ouvinte para o Botão Enviar
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+
+// Ouvinte para a tecla Enter
 document.getElementById('user-input').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
         sendMessage(e);
     }
 });
 
 function addMessage(text, type) {
-    const chat = document.getElementById('chat-container');
+    const chat = document.getElementById('chat-box'); // Corrigido para bater com o HTML
     const div = document.createElement('div');
     const id = 'msg-' + Date.now();
     div.id = id;

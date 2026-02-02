@@ -1,80 +1,72 @@
-// 1. Captura dinâmica de parâmetros da URL
-const urlParams = new URLSearchParams(window.location.search);
-const clienteNome = urlParams.get('nome') || "";
-const clienteEmpresa = urlParams.get('empresa') || "";
+// Cole sua URL real aqui entre as aspas
+const WEBHOOK_URL = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt'; 
 
-document.addEventListener('DOMContentLoaded', () => {
-    const chatInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const initialMsg = document.getElementById('initial-message');
-
-    // Inicialização personalizada baseada nos dados do link de e-mail
-    if (clienteNome) {
-        initialMsg.innerHTML = `Olá, <strong>${clienteNome}</strong>! Eu sou MercurIA. Já estou analisando o cenário da <strong>${clienteEmpresa || 'sua empresa'}</strong>. Como posso acelerar seu lucro hoje?`;
-    } else {
-        initialMsg.innerHTML = "Eu sou MercurIA. Estou pronta para transformar seu atendimento em uma máquina imparável de lucro. Como posso ajudar seu negócio hoje?";
+async function sendMessage(event) {
+    // IMPORTANTE: Previne que o formulário recarregue a página via GET
+    if (event) {
+        event.preventDefault();
     }
 
-    // Ajuste automático de altura para o campo multiline
-    chatInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
-
-    // Envio por botão ou Enter (sem Shift)
-    sendBtn.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-});
-
-// Função de exibição de mensagens com suporte a HTML (para botões/links)
-function appendMessage(text, side) {
-    const chatBox = document.getElementById('chat-box');
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${side}`;
-    
-    // Usamos innerHTML para renderizar botões enviados pelo n8n
-    msgDiv.innerHTML = text; 
-    
-    chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-async function sendMessage() {
     const input = document.getElementById('user-input');
-    const msgText = input.value.trim();
-    if (!msgText) return;
+    const message = input.value.trim();
+    if (!message) return;
 
-    // Exibe mensagem do usuário
-    appendMessage(msgText, 'user');
-    input.value = "";
-    input.style.height = 'auto';
+    addMessage(message, 'user');
+    input.value = '';
+
+    const loadingId = addMessage("Typing...", 'bot loading');
 
     try {
-        const response = await fetch('https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST', // Forçando explicitamente o POST
+            headers: { 
+                'Content-Type': 'application/json' 
+            },
+            mode: 'cors', // Garante que o navegador lide com cross-origin
             body: JSON.stringify({ 
-                message: msgText, 
-                entity: 'MercurIA',
-                metadata: {
-                    nome: clienteNome,
-                    empresa: clienteEmpresa,
-                    source: "mercuria_chat_page"
-                }
+                content: message,
+                user_name: new URLSearchParams(window.location.search).get('nome') || 'Guest',
+                user_company: new URLSearchParams(window.location.search).get('empresa') || 'Company'
             })
         });
+
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
         const data = await response.json();
+        removeMessage(loadingId);
+
+        const botReply = data.output || data.message || data.text || data.reply || 
+                         (typeof data === 'string' ? data : "Check response format.");
         
-        // Renderiza a resposta do bot (Texto + Link/Botão se houver)
-        const botResponse = data.output || data.text || "MercurIA está processando sua solicitação...";
-        appendMessage(botResponse, 'bot');
-        
+        addMessage(botReply, 'bot');
+
     } catch (error) {
-        appendMessage('Falha na comunicação com o Panteão. Verifique sua conexão.', 'bot');
+        console.error("Fail:", error);
+        removeMessage(loadingId);
+        addMessage("Communication failure. Please check if the workflow is ACTIVE in n8n.", 'bot error');
     }
+}
+
+// Garanta que o evento seja passado para a função
+document.getElementById('user-input').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        sendMessage(e);
+    }
+});
+
+function addMessage(text, type) {
+    const chat = document.getElementById('chat-container');
+    const div = document.createElement('div');
+    const id = 'msg-' + Date.now();
+    div.id = id;
+    div.className = `message ${type}`;
+    div.innerText = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return id;
+}
+
+function removeMessage(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
 }

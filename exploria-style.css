@@ -152,27 +152,27 @@ body {
 }
 
 /* Estilização de Links/Botões dentro do Chat */
-.chat-link-button {
+/* Botão de Link específico para a MercurIA quando exibido na ExplorIA */
+.btn-mercuria {
+    background: #d4af37 !important; /* Força o Dourado Vendisia */
+    color: #000000 !important;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4) !important;
     display: inline-block;
     margin-top: 15px;
-    padding: 12px 24px;
-    background: var(--gold-border);
-    color: #000 !important;
+    padding: 14px 28px;
     text-decoration: none;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem;
-    border-radius: 8px;
+    font-size: 1.3rem;
+    border-radius: 10px;
     transition: 0.3s;
     text-align: center;
     letter-spacing: 1px;
+    border: none;
+    cursor: pointer;
 }
 
-.chat-link-button:hover {
-    filter: brightness(1.2);
+.btn-mercuria:hover {
+    background: #ffffff !important;
     transform: scale(1.05);
-}
-
-/* Caso seja o botão da ExplorIA, podemos usar o verde */
-.exploria .chat-link-button {
-    background: var(--prospect-color);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3) !important;
 }

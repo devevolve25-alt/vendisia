@@ -1,0 +1,178 @@
+:root {
+    --bg-color: #000000;
+    --prospect-color: #32ff7e; /* Verde Perícia */
+    --accent-glow: rgba(50, 255, 126, 0.15);
+    --text-white: #ffffff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-white);
+    font-family: 'Montserrat', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #0a150f 0%, #000 100%);
+}
+
+/* HEADER PADRONIZADO */
+.page-header {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto 30px auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+}
+
+.brand-block { display: flex; align-items: center; gap: 15px; }
+.brand-logo { width: 70px; height: auto; }
+.brand-text-wrapper { display: flex; flex-direction: column; }
+
+.brand-name { 
+    font-family: 'Bebas Neue'; font-size: 2.8rem; color: var(--prospect-color); 
+    line-height: 0.9; letter-spacing: 2px;
+}
+
+.brand-tagline { 
+    font-family: 'Bebas Neue'; font-size: 1.2rem; letter-spacing: 6px; 
+    color: var(--text-white); margin-top: 5px; opacity: 0.8;
+}
+
+.header-headline { 
+    font-family: 'Bebas Neue'; font-size: clamp(1.2rem, 3vw, 2.2rem); 
+    text-align: center; letter-spacing: 1px;
+}
+
+/* CONTAINER CENTRAL */
+.main-stage {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.radar-bg {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border: 1px solid rgba(50, 255, 126, 0.05);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.radar-sweep {
+    position: absolute;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border-top: 2px solid var(--prospect-color);
+    opacity: 0.4;
+    animation: rotate 4s linear infinite;
+    display: none;
+}
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* CHAT AMPLIADO */
+.central-chat {
+    width: 100%;
+    max-width: 850px; /* Aumentado */
+    background: rgba(12, 20, 16, 0.85);
+    border: 1px solid rgba(50, 255, 126, 0.3);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    height: 600px; /* Aumentado */
+    z-index: 10;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8), 0 0 20px var(--accent-glow);
+    overflow: hidden;
+}
+
+.chat-header { padding: 25px; border-bottom: 1px solid rgba(50, 255, 126, 0.1); text-align: center; }
+.chat-header h1 { font-family: 'Bebas Neue'; font-size: 2rem; color: var(--prospect-color); letter-spacing: 3px; }
+
+.chat-display {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+}
+
+.msg-bot { margin-bottom: 25px; border-left: 3px solid var(--prospect-color); padding-left: 20px; }
+.msg-user { color: var(--prospect-color); font-weight: 600; text-align: right; margin-bottom: 25px; }
+
+/* INPUT MULTILINE */
+.chat-input-area {
+    padding: 25px;
+    background: rgba(0,0,0,0.4);
+    border-top: 1px solid rgba(50, 255, 126, 0.1);
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.url-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(50, 255, 126, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 1.1rem;
+    outline: none;
+    resize: none;
+    max-height: 120px;
+}
+
+.btn-scan {
+    background: var(--prospect-color);
+    color: #000;
+    border: none;
+    padding: 15px 30px;
+    font-family: 'Bebas Neue';
+    font-size: 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-scan:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 0 15px var(--prospect-color); }
+
+@media (max-width: 850px) {
+    .page-header { grid-template-columns: 1fr; gap: 20px; }
+    .brand-block { justify-content: center; }
+    .radar-bg { width: 350px; height: 350px; }
+}
+
+/* Estilização de Links/Botões dentro do Chat */
+.chat-link-button {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 24px;
+    background: var(--gold-border);
+    color: #000 !important;
+    text-decoration: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    transition: 0.3s;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.chat-link-button:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+
+/* Caso seja o botão da ExplorIA, podemos usar o verde */
+.exploria .chat-link-button {
+    background: var(--prospect-color);
+}

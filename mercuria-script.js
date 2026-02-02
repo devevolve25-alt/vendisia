@@ -55,12 +55,16 @@ document.getElementById('user-input').addEventListener('keypress', function (e) 
 });
 
 function addMessage(text, type) {
-    const chat = document.getElementById('chat-box'); // Corrigido para bater com o HTML
+    const chat = document.getElementById('chat-box');
     const div = document.createElement('div');
     const id = 'msg-' + Date.now();
     div.id = id;
     div.className = `message ${type}`;
-    div.innerText = text;
+    
+    // MUDANÇA AQUI: de .innerText para .innerHTML
+    // Isso permite que a IA envie o link com a classe do botão
+    div.innerHTML = text; 
+    
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
     return id;

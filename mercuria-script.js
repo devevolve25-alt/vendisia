@@ -110,3 +110,23 @@ function removeMessage(id) {
     const el = document.getElementById(id);
     if (el) el.remove();
 }
+
+/* --- GATILHO DE ENTRADA PROATIVA (CONEXÃO SUPABASE) --- */
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const nome = params.get('nome');
+    const empresa = params.get('empresa');
+    const email = params.get('email');
+    
+    // Só dispara se tiver pelo menos nome e email para a busca ser precisa
+    if (nome && email) {
+        setTimeout(() => {
+            const mensagemGatilho = `Olá Mercuria, sou ${nome} da empresa ${empresa || 'minha clínica'}, meu email é ${email} - CODIGO_LEAD_01`;
+            
+            // Chama a função que envia ao n8n sem mostrar o balão do usuário
+            if (typeof sendAutomatedTrigger === "function") {
+                sendAutomatedTrigger(mensagemGatilho);
+            }
+        }, 1500); // 1.5s para o cliente se situar na página antes da IA "atacar"
+    }
+});

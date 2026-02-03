@@ -20,7 +20,7 @@ body {
 
 /* HEADER & NAV */
 .main-header { width: 100%; max-width: 1200px; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; position: relative; }
-.main-nav { display: flex; gap: 30px; margin-bottom: 40px; background: rgba(255, 255, 255, 0.03); padding: 12px 40px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.1); transition: 0.3s; }
+.main-nav { display: flex; gap: 30px; margin-bottom: 40px; background: rgba(255, 255, 255, 0.03); padding: 12px 40px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.1); transition: 0.3s; z-index: 1000; }
 .nav-link { text-decoration: none; color: var(--text-muted); font-family: 'Bebas Neue'; font-size: 1.3rem; letter-spacing: 1.5px; transition: 0.3s; }
 .nav-link:hover { color: var(--gold); }
 
@@ -61,38 +61,65 @@ body {
 .main-footer { width: 100%; padding: 40px; text-align: center; color: #475569; font-size: 0.9rem; }
 
 /* =============================================
-   SISTEMA DE RESPONSIVIDADE UNIFICADO
+   MENU MOBILE TOGGLE ICON
    ============================================= */
+.menu-toggle { display: none; background: none; border: none; color: var(--gold); font-size: 2rem; cursor: pointer; position: absolute; top: 20px; right: 20px; z-index: 1100; }
 
-/* MENU MOBILE TOGGLE ICON */
-.menu-toggle { display: none; background: none; border: none; color: var(--gold); font-size: 2rem; cursor: pointer; position: absolute; top: 20px; right: 20px; z-index: 1001; }
+/* =============================================
+   RESPONSIVIDADE (TABLETS E CELULARES)
+   ============================================= */
 
 @media screen and (max-width: 1200px) {
     .showroom-grid { grid-template-columns: repeat(2, 340px); }
 }
 
 @media screen and (max-width: 768px) {
-    /* TOGGLE ELEMENTS */
-    .header-manifesto, .header-tagline, .click-hint { display: none !important; }
-
-    /* MENU HAMBURGER */
+    /* 1. Header & Menu */
     .menu-toggle { display: block; }
-    .main-nav { display: none; flex-direction: column; position: absolute; top: 80px; left: 0; width: 100%; background: rgba(0,0,0,0.95); padding: 20px; border-radius: 0; border: none; border-bottom: 2px solid var(--gold); z-index: 1000; }
-    .main-nav.active { display: flex; }
-    .nav-link { font-size: 1rem; padding: 10px; width: 100%; text-align: center; }
-
-    /* HEADER RESTRUCTURE */
-    .main-header { padding: 20px 10px; }
-    .header-brand-wrapper { flex-direction: column; gap: 10px; }
-    .header-logo { height: 60px; margin-right: 0; }
-    .header-title-vendisia { font-size: 2.5rem; letter-spacing: 4px; }
-    .header-subtitle-ecosystem { font-size: 1rem; letter-spacing: 6px; }
-
-    /* GRID RESTRUCTURE */
-    .showroom-grid { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px; }
-    .card-container { width: 95%; max-width: 340px; height: 500px; }
     
-    /* SUPERCARD RESTRUCTURE */
-    .super-card-container { min-height: 250px; margin: 30px auto; }
-    .super-card-title { font-size: 1.4rem; }
+    .main-nav { 
+        display: none; 
+        flex-direction: column; 
+        position: fixed; /* Fixado para sobrepor conteúdo */
+        top: 0; left: 0; width: 100%; height: 100vh;
+        background: rgba(0,0,0,0.98); 
+        padding-top: 100px;
+        border-radius: 0; border: none; z-index: 1050; 
+        justify-content: flex-start;
+        gap: 20px;
+    }
+    .main-nav.active { display: flex; }
+
+    /* 2. Brand Restructuring (Logo Menor + Tagline Abaixo) */
+    .header-brand-wrapper { flex-direction: column; text-align: center; gap: 20px; }
+    .header-brand { flex-direction: column; gap: 10px; }
+    .header-logo { height: 60px; margin-right: 0; }
+    .header-title-vendisia { font-size: 3rem; letter-spacing: 5px; }
+    .header-subtitle-ecosystem { font-size: 1rem; letter-spacing: 8px; }
+    
+    .header-tagline { 
+        text-align: center; 
+        border-left: none; 
+        border-top: 2px solid var(--gold); 
+        padding-left: 0; 
+        padding-top: 15px; 
+        font-size: 1.5rem;
+    }
+    
+    /* 3. Manifesto & Supercard */
+    .header-manifesto { display: none; } /* Limpeza para o mobile */
+    .super-card-container { display: none; } /* Conforme solicitado: some no mobile */
+
+    /* 4. Grid Vertical (TODAS as entidades) */
+    .showroom-grid { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 30px; 
+        width: 100%;
+        margin-top: 20px;
+    }
+    .card-container { width: 90%; max-width: 340px; height: 500px; }
+    
+    .entity-name { font-size: 2.5rem; }
 }

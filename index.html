@@ -10,10 +10,8 @@
 <body>
 
     <header class="main-header">
-        <button class="menu-toggle" id="btn-menu-mobile" aria-label="Abrir Menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
+        <button class="menu-toggle" onclick="document.getElementById('nav-principal').classList.toggle('active')">
+            <i class="fas fa-bars"></i>
         </button>
 
         <nav class="main-nav" id="nav-principal">
@@ -35,80 +33,112 @@
         </div>
         
         <div class="header-manifesto">
-            <p>Na <b>VENDISIA</b>, acreditamos que a tecnologia deve servir à conexão humana. Transformamos o engajamento digital em resultados tangíveis.</p>
+            <p>Na <b>VENDISIA</b>, acreditamos que a tecnologia deve servir à conexão humana.</p>
         </div>
     </header>
 
     <main class="content-wrapper">
-        <div class="super-card-container mobile-hide">
+        <div class="super-card-container">
             <div class="super-card" id="mainSuperCard">
                 <div class="super-card-front">
-                    <h2 class="super-card-title">Otimização Estratégica com a Plataforma Vendisia: Insights Preditivos para Maximização de Resultados.</h2>
-                    <p class="click-hint">Clique para descobrir o poder da plataforma</p>
+                    <h2 class="super-card-title">Otimização Estratégica com a Plataforma Vendisia</h2>
+                    <p class="click-hint">Clique para descobrir o poder</p>
                 </div>
                 <div class="super-card-back">
-                    <p class="super-card-description">
-                        A Plataforma Vendisia é a inteligência que capacita sua empresa a dominar o cenário digital. Integra identidade de marca, engajamento estratégico e prospecção preditiva.
-                    </p>
+                    <p class="super-card-description">Integração total de identidade e prospecção preditiva.</p>
                 </div>
             </div>
         </div>
 
         <section id="servicos" class="grid-section">
-            <div class="showroom-grid" id="container-entidades">
+            <div class="showroom-grid">
                 
-                <div class="card-container mercuria">
+                <div class="card-container">
                     <div class="card">
                         <div class="card-front">
                             <span class="ia-tag">Sales Elite</span>
                             <h2 class="entity-name">MercurIA</h2>
-                            <p class="entity-desc">Transforme cada interação em uma venda. Conversões Instantâneas.</p>
-                            <button class="btn-flip">DESBLOQUEAR POTENCIAL</button>
+                            <p class="entity-desc">Conversões Instantâneas 24/7.</p>
+                            <button class="btn-flip">DESBLOQUEAR</button>
                         </div>
                         <div class="card-back">
-                            <div class="pas-content">
-                                <p><strong>Problema:</strong> Atendimentos manuais perdem leads.</p>
-                                <p class="solution-text"><strong>Solução:</strong> MercurIA multiplica seu faturamento 24/7.</p>
-                            </div>
-                            <div class="cta-wrapper">
-                                <a href="mercuria.html" class="btn-experience">SINTA A EXPERIÊNCIA</a>
-                            </div>
+                            <p>Vendas automáticas e escala infinita.</p>
+                            <a href="mercuria.html" class="btn-experience">EXPERIMENTAR</a>
                             <button class="btn-flip back">VOLTAR</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="card-container exploria">
+                <div class="card-container">
                     <div class="card">
                         <div class="card-front">
-                            <span class="ia-tag">Auditoria Digital</span>
+                            <span class="ia-tag">Auditoria</span>
                             <h2 class="entity-name">ExplorIA</h2>
-                            <p class="entity-desc">Dinheiro sumindo no tráfego pago? Descubra o vazamento agora.</p>
-                            <button class="btn-flip">ESTANCAR PERDAS</button>
+                            <p class="entity-desc">Estanque perdas no tráfego pago.</p>
+                            <button class="btn-flip">ANALISAR</button>
                         </div>
                         <div class="card-back">
-                            <div class="pas-content">
-                                <p><strong>Problema:</strong> ROI baixo por falhas ocultas.</p>
-                                <p class="solution-text"><strong>Solução:</strong> Auditoria que revela gargalos e reverte perdas.</p>
-                            </div>
+                            <p>Auditoria completa de ROI e conversão.</p>
                             <button class="btn-flip back">VOLTAR</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="card-container criaria">
+                <div class="card-container">
                     <div class="card">
                         <div class="card-front">
-                            <span class="ia-tag">Marketing Partner</span>
+                            <span class="ia-tag">Marketing</span>
                             <h2 class="entity-name">Criaria</h2>
-                            <p class="entity-desc">Sua marca merece campanhas que não apenas chamam a atenção, mas convertem.</p>
-                            <button class="btn-flip">CRIAR IMPACTO</button>
+                            <p class="entity-desc">Campanhas que convertem desejo em compra.</p>
+                            <button class="btn-flip">CRIAR</button>
                         </div>
                         <div class="card-back">
-                            <div class="pas-content">
-                                <p><strong>Problema:</strong> Conteúdo que não gera engajamento.</p>
-                                <p class="solution-text"><strong>Solução:</strong> Campanhas vibrantes com visuais irresistíveis.</p>
-                            </div>
+                            <p>Visuais irresistíveis e copy de alto impacto.</p>
+                            <button class="btn-flip back">VOLTAR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-container">
+                    <div class="card">
+                        <div class="card-front">
+                            <span class="ia-tag">Brand Identity</span>
+                            <h2 class="entity-name">Lumia</h2>
+                            <p class="entity-desc">A alma da sua marca em pixels e luz.</p>
+                            <button class="btn-flip">ILUMINAR</button>
+                        </div>
+                        <div class="card-back">
+                            <p>Identidade visual e posicionamento premium.</p>
+                            <button class="btn-flip back">VOLTAR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-container">
+                    <div class="card">
+                        <div class="card-front">
+                            <span class="ia-tag">Data Intelligence</span>
+                            <h2 class="entity-name">IAO</h2>
+                            <p class="entity-desc">Decisões baseadas em dados, não em sorte.</p>
+                            <button class="btn-flip">PROCESSAR</button>
+                        </div>
+                        <div class="card-back">
+                            <p>Big Data aplicado ao seu faturamento real.</p>
+                            <button class="btn-flip back">VOLTAR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-container">
+                    <div class="card">
+                        <div class="card-front">
+                            <span class="ia-tag">Customer Experience</span>
+                            <h2 class="entity-name">ENAS</h2>
+                            <p class="entity-desc">Fidelização através de experiências únicas.</p>
+                            <button class="btn-flip">CONECTAR</button>
+                        </div>
+                        <div class="card-back">
+                            <p>Pós-venda e retenção automatizada com IA.</p>
                             <button class="btn-flip back">VOLTAR</button>
                         </div>
                     </div>

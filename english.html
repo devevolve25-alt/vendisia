@@ -105,6 +105,15 @@
 
         .empty-state { text-align: center; margin-top: 150px; opacity: 0.4; font-style: italic; font-size: 1.4rem; }
         .hidden { display: none !important; }
+
+        /* MOBILE ADJUSTMENTS */
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar-chat { width: 100%; height: 350px; border-right: none; border-bottom: 1px solid var(--border); }
+            .tab-btn { font-size: 1.1rem; padding: 15px; }
+            .tab-content { padding: 25px; }
+            .main-header { padding: 0 20px; }
+        }
     </style>
 </head>
 <body>
@@ -154,7 +163,7 @@
 
     <script>
         const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
+        const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm'; // Use a sua anon key aqui
         const WEBHOOK_IA = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/english_module_vendisia';
 
         let lastRecordId = null;
@@ -218,7 +227,7 @@
             
             const bMsgLoading = document.createElement('div');
             bMsgLoading.className = 'msg-bot';
-            bMsgLoading.innerText = "Processing your request... Please wait.";
+            bMsgLoading.innerText = "Processing request...";
             history.appendChild(bMsgLoading);
             
             document.getElementById('ai-command').value = "";
@@ -231,14 +240,18 @@
                     body: JSON.stringify({ instruction: cmd })
                 });
 
+                const data = await response.json();
+
                 if (response.ok) {
-                    bMsgLoading.innerText = "Lesson created! Refreshing dashboard...";
-                    setTimeout(loadLatestLesson, 3000);
+                    bMsgLoading.innerText = data.output || "Lesson generated successfully!";
+                    // Aguarda um pouco para o banco processar e recarrega a tela principal
+                    setTimeout(loadLatestLesson, 2000);
                 } else {
-                    bMsgLoading.innerText = "AI could not process the request. Check n8n logs.";
+                    bMsgLoading.innerText = "AI could not process. Check n8n logs.";
                 }
             } catch (e) { 
-                bMsgLoading.innerText = "Network error. Is the n8n webhook active?";
+                bMsgLoading.innerText = "Connection error.";
+                console.error(e);
             }
         }
 

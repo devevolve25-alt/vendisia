@@ -242,3 +242,81 @@ body {
         font-size: 1.8rem;
     }
 }
+
+/* MOBILE FIX - VENDISIA */
+@media screen and (max-width: 768px) {
+    /* Esconde elementos problemáticos */
+    .header-manifesto, .header-tagline, .header-manifesto b {
+        display: none !important;
+    }
+
+    /* Reseta o Header que está travado */
+    .main-header {
+        height: auto !important;
+        min-height: 80px !important;
+        flex-direction: column !important;
+        padding: 10px !important;
+        display: block !important;
+    }
+
+    /* Ajusta a logo e o título para não quebrar */
+    .header-brand-wrapper {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }
+
+    .header-text-container {
+        margin-left: 10px !important;
+    }
+
+    .header-title-vendisia {
+        font-size: 1.4rem !important;
+        margin: 0 !important;
+    }
+
+    .header-subtitle-ecosystem {
+        font-size: 0.7rem !important;
+    }
+
+    /* Transforma a Nav em lista simples para não bugar */
+    .main-nav {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        margin-bottom: 10px !important;
+        float: none !important;
+    }
+
+    .nav-link {
+        font-size: 0.65rem !important;
+        padding: 5px !important;
+    }
+
+    /* Força o Grid a virar 1 coluna só */
+    .showroom-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 10px !important;
+    }
+
+    .card-container {
+        width: 100% !important;
+        margin-bottom: 20px !important;
+    }
+
+    /* Ajusta o Super Card para caber na tela */
+    .super-card-container {
+        width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important;
+    }
+
+    .super-card-title {
+        font-size: 1rem !important;
+        text-align: center !important;
+    }
+}

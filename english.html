@@ -42,9 +42,9 @@
         .brand-tagline { font-family: 'Bebas Neue'; font-size: 1rem; letter-spacing: 4px; margin-left: 12px; }
 
         /* CONTAINER */
-        .app-container { display: flex; flex: 1; height: calc(100vh - 80px); }
+        .app-container { display: flex; flex: 1; height: calc(100vh - 80px); position: relative; }
 
-        /* SIDEBAR CHAT (ADMIN ONLY) */
+        /* SIDEBAR CHAT */
         .sidebar-chat {
             width: 420px;
             background: var(--sidebar-bg);
@@ -71,7 +71,6 @@
             width: 100%; background: var(--gold); color: #000; border: none; 
             padding: 15px; font-family: 'Bebas Neue'; font-size: 1.5rem; cursor: pointer; border-radius: 10px; transition: 0.3s;
         }
-        #btn-generate:hover { filter: brightness(1.2); }
 
         /* MAIN DISPLAY */
         .main-display { flex: 1; display: flex; flex-direction: column; background: #020202; overflow: hidden; }
@@ -85,24 +84,28 @@
         .tab-content { flex: 1; padding: 50px; overflow-y: auto; display: none; }
         .tab-content.active { display: block; }
 
-        /* CONTENT STYLING */
+        /* RESPONSIVIDADE MOBILE */
+        @media (max-width: 768px) {
+            .main-header { padding: 0 20px; height: 60px; }
+            .brand-name { font-size: 1.5rem; }
+            .app-container { flex-direction: column; }
+            .sidebar-chat { width: 100%; border-right: none; border-bottom: 1px solid var(--border); height: 400px; }
+            .tab-nav .tab-btn { font-size: 1.1rem; padding: 15px; }
+            .tab-content { padding: 20px; }
+            .content-body { font-size: 1.1rem; }
+        }
+
         .content-body { font-size: 1.35rem; line-height: 1.9; color: var(--text-white); max-width: 950px; margin: 0 auto; }
         .exercise-card { background: var(--card-bg); padding: 40px; border-radius: 20px; margin-bottom: 30px; border-left: 6px solid var(--gold); }
         .exercise-card strong { display: block; margin-bottom: 12px; color: var(--gold); font-size: 1.4rem; }
-        .exercise-card p { font-size: 1.25rem; margin-bottom: 20px; }
-        
         .ans-input { 
             width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #444; 
             padding: 20px; color: white; border-radius: 10px; margin-top: 15px; outline: none; font-size: 1.2rem;
         }
-        .ans-input:focus { border-color: var(--gold); }
-
         .btn-primary { 
             background: var(--cyan); color: #000; border: none; padding: 20px; 
-            font-family: 'Bebas Neue'; font-size: 1.6rem; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px; transition: 0.3s;
+            font-family: 'Bebas Neue'; font-size: 1.6rem; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px;
         }
-        .btn-primary:hover { filter: brightness(1.2); }
-
         .empty-state { text-align: center; margin-top: 150px; opacity: 0.4; font-style: italic; font-size: 1.4rem; }
         .hidden { display: none !important; }
     </style>
@@ -152,7 +155,7 @@
         </main>
     </div>
 
-    <<script>
+    <script>
         const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
         const WEBHOOK_IA = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/english_module_vendisia';
@@ -218,7 +221,7 @@
             
             const bMsgLoading = document.createElement('div');
             bMsgLoading.className = 'msg-bot';
-            bMsgLoading.innerText = "Processing your request... Please wait.";
+            bMsgLoading.innerText = "Generating lesson...";
             history.appendChild(bMsgLoading);
             
             document.getElementById('ai-command').value = "";
@@ -231,14 +234,18 @@
                     body: JSON.stringify({ instruction: cmd })
                 });
 
+                const data = await response.json(); // Lê o JSON enviado pelo n8n
+
                 if (response.ok) {
-                    bMsgLoading.innerText = "Lesson created! Refreshing dashboard...";
-                    setTimeout(loadLatestLesson, 3000);
+                    // Exibe a resposta textual da MercurIA no chat
+                    bMsgLoading.innerText = data.output || data.text || "Lesson created successfully!";
+                    // Atualiza a lição na tela após um breve delay
+                    setTimeout(loadLatestLesson, 1500);
                 } else {
-                    bMsgLoading.innerText = "AI could not process the request. Check n8n logs.";
+                    bMsgLoading.innerText = "Error: The AI could not complete the request.";
                 }
             } catch (e) { 
-                bMsgLoading.innerText = "Network error. Is the n8n webhook active?";
+                bMsgLoading.innerText = "Connection error. Please check if n8n is active.";
             }
         }
 

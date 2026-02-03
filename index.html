@@ -1,101 +1,85 @@
-<header class="main-header">
-    <button class="menu-toggle" onclick="document.querySelector('.main-nav').classList.toggle('active')">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <nav class="main-nav">
-        ```
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendisia IA Ecosystem | Inteligência Preditiva</title>
+    <link rel="stylesheet" href="style.css?v=1.2">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
 
-### 2. O CSS de "Choque" (Substitua as Media Queries anteriores)
+    <header class="main-header">
+        <button class="menu-toggle" aria-label="Abrir Menu" onclick="document.querySelector('.main-nav').classList.toggle('active')">
+            <i class="fas fa-bars"></i>
+        </button>
 
-Este código vai dar **toggle** (esconder) nos elementos que estão quebrando o layout e transformar a navegação:
+        <nav class="main-nav">
+            <a href="#missao" class="nav-link">MISSÃO</a>
+            <a href="#servicos" class="nav-link">SERVIÇOS</a>
+            <a href="#investimento" class="nav-link">INVESTIMENTO</a>
+            <a href="#sobre" class="nav-link">SOBRE NÓS</a>
+        </nav>
 
-```css
-@media (max-width: 768px) {
-    /* 1. ESCONDER ELEMENTOS QUE POLUEM O MOBILE */
-    .header-manifesto, 
-    .header-tagline, 
-    .click-hint {
-        display: none !important;
-    }
+        <div class="header-brand-wrapper">
+            <div class="header-brand">
+                <img src="merc_face.png" alt="Logo Vendisia" class="header-logo">
+                <div class="header-text-container">
+                    <h1 class="header-title-vendisia">VENDISIA</h1>
+                    <p class="header-subtitle-ecosystem">IA ECOSYSTEM</p>
+                </div>
+            </div>
+            <p class="header-tagline">SOMOS GERADORES<br>DE INTERAÇÃO</p>
+        </div>
+        
+        <div class="header-manifesto">
+            <p>Na <b>VENDISIA</b>, acreditamos que a tecnologia deve servir à conexão humana. Transformamos o engajamento digital em resultados tangíveis.</p>
+        </div>
+    </header>
 
-    /* 2. REESTRUTURAR HEADER */
-    .main-header {
-        height: auto;
-        padding: 15px;
-        display: block; /* Sai do flex para evitar esmagamento */
-        position: relative;
-    }
+    <main class="content-wrapper">
+        <div class="super-card-container">
+            <div class="super-card" id="mainSuperCard">
+                <div class="super-card-front">
+                    <h2 class="super-card-title">Otimização Estratégica com a Plataforma Vendisia.</h2>
+                    <p class="click-hint">Clique para descobrir</p>
+                </div>
+                <div class="super-card-back">
+                    <p class="super-card-description">
+                        A Plataforma Vendisia capacita sua empresa a dominar o cenário digital através de inteligência artificial e neurociência de dados.
+                    </p>
+                </div>
+            </div>
+        </div>
 
-    .header-brand-wrapper {
-        justify-content: center;
-        margin-top: 10px;
-    }
+        <section id="servicos" class="grid-section">
+            <div class="showroom-grid">
+                <div class="card-container mercuria">
+                    <div class="card">
+                        <div class="card-front">
+                            <span class="ia-tag">Sales Elite</span>
+                            <h2 class="entity-name">MercurIA</h2>
+                            <p class="entity-desc">Transforme cada interação em uma venda.</p>
+                            <button class="btn-flip">DESBLOQUEAR</button>
+                        </div>
+                        <div class="card-back">
+                            <div class="pas-content">
+                                <p><strong>Solução:</strong> MercurIA multiplica seu faturamento 24/7.</p>
+                            </div>
+                            <a href="mercuria.html" class="btn-experience">SINTA A EXPERIÊNCIA</a>
+                            <button class="btn-flip back">VOLTAR</button>
+                        </div>
+                    </div>
+                </div>
 
-    /* 3. MENU NAV ESTILO TOGGLE */
-    .menu-toggle {
-        display: block;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: none;
-        border: none;
-        color: var(--gold);
-        font-size: 1.5rem;
-        z-index: 1000;
-        cursor: pointer;
-    }
+                </div>
+        </section>
+    </main>
 
-    .main-nav {
-        display: none; /* Escondido por padrão */
-        flex-direction: column;
-        background: rgba(0, 0, 0, 0.95);
-        position: absolute;
-        top: 70px;
-        left: 0;
-        width: 100%;
-        padding: 20px;
-        border-bottom: 2px solid var(--gold);
-        z-index: 999;
-    }
+    <footer class="main-footer" id="sobre">
+        <p>&copy; 2026 Vendisia IA Ecosystem. Todos os direitos reservados.</p>
+    </footer>
 
-    .main-nav.active {
-        display: flex; /* Aparece quando clicado */
-    }
-
-    .nav-link {
-        padding: 15px;
-        width: 100%;
-        text-align: center;
-        border-bottom: 1px solid var(--border);
-    }
-
-    /* 4. AJUSTE DE CARDS */
-    .showroom-grid {
-        grid-template-columns: 1fr !important;
-        gap: 30px;
-        padding: 10px;
-    }
-
-    .super-card-container {
-        margin: 20px 0;
-    }
-
-    .super-card-title {
-        font-size: 1.1rem !important;
-        line-height: 1.4;
-    }
-
-    .header-logo {
-        width: 50px;
-    }
-
-    .header-title-vendisia {
-        font-size: 1.6rem;
-    }
-}
-
-/* Ocultar botão de menu no Desktop */
-@media (min-width: 769px) {
-    .menu-toggle { display: none; }
-}
+    <script src="script.js"></script>
+</body>
+</html>

@@ -19,304 +19,80 @@ body {
 }
 
 /* HEADER & NAV */
-.main-header { width: 100%; max-width: 1200px; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-.main-nav { display: flex; gap: 30px; margin-bottom: 40px; background: rgba(255, 255, 255, 0.03); padding: 12px 40px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.1); }
+.main-header { width: 100%; max-width: 1200px; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; position: relative; }
+.main-nav { display: flex; gap: 30px; margin-bottom: 40px; background: rgba(255, 255, 255, 0.03); padding: 12px 40px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.1); transition: 0.3s; }
 .nav-link { text-decoration: none; color: var(--text-muted); font-family: 'Bebas Neue'; font-size: 1.3rem; letter-spacing: 1.5px; transition: 0.3s; }
 .nav-link:hover { color: var(--gold); }
 
-/* HEADER BRAND - ALINHAMENTO COM TAGLINE EM DUAS LINHAS */
+/* BRANDING */
 .header-brand-wrapper { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1000px; margin-bottom: 30px; }
 .header-brand { display: flex; align-items: center; }
 .header-logo { height: 100px; margin-right: 25px; }
 .header-title-vendisia { font-family: 'Bebas Neue'; font-size: 6rem; color: var(--gold); letter-spacing: 10px; line-height: 0.9; }
 .header-subtitle-ecosystem { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 14px; margin-top: 5px; opacity: 0.8; }
-
-.header-tagline { 
-    font-family: 'Bebas Neue'; font-size: 2.2rem; color: var(--gold); 
-    line-height: 1.1; letter-spacing: 4px; text-align: right; border-left: 2px solid var(--gold); padding-left: 20px;
-}
-
-/* MANIFESTO NO HEADER */
+.header-tagline { font-family: 'Bebas Neue'; font-size: 2.2rem; color: var(--gold); line-height: 1.1; letter-spacing: 4px; text-align: right; border-left: 2px solid var(--gold); padding-left: 20px; }
 .header-manifesto { max-width: 850px; text-align: center; margin-top: 20px; }
 .header-manifesto p { font-size: 1.2rem; line-height: 1.8; color: var(--text-muted); font-weight: 300; }
 
-/* SUPERCARD STYLE - AJUSTE DE +0.5PX NO TÍTULO */
+/* SUPERCARD */
 .super-card-container { width: 95%; max-width: 1200px; min-height: 350px; perspective: 1500px; margin: 60px auto; }
 .super-card { width: 100%; height: 100%; min-height: 350px; position: relative; transform-style: preserve-3d; transition: transform 0.8s; cursor: pointer; }
 .super-card.flipped { transform: rotateY(180deg); }
-
-.super-card-front, .super-card-back {
-    position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    border-radius: 30px; border: 1px solid rgba(255, 215, 0, 0.2);
-    background: var(--card-bg); padding: 50px; text-align: center;
-}
+.super-card-front, .super-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 30px; border: 1px solid rgba(255, 215, 0, 0.2); background: var(--card-bg); padding: 50px; text-align: center; }
 .super-card-back { transform: rotateY(180deg); color: #00e6e6; background: rgba(10, 15, 25, 0.98); }
-
-.super-card-title { color: var(--gold); font-size: calc(2.6rem + 0.5px); font-family: 'Bebas Neue'; letter-spacing: 2px; line-height: 1.1; }
+.super-card-title { color: var(--gold); font-size: 2.6rem; font-family: 'Bebas Neue'; letter-spacing: 2px; line-height: 1.1; }
 .super-card-description { font-size: 1.25rem; line-height: 1.8; max-width: 1050px; color: #00e6e6; }
 .click-hint { font-size: 0.8rem; color: var(--gold); margin-top: 25px; opacity: 0.6; letter-spacing: 2px; text-transform: uppercase; }
 
-/* GRID ENTIDADES - CENTRALIZAÇÃO TOTAL */
+/* GRID ENTIDADES */
 .grid-section { width: 100%; display: flex; justify-content: center; }
-.showroom-grid { 
-    display: grid; 
-    grid-template-columns: repeat(3, 340px); /* Largura fixa para centralização perfeita */
-    gap: 40px; 
-    width: auto; /* Deixa o grid ocupar apenas o necessário */
-    margin: 40px 0 100px 0; 
-    justify-content: center; /* Centraliza as colunas */
-}
-
+.showroom-grid { display: grid; grid-template-columns: repeat(3, 340px); gap: 40px; margin: 40px 0 100px 0; justify-content: center; }
 .card-container { height: 550px; perspective: 1500px; }
 .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 .card.flipped { transform: rotateY(180deg); }
-
-.card-front, .card-back {
-    position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-    background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 25px; padding: 45px 30px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-}
+.card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 25px; padding: 45px 30px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
 .card-back { transform: rotateY(180deg); border-color: rgba(212, 175, 55, 0.3); background: rgba(10, 15, 25, 0.98); }
 
-/* FONTES DOS CARDS */
-.ia-tag { font-family: 'Bebas Neue'; font-size: 1.1rem; color: var(--gold); letter-spacing: 3px; opacity: 0.8; margin-bottom: 5px; }
-.entity-name { font-family: 'Bebas Neue'; font-size: 3rem; color: var(--gold); margin: 5px 0 15px 0; letter-spacing: 2px; }
-.entity-desc { text-align: center; font-size: 1.2rem; color: var(--text-white); font-weight: 300; line-height: 1.5; }
+/* IA TAGS & BUTTONS */
+.entity-name { font-family: 'Bebas Neue'; font-size: 3rem; color: var(--gold); margin: 5px 0 15px 0; }
+.btn-flip { background: var(--gold); color: #000; border: none; padding: 16px; font-family: 'Bebas Neue'; font-size: 1.3rem; cursor: pointer; border-radius: 8px; width: 100%; transition: 0.3s; }
+.btn-experience { display: inline-block; background: #d4af37; color: #000 !important; text-decoration: none; font-family: 'Bebas Neue'; padding: 12px 30px; border-radius: 6px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); }
 
-/* FONTES NO VERSO */
-.pas-content { text-align: left; width: 100%; }
-.pas-content p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 15px; color: var(--text-muted); }
-.pas-content strong { color: var(--gold); font-size: 1.15rem; text-transform: uppercase; font-family: 'Bebas Neue'; letter-spacing: 1px; }
-.solution-text { padding: 15px; background: rgba(255, 215, 0, 0.05); border-radius: 12px; border-left: 4px solid var(--gold); }
+.main-footer { width: 100%; padding: 40px; text-align: center; color: #475569; font-size: 0.9rem; }
 
-/* BOTÕES */
-.btn-flip { background: var(--gold); color: #000; border: none; padding: 16px; font-family: 'Bebas Neue'; font-size: 1.3rem; cursor: pointer; border-radius: 8px; width: 100%; transition: 0.3s; letter-spacing: 1px; }
-.btn-flip.back { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); margin-top: 15px; }
+/* =============================================
+   SISTEMA DE RESPONSIVIDADE UNIFICADO
+   ============================================= */
 
-/* FOOTER */
-.main-footer { width: 100%; padding: 40px; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center; color: #475569; font-size: 0.9rem; }
+/* MENU MOBILE TOGGLE ICON */
+.menu-toggle { display: none; background: none; border: none; color: var(--gold); font-size: 2rem; cursor: pointer; position: absolute; top: 20px; right: 20px; z-index: 1001; }
 
-/* RESPONSIVIDADE */
-@media (max-width: 1200px) { .showroom-grid { grid-template-columns: repeat(2, 340px); } }
-@media (max-width: 768px) { 
-    .showroom-grid { grid-template-columns: 1fr; width: 90%; } 
-    .header-brand-wrapper { flex-direction: column; text-align: center; }
-    .header-tagline { text-align: center; border: none; padding: 0; margin-top: 20px; font-size: 1.8rem; }
+@media screen and (max-width: 1200px) {
+    .showroom-grid { grid-template-columns: repeat(2, 340px); }
 }
 
-/* --- BOTÃO DE EXPERIÊNCIA VENDISIA --- */
-.cta-wrapper {
-    margin: 10px 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.btn-experience {
-    display: inline-block;
-    background: #d4af37; /* Gold */
-    color: #000000 !important;
-    text-decoration: none;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.3rem;
-    padding: 12px 30px;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    letter-spacing: 2px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-    text-transform: uppercase;
-}
-
-.btn-experience:hover {
-    background: #ffffff;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
-}
-
-/* Ajuste fino para o card-back comportar o botão sem apertar o texto */
-.card-back {
-    padding: 25px !important;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.pas-content p {
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-/* --- AJUSTES DE RESPONSIVIDADE VENDISIA --- */
-
-@media (max-width: 992px) {
-    .showroom-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 colunas em tablets */
-        gap: 20px;
-        padding: 20px;
-    }
-}
-
-@media (max-width: 768px) {
-    /* Ajuste do Header */
-    .main-header {
-        height: auto;
-        padding: 20px;
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .header-brand-wrapper {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .header-tagline {
-        text-align: center;
-        border-left: none;
-        padding-left: 0;
-        font-size: 0.9rem;
-    }
-
-    .header-logo {
-        width: 60px; /* Logo menor no mobile */
-    }
-
-    .header-title-vendisia {
-        font-size: 1.8rem;
-    }
-
-    /* Navegação */
-    .main-nav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-
-    .nav-link {
-        font-size: 0.7rem;
-        letter-spacing: 1px;
-    }
-
-    /* Super Card (O card grande do topo) */
-    .super-card-container {
-        padding: 0 15px;
-    }
-
-    .super-card-title {
-        font-size: 1.2rem;
-        padding: 0 10px;
-    }
-
-    /* Grid de IAs (1 coluna no mobile) */
-    .showroom-grid {
-        grid-template-columns: 1fr;
-        padding: 15px;
-    }
-
-    .card-container {
-        height: 450px; /* Garante altura suficiente para o flip */
-    }
-
-    /* Manifesto */
-    .header-manifesto {
-        margin-top: 20px;
-        font-size: 0.9rem;
-        padding: 0 10px;
-    }
-}
-
-/* Ajuste para celulares muito pequenos */
-@media (max-width: 480px) {
-    .header-title-vendisia {
-        font-size: 1.5rem;
-    }
-    
-    .entity-name {
-        font-size: 1.8rem;
-    }
-}
-
-/* MOBILE FIX - VENDISIA */
 @media screen and (max-width: 768px) {
-    /* Esconde elementos problemáticos */
-    .header-manifesto, .header-tagline, .header-manifesto b {
-        display: none !important;
-    }
+    /* TOGGLE ELEMENTS */
+    .header-manifesto, .header-tagline, .click-hint { display: none !important; }
 
-    /* Reseta o Header que está travado */
-    .main-header {
-        height: auto !important;
-        min-height: 80px !important;
-        flex-direction: column !important;
-        padding: 10px !important;
-        display: block !important;
-    }
+    /* MENU HAMBURGER */
+    .menu-toggle { display: block; }
+    .main-nav { display: none; flex-direction: column; position: absolute; top: 80px; left: 0; width: 100%; background: rgba(0,0,0,0.95); padding: 20px; border-radius: 0; border: none; border-bottom: 2px solid var(--gold); z-index: 1000; }
+    .main-nav.active { display: flex; }
+    .nav-link { font-size: 1rem; padding: 10px; width: 100%; text-align: center; }
 
-    /* Ajusta a logo e o título para não quebrar */
-    .header-brand-wrapper {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 100% !important;
-    }
+    /* HEADER RESTRUCTURE */
+    .main-header { padding: 20px 10px; }
+    .header-brand-wrapper { flex-direction: column; gap: 10px; }
+    .header-logo { height: 60px; margin-right: 0; }
+    .header-title-vendisia { font-size: 2.5rem; letter-spacing: 4px; }
+    .header-subtitle-ecosystem { font-size: 1rem; letter-spacing: 6px; }
 
-    .header-text-container {
-        margin-left: 10px !important;
-    }
-
-    .header-title-vendisia {
-        font-size: 1.4rem !important;
-        margin: 0 !important;
-    }
-
-    .header-subtitle-ecosystem {
-        font-size: 0.7rem !important;
-    }
-
-    /* Transforma a Nav em lista simples para não bugar */
-    .main-nav {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        gap: 8px !important;
-        margin-bottom: 10px !important;
-        float: none !important;
-    }
-
-    .nav-link {
-        font-size: 0.65rem !important;
-        padding: 5px !important;
-    }
-
-    /* Força o Grid a virar 1 coluna só */
-    .showroom-grid {
-        display: flex !important;
-        flex-direction: column !important;
-        padding: 10px !important;
-    }
-
-    .card-container {
-        width: 100% !important;
-        margin-bottom: 20px !important;
-    }
-
-    /* Ajusta o Super Card para caber na tela */
-    .super-card-container {
-        width: 100% !important;
-        padding: 10px !important;
-        margin: 0 !important;
-    }
-
-    .super-card-title {
-        font-size: 1rem !important;
-        text-align: center !important;
-    }
+    /* GRID RESTRUCTURE */
+    .showroom-grid { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px; }
+    .card-container { width: 95%; max-width: 340px; height: 500px; }
+    
+    /* SUPERCARD RESTRUCTURE */
+    .super-card-container { min-height: 250px; margin: 30px auto; }
+    .super-card-title { font-size: 1.4rem; }
 }

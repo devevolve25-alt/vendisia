@@ -15,9 +15,7 @@
             --text-white: #ffffff;
             --border: rgba(255, 255, 255, 0.1);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             background-color: var(--bg-black);
             color: var(--text-white);
@@ -27,104 +25,45 @@
             flex-direction: column;
             overflow: hidden;
         }
-
-        /* HEADER */
         .main-header {
-            height: 80px;
-            padding: 0 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
+            height: 80px; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-shrink: 0;
         }
         .brand-name { font-family: 'Bebas Neue'; font-size: 2.2rem; color: var(--gold); letter-spacing: 2px; }
-        .brand-tagline { font-family: 'Bebas Neue'; font-size: 1rem; letter-spacing: 4px; margin-left: 12px; }
-
-        /* CONTAINER */
         .app-container { display: flex; flex: 1; height: calc(100vh - 80px); }
-
-        /* SIDEBAR CHAT (ADMIN ONLY) */
-        .sidebar-chat {
-            width: 420px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            transition: 0.3s;
-        }
+        .sidebar-chat { width: 420px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
         .sidebar-chat.hidden { display: none; }
-
-        .sidebar-header { padding: 30px; border-bottom: 1px solid var(--border); }
-        .sidebar-header h3 { font-family: 'Bebas Neue'; color: var(--gold); font-size: 1.6rem; }
-
         .chat-history { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        .msg-bot { background: rgba(255,255,255,0.04); padding: 20px; border-radius: 12px; font-size: 1.1rem; border-left: 4px solid var(--gold); line-height: 1.6; }
-        .msg-user { background: var(--gold); color: #000; padding: 15px 20px; border-radius: 12px; align-self: flex-end; font-size: 1rem; font-weight: 600; }
-
+        .msg-bot { background: rgba(255,255,255,0.04); padding: 20px; border-radius: 12px; border-left: 4px solid var(--gold); }
+        .msg-user { background: var(--gold); color: #000; padding: 15px 20px; border-radius: 12px; align-self: flex-end; font-weight: 600; }
         .chat-input-area { padding: 25px; border-top: 1px solid var(--border); background: #050505; }
-        #ai-command { 
-            width: 100%; background: #111; border: 1px solid #444; border-radius: 10px; 
-            padding: 15px; color: white; resize: none; margin-bottom: 15px; font-family: inherit; font-size: 1.1rem;
-        }
-        #btn-generate { 
-            width: 100%; background: var(--gold); color: #000; border: none; 
-            padding: 15px; font-family: 'Bebas Neue'; font-size: 1.5rem; cursor: pointer; border-radius: 10px; transition: 0.3s;
-        }
-
-        /* MAIN DISPLAY */
+        #ai-command { width: 100%; background: #111; border: 1px solid #444; border-radius: 10px; padding: 15px; color: white; resize: none; margin-bottom: 15px; }
+        #btn-generate { width: 100%; background: var(--gold); color: #000; border: none; padding: 15px; font-family: 'Bebas Neue'; font-size: 1.5rem; cursor: pointer; border-radius: 10px; }
         .main-display { flex: 1; display: flex; flex-direction: column; background: #020202; overflow: hidden; }
-        .tab-nav { display: flex; background: #080808; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .tab-btn { 
-            flex: 1; padding: 20px; background: none; border: none; color: #666; 
-            font-family: 'Bebas Neue'; font-size: 1.4rem; cursor: pointer; transition: 0.3s;
-        }
-        .tab-btn.active { color: var(--gold); border-bottom: 3px solid var(--gold); background: rgba(212, 175, 55, 0.08); }
-
+        .tab-nav { display: flex; background: #080808; border-bottom: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 20px; background: none; border: none; color: #666; font-family: 'Bebas Neue'; font-size: 1.4rem; cursor: pointer; }
+        .tab-btn.active { color: var(--gold); border-bottom: 3px solid var(--gold); }
         .tab-content { flex: 1; padding: 50px; overflow-y: auto; display: none; }
         .tab-content.active { display: block; }
-
-        /* CONTENT STYLING */
-        .content-body { font-size: 1.35rem; line-height: 1.9; color: var(--text-white); max-width: 950px; margin: 0 auto; }
+        .content-body { font-size: 1.35rem; line-height: 1.9; max-width: 950px; margin: 0 auto; }
         .exercise-card { background: var(--card-bg); padding: 40px; border-radius: 20px; margin-bottom: 30px; border-left: 6px solid var(--gold); }
-        .exercise-card strong { display: block; margin-bottom: 12px; color: var(--gold); font-size: 1.4rem; }
-        .ans-input { 
-            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #444; 
-            padding: 20px; color: white; border-radius: 10px; margin-top: 15px; outline: none; font-size: 1.2rem;
-        }
-        .btn-primary { 
-            background: var(--cyan); color: #000; border: none; padding: 20px; 
-            font-family: 'Bebas Neue'; font-size: 1.6rem; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px; transition: 0.3s;
-        }
-        .empty-state { text-align: center; margin-top: 150px; opacity: 0.4; font-style: italic; font-size: 1.4rem; }
+        .ans-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #444; padding: 20px; color: white; border-radius: 10px; margin-top: 15px; font-size: 1.2rem; }
+        .btn-primary { background: var(--cyan); color: #000; border: none; padding: 20px; font-family: 'Bebas Neue'; font-size: 1.6rem; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px; }
         .hidden { display: none !important; }
-
-        @media (max-width: 768px) {
-            .app-container { flex-direction: column; }
-            .sidebar-chat { width: 100%; height: 350px; border-right: none; }
-            .tab-btn { font-size: 1.1rem; padding: 15px; }
-        }
     </style>
 </head>
 <body>
 
     <header class="main-header">
-        <div class="brand-block">
-            <span class="brand-name">VENDISIA</span>
-            <span class="brand-tagline">ENGLISH MODULE</span>
-        </div>
+        <span class="brand-name">VENDISIA</span>
     </header>
 
     <div class="app-container">
         <aside class="sidebar-chat hidden" id="admin-sidebar">
-            <div class="sidebar-header">
-                <h3>AI INSTRUCTIONS</h3>
-            </div>
             <div class="chat-history" id="chat-history">
-                <div class="msg-bot">Admin Mode Active. Ready to create your next lesson.</div>
+                <div class="msg-bot">Admin Mode Active.</div>
             </div>
             <div class="chat-input-area">
-                <textarea id="ai-command" placeholder="Type your lesson instructions..." rows="2"></textarea>
+                <textarea id="ai-command" placeholder="Lesson instructions..." rows="2"></textarea>
                 <button id="btn-generate" onclick="generateContent()">GENERATE LESSON</button>
             </div>
         </aside>
@@ -136,17 +75,13 @@
                 <button class="tab-btn" onclick="openTab(event, 'feedback')">FEEDBACK</button>
             </nav>
 
-            <div id="lesson" class="tab-content active">
-                <div class="empty-state">Loading latest lesson...</div>
-            </div>
-
+            <div id="lesson" class="tab-content active"></div>
             <div id="exercises" class="tab-content">
                 <div id="exercise-list"></div>
-                <button id="btn-save-answers" class="btn-primary hidden" onclick="saveAnswers()">SUBMIT MY ANSWERS</button>
+                <button id="btn-save-answers" class="btn-primary" onclick="saveAnswers()">SUBMIT MY ANSWERS</button>
             </div>
-
             <div id="feedback" class="tab-content">
-                <div id="feedback-content" class="empty-state">Your feedback will appear here after submission.</div>
+                <div id="feedback-area" class="content-body">Your feedback will appear here.</div>
             </div>
         </main>
     </div>
@@ -160,9 +95,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('admin') === 'true') {
-                document.getElementById('admin-sidebar').classList.remove('hidden');
-            }
+            if (urlParams.get('admin') === 'true') document.getElementById('admin-sidebar').classList.remove('hidden');
             loadLatestLesson();
         });
 
@@ -170,9 +103,9 @@
             const contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
             const tabs = document.getElementsByClassName("tab-btn");
-            for (let i = 0; i < tabs.length; i++) tabs[i].className = tabs[i].className.replace(" active", "");
+            for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
             document.getElementById(tabId).style.display = "block";
-            if(evt && evt.currentTarget) evt.currentTarget.className += " active";
+            if(evt) evt.currentTarget.classList.add("active");
         }
 
         async function loadLatestLesson() {
@@ -183,59 +116,38 @@
                 const data = await res.json();
                 if (data.length > 0) {
                     const lesson = data[0];
-                    lastRecordId = lesson.id;
+                    lastRecordId = lesson.id; // AQUI O CÓDIGO GUARDA O ID DA LIÇÃO
                     renderLesson(lesson);
-                    if (lesson.feedback) {
-                        document.getElementById('feedback-content').innerHTML = `<div class="content-body">${lesson.feedback}</div>`;
-                        document.getElementById('feedback-content').className = "";
-                    }
                 }
-            } catch (e) { console.error("Error loading lesson", e); }
+            } catch (e) { console.error(e); }
         }
 
         function renderLesson(lesson) {
             document.getElementById('lesson').innerHTML = `<div class="content-body">${lesson.conteudo}</div>`;
+            if (lesson.feedback) document.getElementById('feedback-area').innerText = lesson.feedback;
+            
             const exContainer = document.getElementById('exercise-list');
             exContainer.innerHTML = '';
             for (let i = 1; i <= 5; i++) {
                 if (lesson[`statm${i}`]) {
                     exContainer.innerHTML += `
                         <div class="exercise-card">
-                            <strong>Question ${i}</strong>
-                            <p>${lesson[`statm${i}`]}</p>
-                            <input type="text" class="ans-input" id="field-answr${i}" value="${lesson[`answr${i}`] || ''}" placeholder="Type your answer...">
+                            <strong>Question ${i}:</strong> ${lesson[`statm${i}`]}
+                            <input type="text" class="ans-input" id="field-answr${i}" value="${lesson[`answr${i}`] || ''}">
                         </div>`;
                 }
             }
-            document.getElementById('btn-save-answers').classList.remove('hidden');
-        }
-
-        async function generateContent() {
-            const cmd = document.getElementById('ai-command').value;
-            if (!cmd) return;
-            const history = document.getElementById('chat-history');
-            const bMsg = document.createElement('div'); bMsg.className = 'msg-bot'; bMsg.innerText = "Generating...";
-            history.appendChild(bMsg);
-
-            try {
-                const response = await fetch(WEBHOOK_IA, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ instruction: cmd })
-                });
-                const data = await response.json();
-                bMsg.innerText = data.output || "Done!";
-                setTimeout(loadLatestLesson, 2000);
-            } catch (e) { bMsg.innerText = "Error."; }
         }
 
         async function saveAnswers() {
-            if (!lastRecordId) return;
+            if (!lastRecordId) return alert("No lesson ID found.");
+            
             const updateData = {};
             for (let i = 1; i <= 5; i++) {
-                const input = document.getElementById(`field-answr${i}`);
-                if (input) updateData[`answr${i}`] = input.value;
+                const val = document.getElementById(`field-answr${i}`)?.value;
+                if (val !== undefined) updateData[`answr${i}`] = val;
             }
+
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/modulo_treinamento?id=eq.${lastRecordId}`, {
                     method: 'PATCH',
@@ -247,30 +159,47 @@
                     },
                     body: JSON.stringify(updateData)
                 });
-                if(res.ok) {
-                    alert("Answers saved! Requesting AI Analysis...");
-                    
-                    // LIMPEZA DOS CAMPOS DE INPUT APÓS O SALVAMENTO
+
+                if (res.ok) {
+                    alert("Answers saved! Analyzing...");
+                    // LIMPA OS CAMPOS
                     for (let i = 1; i <= 5; i++) {
                         const input = document.getElementById(`field-answr${i}`);
-                        if (input) input.value = ""; 
+                        if(input) input.value = "";
                     }
-
+                    // CHAMA A IA PARA O FEEDBACK
                     requestFeedback();
+                } else {
+                    alert("Error saving. Check Supabase RLS.");
                 }
-            } catch (e) { alert("Error saving answers."); }
+            } catch (e) { console.error(e); }
         }
 
         async function requestFeedback() {
             openTab(null, 'feedback');
-            document.getElementById('feedback-content').innerHTML = "MercurIA is analyzing your performance...";
+            document.getElementById('feedback-area').innerText = "MercurIA is thinking...";
+            
             try {
                 await fetch(WEBHOOK_IA, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'analyze_feedback', id: lastRecordId })
                 });
-                // Recarrega a lição para puxar o feedback gravado pela IA
+                // Aguarda 3 segundos e recarrega para mostrar o feedback que a IA gravou
+                setTimeout(loadLatestLesson, 3000);
+            } catch (e) { console.error(e); }
+        }
+
+        async function generateContent() {
+            const cmd = document.getElementById('ai-command').value;
+            if (!cmd) return;
+            try {
+                await fetch(WEBHOOK_IA, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ instruction: cmd })
+                });
+                alert("Generating lesson... Wait a few seconds.");
                 setTimeout(loadLatestLesson, 3000);
             } catch (e) { console.error(e); }
         }

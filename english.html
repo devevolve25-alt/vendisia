@@ -249,6 +249,13 @@
                 });
                 if(res.ok) {
                     alert("Answers saved! Requesting AI Analysis...");
+                    
+                    // LIMPEZA DOS CAMPOS DE INPUT APÓS O SALVAMENTO
+                    for (let i = 1; i <= 5; i++) {
+                        const input = document.getElementById(`field-answr${i}`);
+                        if (input) input.value = ""; 
+                    }
+
                     requestFeedback();
                 }
             } catch (e) { alert("Error saving answers."); }
@@ -263,6 +270,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'analyze_feedback', id: lastRecordId })
                 });
+                // Recarrega a lição para puxar o feedback gravado pela IA
                 setTimeout(loadLatestLesson, 3000);
             } catch (e) { console.error(e); }
         }

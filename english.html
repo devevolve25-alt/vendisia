@@ -71,7 +71,6 @@
             width: 100%; background: var(--gold); color: #000; border: none; 
             padding: 15px; font-family: 'Bebas Neue'; font-size: 1.5rem; cursor: pointer; border-radius: 10px; transition: 0.3s;
         }
-        #btn-generate:hover { filter: brightness(1.2); }
 
         /* MAIN DISPLAY */
         .main-display { flex: 1; display: flex; flex-direction: column; background: #020202; overflow: hidden; }
@@ -89,30 +88,21 @@
         .content-body { font-size: 1.35rem; line-height: 1.9; color: var(--text-white); max-width: 950px; margin: 0 auto; }
         .exercise-card { background: var(--card-bg); padding: 40px; border-radius: 20px; margin-bottom: 30px; border-left: 6px solid var(--gold); }
         .exercise-card strong { display: block; margin-bottom: 12px; color: var(--gold); font-size: 1.4rem; }
-        .exercise-card p { font-size: 1.25rem; margin-bottom: 20px; }
-        
         .ans-input { 
             width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #444; 
             padding: 20px; color: white; border-radius: 10px; margin-top: 15px; outline: none; font-size: 1.2rem;
         }
-        .ans-input:focus { border-color: var(--gold); }
-
         .btn-primary { 
             background: var(--cyan); color: #000; border: none; padding: 20px; 
             font-family: 'Bebas Neue'; font-size: 1.6rem; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px; transition: 0.3s;
         }
-        .btn-primary:hover { filter: brightness(1.2); }
-
         .empty-state { text-align: center; margin-top: 150px; opacity: 0.4; font-style: italic; font-size: 1.4rem; }
         .hidden { display: none !important; }
 
-        /* MOBILE ADJUSTMENTS */
         @media (max-width: 768px) {
             .app-container { flex-direction: column; }
-            .sidebar-chat { width: 100%; height: 350px; border-right: none; border-bottom: 1px solid var(--border); }
+            .sidebar-chat { width: 100%; height: 350px; border-right: none; }
             .tab-btn { font-size: 1.1rem; padding: 15px; }
-            .tab-content { padding: 25px; }
-            .main-header { padding: 0 20px; }
         }
     </style>
 </head>
@@ -156,15 +146,15 @@
             </div>
 
             <div id="feedback" class="tab-content">
-                <div class="empty-state">Your feedback will appear here after submission.</div>
+                <div id="feedback-content" class="empty-state">Your feedback will appear here after submission.</div>
             </div>
         </main>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm'; // Use a sua anon key aqui
-        const WEBHOOK_IA = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/english_page';
+        const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
+        const WEBHOOK_IA = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/english_module_vendisia';
 
         let lastRecordId = null;
 
@@ -182,7 +172,7 @@
             const tabs = document.getElementsByClassName("tab-btn");
             for (let i = 0; i < tabs.length; i++) tabs[i].className = tabs[i].className.replace(" active", "");
             document.getElementById(tabId).style.display = "block";
-            evt.currentTarget.className += " active";
+            if(evt && evt.currentTarget) evt.currentTarget.className += " active";
         }
 
         async function loadLatestLesson() {
@@ -195,6 +185,10 @@
                     const lesson = data[0];
                     lastRecordId = lesson.id;
                     renderLesson(lesson);
+                    if (lesson.feedback) {
+                        document.getElementById('feedback-content').innerHTML = `<div class="content-body">${lesson.feedback}</div>`;
+                        document.getElementById('feedback-content').className = "";
+                    }
                 }
             } catch (e) { console.error("Error loading lesson", e); }
         }
@@ -219,19 +213,9 @@
         async function generateContent() {
             const cmd = document.getElementById('ai-command').value;
             if (!cmd) return;
-
             const history = document.getElementById('chat-history');
-            const uMsg = document.createElement('div');
-            uMsg.className = 'msg-user'; uMsg.innerText = cmd;
-            history.appendChild(uMsg);
-            
-            const bMsgLoading = document.createElement('div');
-            bMsgLoading.className = 'msg-bot';
-            bMsgLoading.innerText = "Processing request...";
-            history.appendChild(bMsgLoading);
-            
-            document.getElementById('ai-command').value = "";
-            history.scrollTop = history.scrollHeight;
+            const bMsg = document.createElement('div'); bMsg.className = 'msg-bot'; bMsg.innerText = "Generating...";
+            history.appendChild(bMsg);
 
             try {
                 const response = await fetch(WEBHOOK_IA, {
@@ -239,20 +223,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ instruction: cmd })
                 });
-
                 const data = await response.json();
-
-                if (response.ok) {
-                    bMsgLoading.innerText = data.output || "Lesson generated successfully!";
-                    // Aguarda um pouco para o banco processar e recarrega a tela principal
-                    setTimeout(loadLatestLesson, 2000);
-                } else {
-                    bMsgLoading.innerText = "AI could not process. Check n8n logs.";
-                }
-            } catch (e) { 
-                bMsgLoading.innerText = "Connection error.";
-                console.error(e);
-            }
+                bMsg.innerText = data.output || "Done!";
+                setTimeout(loadLatestLesson, 2000);
+            } catch (e) { bMsg.innerText = "Error."; }
         }
 
         async function saveAnswers() {
@@ -273,8 +247,24 @@
                     },
                     body: JSON.stringify(updateData)
                 });
-                if(res.ok) alert("Your answers have been saved!");
+                if(res.ok) {
+                    alert("Answers saved! Requesting AI Analysis...");
+                    requestFeedback();
+                }
             } catch (e) { alert("Error saving answers."); }
+        }
+
+        async function requestFeedback() {
+            openTab(null, 'feedback');
+            document.getElementById('feedback-content').innerHTML = "MercurIA is analyzing your performance...";
+            try {
+                await fetch(WEBHOOK_IA, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'analyze_feedback', id: lastRecordId })
+                });
+                setTimeout(loadLatestLesson, 3000);
+            } catch (e) { console.error(e); }
         }
     </script>
 </body>

@@ -191,18 +191,50 @@
         }
 
         async function generateContent() {
-            const cmd = document.getElementById('ai-command').value;
-            if (!cmd) return;
-            try {
-                await fetch(WEBHOOK_IA, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ instruction: cmd })
-                });
-                alert("Generating lesson... Wait a few seconds.");
-                setTimeout(loadLatestLesson, 3000);
-            } catch (e) { console.error(e); }
+    const cmd = document.getElementById('ai-command').value;
+    if (!cmd) return;
+
+    const history = document.getElementById('chat-history');
+    
+    // 1. Adiciona sua mensagem no chat
+    const uMsg = document.createElement('div');
+    uMsg.className = 'msg-user';
+    uMsg.innerText = cmd;
+    history.appendChild(uMsg);
+    
+    // 2. Adiciona o balão de carregamento
+    const bMsg = document.createElement('div');
+    bMsg.className = 'msg-bot';
+    bMsg.innerText = "Generating lesson... please wait.";
+    history.appendChild(bMsg);
+    
+    // Limpa o campo de texto e rola o chat
+    document.getElementById('ai-command').value = "";
+    history.scrollTop = history.scrollHeight;
+
+    try {
+        const response = await fetch(WEBHOOK_IA, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ instruction: cmd })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // 3. Exibe a confirmação da IA
+            bMsg.innerText = data.output || "Lesson created! Refreshing dashboard...";
+            
+            // 4. Recarrega os campos da lição após 3 segundos
+            setTimeout(loadLatestLesson, 3000);
+        } else {
+            bMsg.innerText = "Error: AI could not process the request.";
         }
+    } catch (e) {
+        console.error("Fetch Error:", e);
+        bMsg.innerText = "Connection error. Is n8n active?";
+    }
+}
     </script>
 </body>
 </html>

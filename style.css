@@ -70,7 +70,7 @@ body {
    ============================================= */
 
 @media screen and (max-width: 1200px) {
-    .showroom-grid { grid-template-columns: repeat(2, 340px); }
+    .showroom-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 }
 
 @media screen and (max-width: 768px) {
@@ -119,7 +119,14 @@ body {
         width: 100%;
         margin-top: 20px;
     }
-    .card-container { width: 90%; max-width: 340px; height: 500px; }
+    .card-container { min-height: 550px; width: 100%; max-width: 340px; }
     
     .entity-name { font-size: 2.5rem; }
 }
+
+.mercuria .card-back { border-color: #d4af37; background: linear-gradient(180deg, #000, #1a1400); }
+.exploria .card-back { border-color: #00e6e6; background: linear-gradient(180deg, #000, #001a1a); }
+.criaria .card-back { border-color: #ff00ff; background: linear-gradient(180deg, #000, #1a001a); }
+.lumia .card-back { border-color: #ffffff; background: linear-gradient(180deg, #000, #1a1a1a); }
+.iao .card-back { border-color: #7000ff; background: linear-gradient(180deg, #000, #0a001a); }
+.enas .card-back { border-color: #00ff70; background: linear-gradient(180deg, #000, #001a0a); }

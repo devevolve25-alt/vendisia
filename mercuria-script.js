@@ -1,5 +1,49 @@
 const WEBHOOK_URL = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt'; 
 
+// --- NOVO: Gatilho de entrada automática ---
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const nome = params.get('nome');
+    
+    if (nome) {
+        // Pequeno delay para o cliente ver o chat carregar antes da IA falar
+        setTimeout(() => {
+            // Enviamos um comando oculto para a IA saber que deve saudar o cliente
+            sendAutomatedTrigger(`AÇÃO_GATILHO: O cliente ${nome} acabou de chegar pelo link do e-mail. Saude-o pelo nome.`);
+        }, 1500);
+    }
+});
+
+// Função para disparar a mensagem automática sem o usuário digitar
+async function sendAutomatedTrigger(triggerText) {
+    const loadingId = addMessage("MercurIA is thinking...", 'bot loading');
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            mode: 'cors',
+            body: JSON.stringify({ 
+                content: triggerText,
+                user_name: new URLSearchParams(window.location.search).get('nome') || 'Guest',
+                user_company: new URLSearchParams(window.location.search).get('empresa') || 'Company',
+                is_trigger: true // Informa ao n8n que é um gatilho de sistema
+            })
+        });
+
+        const data = await response.json();
+        removeMessage(loadingId);
+
+        const botReply = data.output || data.message || data.text || data.reply || 
+                         (typeof data === 'string' ? data : "Olá! Como posso ajudar?");
+        
+        addMessage(botReply, 'bot');
+    } catch (error) {
+        removeMessage(loadingId);
+        console.error("Trigger Fail:", error);
+    }
+}
+
 async function sendMessage(event) {
     if (event) event.preventDefault();
 
@@ -10,7 +54,6 @@ async function sendMessage(event) {
     addMessage(message, 'user');
     input.value = '';
 
-    // Feedback visual
     const loadingId = addMessage("MercurIA is thinking...", 'bot loading');
 
     try {
@@ -30,7 +73,6 @@ async function sendMessage(event) {
         const data = await response.json();
         removeMessage(loadingId);
 
-        // Busca multicampo para garantir que a resposta apareça
         const botReply = data.output || data.message || data.text || data.reply || 
                          (typeof data === 'string' ? data : "Success, but no text response found.");
         
@@ -43,10 +85,8 @@ async function sendMessage(event) {
     }
 }
 
-// Ouvinte para o Botão Enviar
+// Ouvintes permanecem iguais
 document.getElementById('send-btn').addEventListener('click', sendMessage);
-
-// Ouvinte para a tecla Enter
 document.getElementById('user-input').addEventListener('keypress', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -60,11 +100,7 @@ function addMessage(text, type) {
     const id = 'msg-' + Date.now();
     div.id = id;
     div.className = `message ${type}`;
-    
-    // MUDANÇA AQUI: de .innerText para .innerHTML
-    // Isso permite que a IA envie o link com a classe do botão
     div.innerHTML = text; 
-    
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
     return id;

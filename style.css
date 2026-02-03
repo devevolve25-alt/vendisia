@@ -149,3 +149,96 @@ body {
     font-size: 0.9rem;
     line-height: 1.4;
 }
+
+/* --- AJUSTES DE RESPONSIVIDADE VENDISIA --- */
+
+@media (max-width: 992px) {
+    .showroom-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 colunas em tablets */
+        gap: 20px;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Ajuste do Header */
+    .main-header {
+        height: auto;
+        padding: 20px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .header-brand-wrapper {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .header-tagline {
+        text-align: center;
+        border-left: none;
+        padding-left: 0;
+        font-size: 0.9rem;
+    }
+
+    .header-logo {
+        width: 60px; /* Logo menor no mobile */
+    }
+
+    .header-title-vendisia {
+        font-size: 1.8rem;
+    }
+
+    /* Navegação */
+    .main-nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .nav-link {
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+    }
+
+    /* Super Card (O card grande do topo) */
+    .super-card-container {
+        padding: 0 15px;
+    }
+
+    .super-card-title {
+        font-size: 1.2rem;
+        padding: 0 10px;
+    }
+
+    /* Grid de IAs (1 coluna no mobile) */
+    .showroom-grid {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+
+    .card-container {
+        height: 450px; /* Garante altura suficiente para o flip */
+    }
+
+    /* Manifesto */
+    .header-manifesto {
+        margin-top: 20px;
+        font-size: 0.9rem;
+        padding: 0 10px;
+    }
+}
+
+/* Ajuste para celulares muito pequenos */
+@media (max-width: 480px) {
+    .header-title-vendisia {
+        font-size: 1.5rem;
+    }
+    
+    .entity-name {
+        font-size: 1.8rem;
+    }
+}

@@ -10,11 +10,13 @@
 <body>
 
     <header class="main-header">
-        <button class="menu-toggle" onclick="document.querySelector('.main-nav').classList.toggle('active')">
-            <i class="fas fa-bars"></i>
+        <button class="menu-toggle" id="btn-menu-mobile" aria-label="Abrir Menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
         </button>
 
-        <nav class="main-nav">
+        <nav class="main-nav" id="nav-principal">
             <a href="#missao" class="nav-link">MISSÃO</a>
             <a href="#servicos" class="nav-link">SERVIÇOS</a>
             <a href="#investimento" class="nav-link">INVESTIMENTO</a>
@@ -38,7 +40,7 @@
     </header>
 
     <main class="content-wrapper">
-        <div class="super-card-container">
+        <div class="super-card-container mobile-hide">
             <div class="super-card" id="mainSuperCard">
                 <div class="super-card-front">
                     <h2 class="super-card-title">Otimização Estratégica com a Plataforma Vendisia: Insights Preditivos para Maximização de Resultados.</h2>
@@ -53,7 +55,7 @@
         </div>
 
         <section id="servicos" class="grid-section">
-            <div class="showroom-grid">
+            <div class="showroom-grid" id="container-entidades">
                 
                 <div class="card-container mercuria">
                     <div class="card">
@@ -112,7 +114,7 @@
                     </div>
                 </div>
 
-                </div>
+            </div>
         </section>
     </main>
 

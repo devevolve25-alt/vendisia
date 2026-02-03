@@ -1,325 +1,268 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teaching Module</title>
+    <title>VENDISIA | English Training</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #000000;
-            --chat-bg: #0c1320;
-            --creative-color: #a55eea; /* Violeta Elétrico */
-            --creative-accent: #fd79a8;
-            --gold-border: #d4af37;
+            --bg-black: #000000;
+            --sidebar-bg: #0a0a0a;
+            --card-bg: #0c1320;
+            --gold: #d4af37;
+            --cyan: #00ffff;
+            --text-white: #ffffff;
+            --border: rgba(255, 255, 255, 0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: var(--bg-color);
-            color: #ffffff;
+            background-color: var(--bg-black);
+            color: var(--text-white);
             font-family: 'Montserrat', sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 15px;
-            overflow: hidden; /* Desktop mantém o scroll interno */
-        }
-
-        /* Header Padrão Vendisia */
-        .page-header {
-            width: 100%;
-            max-width: 1400px;
-            margin: 0 auto 15px auto;
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            align-items: center;
-        }
-
-        .brand-block { display: flex; align-items: center; gap: 12px; }
-        .brand-logo { width: 45px; height: auto; }
-        .brand-text-wrapper { display: flex; flex-direction: column; }
-        .brand-name { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--creative-color); line-height: 0.9; letter-spacing: 2px; }
-        .brand-tagline { font-family: 'Bebas Neue'; font-size: 0.9rem; color: #fff; letter-spacing: 3px; margin-top: 3px; }
-        .header-headline { font-family: 'Bebas Neue'; font-size: 1.2rem; text-align: center; color: #fff; opacity: 0.8; }
-
-        /* Estrutura de Estúdio */
-        .studio-container {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-            max-width: 1400px;
-            width: 100%;
-            margin: 0 auto;
-            min-height: 0;
-        }
-
-        /* Lado Esquerdo: Chat */
-        .chat-column {
-            background: var(--chat-bg);
-            border: 1px solid rgba(165, 94, 234, 0.3);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
         }
 
-        .chat-header {
-            padding: 12px;
-            background: rgba(165, 94, 234, 0.1);
-            border-bottom: 1px solid rgba(165, 94, 234, 0.2);
-            font-family: 'Bebas Neue';
-            font-size: 1.1rem;
-            color: var(--creative-color);
-            text-align: center;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            font-size: 0.85rem;
+        /* HEADER */
+        .main-header {
+            height: 80px;
+            padding: 0 40px;
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .msg-bot { border-left: 2px solid var(--creative-color); padding-left: 10px; color: #cbd5e1; margin-bottom: 5px; }
-        .msg-user { color: var(--creative-color); font-weight: 600; text-align: right; margin-bottom: 5px; }
-
-        .input-area {
-            padding: 12px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        textarea {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(165, 94, 234, 0.2);
-            border-radius: 4px;
-            padding: 10px;
-            color: white;
-            font-family: 'Montserrat';
-            resize: none;
-            height: 70px;
-            outline: none;
-        }
-
-        .btn-generate {
-            background: var(--creative-color);
-            color: #000;
-            border: none;
-            padding: 10px;
-            font-family: 'Bebas Neue';
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        /* Lado Direito: Preview */
-        .preview-column {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .preview-tabs {
-            display: flex;
-            background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            overflow-x: auto; /* Permite scroll das abas se necessário no mobile */
-        }
-
-        .tab {
-            padding: 12px 20px;
-            font-family: 'Bebas Neue';
-            cursor: pointer;
-            opacity: 0.5;
-            white-space: nowrap;
-        }
-
-        .tab.active { opacity: 1; color: var(--creative-color); border-bottom: 2px solid var(--creative-color); }
-
-        .display-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            justify-content: center;
-        }
-
-        .proposal-paper {
-            background: #fff;
-            color: #333;
-            width: 100%;
-            max-width: 800px;
-            min-height: 800px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-family: 'Montserrat', serif;
-            line-height: 1.6;
-            border-radius: 2px;
-            overflow-wrap: break-word;
-        }
-
-        .image-preview {
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1 / 1;
-            background: #1a1a1a;
-            border: 1px solid var(--creative-color);
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
         }
+        .brand-name { font-family: 'Bebas Neue'; font-size: 2.2rem; color: var(--gold); letter-spacing: 2px; }
+        .brand-tagline { font-family: 'Bebas Neue'; font-size: 1rem; letter-spacing: 4px; margin-left: 12px; }
 
-        /* RESPONSIVIDADE MOBILE */
-        @media (max-width: 1000px) {
-            body { overflow-y: auto; height: auto; }
-            .page-header { grid-template-columns: 1fr; text-align: center; gap: 10px; }
-            .brand-block { justify-content: center; }
-            .studio-container { grid-template-columns: 1fr; display: flex; flex-direction: column; }
-            .chat-column { height: 450px; } /* Chat com altura fixa no mobile */
-            .preview-column { min-height: 600px; margin-top: 10px; }
-            .proposal-paper { padding: 25px 15px; font-size: 0.9rem; }
+        /* CONTAINER */
+        .app-container { display: flex; flex: 1; height: calc(100vh - 80px); }
+
+        /* SIDEBAR CHAT (ADMIN ONLY) */
+        .sidebar-chat {
+            width: 420px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s;
         }
+        .sidebar-chat.hidden { display: none; }
+
+        .sidebar-header { padding: 30px; border-bottom: 1px solid var(--border); }
+        .sidebar-header h3 { font-family: 'Bebas Neue'; color: var(--gold); font-size: 1.6rem; }
+
+        .chat-history { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .msg-bot { background: rgba(255,255,255,0.04); padding: 20px; border-radius: 12px; font-size: 1.1rem; border-left: 4px solid var(--gold); line-height: 1.6; }
+        .msg-user { background: var(--gold); color: #000; padding: 15px 20px; border-radius: 12px; align-self: flex-end; font-size: 1rem; font-weight: 600; }
+
+        .chat-input-area { padding: 25px; border-top: 1px solid var(--border); background: #050505; }
+        #ai-command { 
+            width: 100%; background: #111; border: 1px solid #444; border-radius: 10px; 
+            padding: 15px; color: white; resize: none; margin-bottom: 15px; font-family: inherit; font-size: 1.1rem;
+        }
+        #btn-generate { 
+            width: 100%; background: var(--gold); color: #000; border: none; 
+            padding: 15px; font-family: 'Bebas Neue'; font-size: 1.5rem; cursor: pointer; border-radius: 10px; transition: 0.3s;
+        }
+        #btn-generate:hover { filter: brightness(1.2); }
+
+        /* MAIN DISPLAY */
+        .main-display { flex: 1; display: flex; flex-direction: column; background: #020202; overflow: hidden; }
+        .tab-nav { display: flex; background: #080808; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .tab-btn { 
+            flex: 1; padding: 20px; background: none; border: none; color: #666; 
+            font-family: 'Bebas Neue'; font-size: 1.4rem; cursor: pointer; transition: 0.3s;
+        }
+        .tab-btn.active { color: var(--gold); border-bottom: 3px solid var(--gold); background: rgba(212, 175, 55, 0.08); }
+
+        .tab-content { flex: 1; padding: 50px; overflow-y: auto; display: none; }
+        .tab-content.active { display: block; }
+
+        /* CONTENT STYLING */
+        .content-body { font-size: 1.35rem; line-height: 1.9; color: var(--text-white); max-width: 950px; margin: 0 auto; }
+        .exercise-card { background: var(--card-bg); padding: 40px; border-radius: 20px; margin-bottom: 30px; border-left: 6px solid var(--gold); }
+        .exercise-card strong { display: block; margin-bottom: 12px; color: var(--gold); font-size: 1.4rem; }
+        .exercise-card p { font-size: 1.25rem; margin-bottom: 20px; }
+        
+        .ans-input { 
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #444; 
+            padding: 20px; color: white; border-radius: 10px; margin-top: 15px; outline: none; font-size: 1.2rem;
+        }
+        .ans-input:focus { border-color: var(--gold); }
+
+        .btn-primary { 
+            background: var(--cyan); color: #000; border: none; padding: 20px; 
+            font-family: 'Bebas Neue'; font-size: 1.6rem; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px; transition: 0.3s;
+        }
+        .btn-primary:hover { filter: brightness(1.2); }
+
+        .empty-state { text-align: center; margin-top: 150px; opacity: 0.4; font-style: italic; font-size: 1.4rem; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <header class="page-header">
+    <header class="main-header">
         <div class="brand-block">
-            <img src="merc_face.png" alt="Logo" class="brand-logo">
-            <div class="brand-text-wrapper">
-                <span class="brand-name">VENDISIA</span>
-                <span class="brand-tagline">IA ECOSYSTEM</span>
-            </div>
+            <span class="brand-name">VENDISIA</span>
+            <span class="brand-tagline">ENGLISH MODULE</span>
         </div>
-        <h2 class="header-headline">RELATÓRIOS DE ANÁLISES</h2>
-        <div class="spacer"></div>
     </header>
 
-    <main class="studio-container">
-        <section class="chat-column">
-            <div class="chat-header">DADOS PARA ANÁLISE</div>
-            <div class="chat-messages" id="chat-criar">
-                <div class="msg-bot">Olá, sou Analista. Envie os dados para análise.</div>
+    <div class="app-container">
+        <aside class="sidebar-chat hidden" id="admin-sidebar">
+            <div class="sidebar-header">
+                <h3>AI INSTRUCTIONS</h3>
             </div>
-            <div class="input-area">
-                <textarea id="cmd-input" placeholder="O que deseja criar?"></textarea>
-                <button class="btn-generate" onclick="generateContent()">GERAR RELATÓRIO</button>
+            <div class="chat-history" id="chat-history">
+                <div class="msg-bot">Admin Mode Active. Ready to create your next lesson.</div>
             </div>
-        </section>
+            <div class="chat-input-area">
+                <textarea id="ai-command" placeholder="Type your lesson instructions..." rows="2"></textarea>
+                <button id="btn-generate" onclick="generateContent()">GENERATE LESSON</button>
+            </div>
+        </aside>
 
-        <section class="preview-column">
-            <div class="preview-tabs">
-                <div class="tab active" onclick="switchTab('text', this)">DOCUMENTOS</div>
-                <div class="tab" onclick="switchTab('image', this)">POSTS / IMAGENS</div>
-                <div class="tab" onclick="switchTab('viral', this)">SCANNER VIRAL</div>
+        <main class="main-display">
+            <nav class="tab-nav">
+                <button class="tab-btn active" onclick="openTab(event, 'lesson')">LESSON</button>
+                <button class="tab-btn" onclick="openTab(event, 'exercises')">EXERCISES</button>
+                <button class="tab-btn" onclick="openTab(event, 'feedback')">FEEDBACK</button>
+            </nav>
+
+            <div id="lesson" class="tab-content active">
+                <div class="empty-state">Loading latest lesson...</div>
             </div>
-            
-            <div class="display-area" id="display-content">
-                <div class="proposal-paper" id="text-view">
-                    <h1 style="text-align: center; margin-bottom: 30px; font-family: 'Bebas Neue';">ANÁLISE TÉCNICA</h1>
-                    <p>A inteligência artificial do ecossistema VENDISIA está pronta para ser integrada ao seu negócio.</p>
-                    <p>Aguardando comandos para gerar a análise técnica...</p>
-                </div>
-                <div class="image-preview" id="image-view" style="display: none;">
-                    <span style="color: #444; font-family: 'Bebas Neue';">PREVIEW DA CRIAÇÃO VISUAL</span>
-                </div>
+
+            <div id="exercises" class="tab-content">
+                <div id="exercise-list"></div>
+                <button id="btn-save-answers" class="btn-primary hidden" onclick="saveAnswers()">SUBMIT MY ANSWERS</button>
             </div>
-        </section>
-    </main>
+
+            <div id="feedback" class="tab-content">
+                <div class="empty-state">Your feedback will appear here after submission.</div>
+            </div>
+        </main>
+    </div>
 
     <script>
-    function switchTab(type, element) {
-        const tabs = document.querySelectorAll('.tab');
-        tabs.forEach(t => t.classList.remove('active'));
-        element.classList.add('active');
+        const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
+        const WEBHOOK_IA = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/english_module_vendisia';
 
-        const textView = document.getElementById('text-view');
-        const imageView = document.getElementById('image-view');
+        let lastRecordId = null;
 
-        if(type === 'text') {
-            textView.style.display = 'block';
-            imageView.style.display = 'none';
-        } else {
-            textView.style.display = 'none';
-            imageView.style.display = 'flex';
-        }
-    }
-
-    async function generateContent() {
-        const input = document.getElementById('cmd-input').value;
-        const chat = document.getElementById('chat-criar');
-        const textView = document.getElementById('text-view');
-
-        if(!input) return;
-
-        // 1. Exibe a mensagem do usuário
-        const userDiv = document.createElement('div');
-        userDiv.className = 'msg-user';
-        userDiv.innerText = input;
-        chat.appendChild(userDiv);
-        document.getElementById('cmd-input').value = "";
-        chat.scrollTop = chat.scrollHeight;
-
-        // 2. Mensagem de processamento
-        const botDivLoading = document.createElement('div');
-        botDivLoading.className = 'msg-bot';
-        botDivLoading.innerText = "[Analista]: Processando sua solicitação criativa... Renderizando no painel.";
-        chat.appendChild(botDivLoading);
-
-        try {
-            // ---------------------------------------------------------
-            // COLE SUA URL DO WEBHOOK DO N8N PARA Analista ABAIXO:
-            const WEBHOOK_URL_Analista = "https://powerfulkiwi-n8n.cloudfy.live/webhook/english_page"; 
-            // ---------------------------------------------------------
-
-            const response = await fetch(WEBHOOK_URL_Analista, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: input,
-                    entity: "Analista",
-                    timestamp: new Date().toISOString()
-                })
-            });
-
-            const data = await response.json();
-
-            // 3. Atualiza o chat com o status final
-            const botDivSuccess = document.createElement('div');
-            botDivSuccess.className = 'msg-bot';
-            botDivSuccess.innerText = "[Analista]: Materialização concluída. Veja o resultado no Dossiê.";
-            chat.appendChild(botDivSuccess);
-
-            // 4. Injeta o conteúdo gerado (texto/proposta) no painel de visualização
-            // Assume que o n8n retorna { "output": "HTML ou Texto da proposta" }
-            if (data.output) {
-                textView.innerHTML = data.output;
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('admin') === 'true') {
+                document.getElementById('admin-sidebar').classList.remove('hidden');
             }
+            loadLatestLesson();
+        });
 
-        } catch (error) {
-            console.error("Erro na criação:", error);
-            const eDiv = document.createElement('div');
-            eDiv.className = 'msg-bot';
-            eDiv.style.color = "#ff4d4d";
-            eDiv.innerText = "[ERRO]: Falha na conexão com o laboratório criativo.";
-            chat.appendChild(eDiv);
-        } finally {
-            chat.scrollTop = chat.scrollHeight;
+        function openTab(evt, tabId) {
+            const contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
+            const tabs = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabs.length; i++) tabs[i].className = tabs[i].className.replace(" active", "");
+            document.getElementById(tabId).style.display = "block";
+            evt.currentTarget.className += " active";
         }
-    }
-</script>
+
+        async function loadLatestLesson() {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/modulo_treinamento?select=*&order=created_at.desc&limit=1`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                const data = await res.json();
+                if (data.length > 0) {
+                    const lesson = data[0];
+                    lastRecordId = lesson.id;
+                    renderLesson(lesson);
+                }
+            } catch (e) { console.error("Error loading lesson", e); }
+        }
+
+        function renderLesson(lesson) {
+            document.getElementById('lesson').innerHTML = `<div class="content-body">${lesson.conteudo}</div>`;
+            const exContainer = document.getElementById('exercise-list');
+            exContainer.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                if (lesson[`statm${i}`]) {
+                    exContainer.innerHTML += `
+                        <div class="exercise-card">
+                            <strong>Question ${i}</strong>
+                            <p>${lesson[`statm${i}`]}</p>
+                            <input type="text" class="ans-input" id="field-answr${i}" value="${lesson[`answr${i}`] || ''}" placeholder="Type your answer...">
+                        </div>`;
+                }
+            }
+            document.getElementById('btn-save-answers').classList.remove('hidden');
+        }
+
+        async function generateContent() {
+            const cmd = document.getElementById('ai-command').value;
+            if (!cmd) return;
+
+            const history = document.getElementById('chat-history');
+            const uMsg = document.createElement('div');
+            uMsg.className = 'msg-user'; uMsg.innerText = cmd;
+            history.appendChild(uMsg);
+            
+            const bMsgLoading = document.createElement('div');
+            bMsgLoading.className = 'msg-bot';
+            bMsgLoading.innerText = "Processing your request... Please wait.";
+            history.appendChild(bMsgLoading);
+            
+            document.getElementById('ai-command').value = "";
+            history.scrollTop = history.scrollHeight;
+
+            try {
+                const response = await fetch(WEBHOOK_IA, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ instruction: cmd })
+                });
+
+                if (response.ok) {
+                    bMsgLoading.innerText = "Lesson created! Refreshing dashboard...";
+                    setTimeout(loadLatestLesson, 3000);
+                } else {
+                    bMsgLoading.innerText = "AI could not process the request. Check n8n logs.";
+                }
+            } catch (e) { 
+                bMsgLoading.innerText = "Network error. Is the n8n webhook active?";
+            }
+        }
+
+        async function saveAnswers() {
+            if (!lastRecordId) return;
+            const updateData = {};
+            for (let i = 1; i <= 5; i++) {
+                const input = document.getElementById(`field-answr${i}`);
+                if (input) updateData[`answr${i}`] = input.value;
+            }
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/modulo_treinamento?id=eq.${lastRecordId}`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'apikey': SUPABASE_KEY, 
+                        'Authorization': `Bearer ${SUPABASE_KEY}`, 
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal' 
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                if(res.ok) alert("Your answers have been saved!");
+            } catch (e) { alert("Error saving answers."); }
+        }
+    </script>
 </body>
 </html>

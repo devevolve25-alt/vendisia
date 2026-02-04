@@ -298,6 +298,19 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let slots = [];
     let atual = new Date(`2000-01-01T${abertura}`);
     const fim = new Date(`2000-01-01T${fechamento}`);
+    while (atual < fim) {
+        const horaTexto = atual.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const ocupado = agendados.find(a => new Date(a.data_hora_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) === horaTexto);
+        slots.push({ hora: horaTexto, dados: ocupado || null });
+        atual.setMinutes(atual.getMinutes() + (intervalo || 60));
+    }
+    return slots;
+}
+
+    function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
+    let slots = [];
+    let atual = new Date(`2000-01-01T${abertura}`);
+    const fim = new Date(`2000-01-01T${fechamento}`);
 
     while (atual < fim) {
         const horaTexto = atual.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -366,32 +379,30 @@ async function switchTabLite(viewId, element) {
     const body = document.getElementById('view-body');
     body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando...</p>";
 
-    if (viewId === 'servicos') {
-        title.innerText = "SERVIÇOS";
-        const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id);
-        let html = '<div class="services-grid">';
-        data?.forEach(s => html += `<div class="service-card"><h3>${s.nome}</h3><p>${s.descricao || ''}</p><span class="service-price">R$ ${s.preco}</span></div>`);
-        body.innerHTML = html + '</div>';
-    } 
     else if (viewId === 'agenda') {
         title.innerText = "AGENDA";
         const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
         const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome), servicos(nome)').eq('estabelecimento_id', dadosEstabelecimento.id).order('data_hora_inicio');
         
+        // Gera a grade completa usando os dados do banco
+        const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, dadosEstabelecimento.intervalo_slot, data || []);
+        
         let html = '<div class="agenda-list">';
-        data?.forEach(item => {
-            const hora = new Date(item.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+        grade.forEach(slot => {
             const exibirPrivado = (userType === 'dono' || userType === 'funcionario');
-            const nomeExibido = exibirPrivado ? item.cliente_nome : "HORÁRIO OCUPADO";
-            const servicoExibido = exibirPrivado ? (item.servicos?.nome || 'Serviço') : "Indisponível";
+            const estaOcupado = slot.dados !== null;
+            
+            const nomeExibido = estaOcupado ? (exibirPrivado ? slot.dados.cliente_nome : "INDISPONÍVEL") : "DISPONÍVEL";
+            const servicoExibido = estaOcupado ? (exibirPrivado ? (slot.dados.servicos?.nome || 'Serviço') : "Horário reservado") : "Toque para agendar";
+            const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
 
             html += `
-                <div class="agenda-item" style="opacity: ${exibirPrivado ? '1' : '0.7'};">
-                    <div class="agenda-time">${hora}</div>
+                <div class="agenda-item" style="border-left: 4px solid ${corStatus}; opacity: ${estaOcupado && !exibirPrivado ? '0.6' : '1'}">
+                    <div class="agenda-time">${slot.hora}</div>
                     <div class="agenda-details">
-                        <h4>${nomeExibido}</h4>
+                        <h4 style="color: ${estaOcupado ? 'inherit' : corStatus}">${nomeExibido}</h4>
                         <span>${servicoExibido}</span>
-                        ${exibirPrivado ? `<span class="prof-tag">${item.profissionais?.nome || 'Geral'}</span>` : ''}
+                        ${estaOcupado && exibirPrivado ? `<span class="prof-tag">${slot.dados.profissionais?.nome || 'Geral'}</span>` : ''}
                     </div>
                 </div>`;
         });

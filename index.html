@@ -230,8 +230,7 @@
         </section>
 
         <section class="preview-column">
-            <div class="preview-tabs" id="dynamic-tabs">
-                </div>
+            <div class="preview-tabs" id="dynamic-tabs"></div>
             <div class="display-area" id="display-content">
                 <div class="proposal-paper" id="text-view">
                     <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>
@@ -244,13 +243,27 @@
     </main>
 
     <script>
-        // --- INSIRA SEUS DADOS DO SUPABASE AQUI ---
         const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-        // -----------------------------------------
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let dadosEstabelecimento = null;
+
+        // Função para calcular lacunas vazias
+        function calcularLacunas(agendamentosExistentes, horaInicio = 9, horaFim = 18, intervaloMinutos = 60) {
+            let slots = [];
+            for (let hora = horaInicio; hora < horaFim; hora++) {
+                for (let min = 0; min < 60; min += intervaloMinutos) {
+                    let horarioString = `${String(hora).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+                    const ocupado = agendamentosExistentes.find(a => {
+                        const h = new Date(a.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+                        return h === horarioString;
+                    });
+                    slots.push({ hora: horarioString, status: ocupado ? 'ocupado' : 'disponivel', dados: ocupado || null });
+                }
+            }
+            return slots;
+        }
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
@@ -283,12 +296,9 @@
                 funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
                 dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
             };
-
             const tabsContainer = document.getElementById('dynamic-tabs');
             tabsContainer.innerHTML = ''; 
-
             const abas = PERFIS[userType] || PERFIS['cliente'];
-
             abas.forEach((aba, index) => {
                 const tab = document.createElement('div');
                 tab.className = `tab ${index === 0 ? 'active' : ''}`;
@@ -296,7 +306,6 @@
                 tab.onclick = () => switchTab(aba.id, tab);
                 tabsContainer.appendChild(tab);
             });
-
             if(abas.length > 0) switchTab(abas[0].id, tabsContainer.firstChild);
         }
 
@@ -308,59 +317,55 @@
             document.getElementById('view-title').innerText = viewId.toUpperCase();
             body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando dados...</p>";
 
-            // ... dentro da função switchTab(viewId, element) ...
+            const params = new URLSearchParams(window.location.search);
+            const userType = params.get('u') || 'cliente';
 
-} else if (viewId === 'agenda') {
-    title.innerText = "AGENDA";
-    
-    // Buscamos agendamentos E os nomes dos serviços/profissionais (Joins)
-    const { data, error } = await supabaseClient
-        .from('agendamentos')
-        .select(`
-            *,
-            profissionais(nome),
-            servicos(nome)
-        `)
-        .eq('estabelecimento_id', dadosEstabelecimento.id)
-        .order('data_hora_inicio', { ascending: true });
+            if (viewId === 'servicos') {
+                const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id);
+                let html = '<div class="services-grid">';
+                data?.forEach(s => html += `<div class="service-card"><h3>${s.nome}</h3><p>${s.descricao || ''}</p><span class="service-price">R$ ${s.preco}</span></div>`);
+                body.innerHTML = html + '</div>';
 
-    const params = new URLSearchParams(window.location.search);
-    const userType = params.get('u') || 'cliente';
+            } else if (viewId === 'agenda') {
+                const { data: ocupados } = await supabaseClient
+                    .from('agendamentos')
+                    .select('*, profissionais(nome), servicos(nome)')
+                    .eq('estabelecimento_id', dadosEstabelecimento.id)
+                    .order('data_hora_inicio', { ascending: true });
 
-    let html = '<div class="agenda-list">';
-    
-    data?.forEach(item => {
-        const hora = new Date(item.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-        
-        // LÓGICA DE VISIBILIDADE
-        if (userType === 'cliente' && item.status !== 'disponivel') {
-            // Se for cliente, mostramos apenas que o horário está OCUPADO
-            html += `
-                <div class="agenda-item" style="opacity: 0.6; filter: grayscale(1);">
-                    <div class="agenda-time">${hora}</div>
-                    <div class="agenda-details">
-                        <h4>HORÁRIO OCUPADO</h4>
-                        <span>Indisponível para reserva</span>
-                    </div>
-                </div>`;
-        } else {
-            // Se for Dono/Func ou se o horário estiver disponível, mostra detalhes
-            const statusGlow = item.status === 'disponivel' ? 'box-shadow: 0 0 15px #2ecc71;' : '';
-            
-            html += `
-                <div class="agenda-item" style="${statusGlow}">
-                    <div class="agenda-time">${hora}</div>
-                    <div class="agenda-details">
-                        <h4>${item.status === 'disponivel' ? 'HORÁRIO LIVRE' : item.cliente_nome}</h4>
-                        <span>${item.servicos?.nome || 'Consulta/Geral'}</span>
-                        <span class="prof-tag">${item.profissionais?.nome || 'Qualquer um'}</span>
-                    </div>
-                </div>`;
+                const grade = calcularLacunas(ocupados || [], 9, 18, 60);
+                let html = '<div class="agenda-list">';
+                
+                grade.forEach(slot => {
+                    if (slot.status === 'ocupado') {
+                        const nomePrincipal = (userType === 'dono' || userType === 'funcionario') ? slot.dados.cliente_nome : "HORÁRIO OCUPADO";
+                        const servicoNome = (userType === 'dono' || userType === 'funcionario') ? (slot.dados.servicos?.nome || 'Ocupado') : "Indisponível";
+                        
+                        html += `
+                            <div class="agenda-item" style="opacity: 0.6;">
+                                <div class="agenda-time">${slot.hora}</div>
+                                <div class="agenda-details">
+                                    <h4>${nomePrincipal}</h4>
+                                    <span>${servicoNome}</span>
+                                    ${userType === 'dono' ? `<span class="prof-tag">${slot.dados.profissionais?.nome || 'Geral'}</span>` : ''}
+                                </div>
+                            </div>`;
+                } else {
+                        html += `
+                            <div class="agenda-item" style="border-left: 3px solid #2ecc71; cursor: pointer;">
+                                <div class="agenda-time" style="color: #2ecc71;">${slot.hora}</div>
+                                <div class="agenda-details">
+                                    <h4 style="color: #2ecc71;">DISPONÍVEL</h4>
+                                    <span>Clique para agendar</span>
+                                </div>
+                            </div>`;
+                    }
+                });
+                body.innerHTML = html + '</div>';
+            } else {
+                body.innerHTML = "<p style='text-align:center; margin-top:50px'>Módulo em desenvolvimento.</p>";
+            }
         }
-    });
-
-    body.innerHTML = html + '</div>';
-}
 
         async function generateContent() {
             const input = document.getElementById('cmd-input').value;

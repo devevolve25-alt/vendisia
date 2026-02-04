@@ -370,22 +370,19 @@ async function switchTabLite(viewId, element) {
         body.innerHTML = html + '</div>';
     } 
     else if (viewId === 'agenda') {
-    title.innerText = "AGENDA DIÁRIA";
-    const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome), servicos(nome)').eq('estabelecimento_id', dadosEstabelecimento.id);
-    const grade = calcularLacunas(data || []);
-    let html = '<div class="agenda-list">';
-    grade.forEach(slot => {
-        const isLivre = slot.status === 'livre';
-        html += `
-            <div class="agenda-item" style="${isLivre ? 'border-left: 4px solid #2ecc71;' : 'opacity: 0.6;'}">
-                <div class="agenda-time">${slot.hora}</div>
-                <div class="agenda-details">
-                    <h4 style="color: ${isLivre ? '#2ecc71' : 'inherit'}">${isLivre ? 'DISPONÍVEL' : slot.dados.cliente_nome}</h4>
-                    <span>${isLivre ? 'Toque para agendar' : (slot.dados.servicos?.nome || 'Ocupado')}</span>
-                </div>
-            </div>`;
-    });
-    body.innerHTML = html + '</div>';
+        title.innerText = "AGENDA";
+        const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome), servicos(nome)').eq('estabelecimento_id', dadosEstabelecimento.id).order('data_hora_inicio');
+        let html = '<div class="agenda-list">';
+        data?.forEach(item => {
+            const hora = new Date(item.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            html += `<div class="agenda-item"><div class="agenda-time">${hora}</div><div class="agenda-details"><h4>${item.cliente_nome}</h4><span>${item.servicos?.nome || 'Serviço'}</span><span class="prof-tag">${item.profissionais?.nome || 'Geral'}</span></div></div>`;
+        });
+        body.innerHTML = html + '</div>';
+    }
+    else {
+        title.innerText = viewId.toUpperCase();
+        body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
+    }
 }
     
 

@@ -243,141 +243,131 @@
     </main>
 
     <script>
-        const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-        
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let dadosEstabelecimento = null;
+    // --- CONFIGURAÇÃO ---
+    const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let dadosEstabelecimento = null;
 
-        // Função para calcular lacunas vazias
-        function calcularLacunas(agendamentosExistentes, horaInicio = 9, horaFim = 18, intervaloMinutos = 60) {
-            let slots = [];
-            for (let hora = horaInicio; hora < horaFim; hora++) {
-                for (let min = 0; min < 60; min += intervaloMinutos) {
-                    let horarioString = `${String(hora).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-                    const ocupado = agendamentosExistentes.find(a => {
-                        const h = new Date(a.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-                        return h === horarioString;
-                    });
-                    slots.push({ hora: horarioString, status: ocupado ? 'ocupado' : 'disponivel', dados: ocupado || null });
-                }
-            }
-            return slots;
-        }
+    // --- FUNÇÕES GLOBAIS (Devem estar fora de tudo para o HTML enxergar) ---
+    function generateContent() {
+        const input = document.getElementById('cmd-input').value;
+        const chat = document.getElementById('chat-criar');
+        if(!input) return;
+        const div = document.createElement('div'); 
+        div.className = 'msg-user'; 
+        div.innerText = input;
+        chat.appendChild(div);
+        document.getElementById('cmd-input').value = "";
+        chat.scrollTop = chat.scrollHeight;
+    }
 
-        async function init() {
-            const params = new URLSearchParams(window.location.search);
-            const slug = params.get('s');
-            const userType = params.get('u') || 'cliente';
-
-            if (!slug) {
-                document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Slug ausente (?s=slug)</p>";
-                return;
-            }
-
-            const { data, error } = await supabaseClient
-                .from('estabelecimentos')
-                .select('*')
-                .eq('slug', slug)
-                .single();
-
-            if (data) {
-                dadosEstabelecimento = data;
-                document.getElementById('salon-name').innerText = data.nome_fantasia;
-                renderTabs(userType);
-            } else {
-                document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
-            }
-        }
-
-        function renderTabs(userType) {
-            const PERFIS = {
-                cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
-                funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
-                dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
-            };
-            const tabsContainer = document.getElementById('dynamic-tabs');
-            tabsContainer.innerHTML = ''; 
-            const abas = PERFIS[userType] || PERFIS['cliente'];
-            abas.forEach((aba, index) => {
-                const tab = document.createElement('div');
-                tab.className = `tab ${index === 0 ? 'active' : ''}`;
-                tab.innerText = aba.label;
-                tab.onclick = () => switchTab(aba.id, tab);
-                tabsContainer.appendChild(tab);
-            });
-            if(abas.length > 0) switchTab(abas[0].id, tabsContainer.firstChild);
-        }
-
-        async function switchTab(viewId, element) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            if(element) element.classList.add('active');
-
-            const body = document.getElementById('view-body');
-            document.getElementById('view-title').innerText = viewId.toUpperCase();
-            body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando dados...</p>";
-
-            const params = new URLSearchParams(window.location.search);
-            const userType = params.get('u') || 'cliente';
-
-            if (viewId === 'servicos') {
-                const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id);
-                let html = '<div class="services-grid">';
-                data?.forEach(s => html += `<div class="service-card"><h3>${s.nome}</h3><p>${s.descricao || ''}</p><span class="service-price">R$ ${s.preco}</span></div>`);
-                body.innerHTML = html + '</div>';
-
-            } else if (viewId === 'agenda') {
-                const { data: ocupados } = await supabaseClient
-                    .from('agendamentos')
-                    .select('*, profissionais(nome), servicos(nome)')
-                    .eq('estabelecimento_id', dadosEstabelecimento.id)
-                    .order('data_hora_inicio', { ascending: true });
-
-                const grade = calcularLacunas(ocupados || [], 9, 18, 60);
-                let html = '<div class="agenda-list">';
-                
-                grade.forEach(slot => {
-                    if (slot.status === 'ocupado') {
-                        const nomePrincipal = (userType === 'dono' || userType === 'funcionario') ? slot.dados.cliente_nome : "HORÁRIO OCUPADO";
-                        const servicoNome = (userType === 'dono' || userType === 'funcionario') ? (slot.dados.servicos?.nome || 'Ocupado') : "Indisponível";
-                        
-                        html += `
-                            <div class="agenda-item" style="opacity: 0.6;">
-                                <div class="agenda-time">${slot.hora}</div>
-                                <div class="agenda-details">
-                                    <h4>${nomePrincipal}</h4>
-                                    <span>${servicoNome}</span>
-                                    ${userType === 'dono' ? `<span class="prof-tag">${slot.dados.profissionais?.nome || 'Geral'}</span>` : ''}
-                                </div>
-                            </div>`;
-                } else {
-                        html += `
-                            <div class="agenda-item" style="border-left: 3px solid #2ecc71; cursor: pointer;">
-                                <div class="agenda-time" style="color: #2ecc71;">${slot.hora}</div>
-                                <div class="agenda-details">
-                                    <h4 style="color: #2ecc71;">DISPONÍVEL</h4>
-                                    <span>Clique para agendar</span>
-                                </div>
-                            </div>`;
-                    }
+    function calcularLacunas(agendamentosExistentes, horaInicio = 9, horaFim = 18, intervaloMinutos = 60) {
+        let slots = [];
+        for (let hora = horaInicio; hora < horaFim; hora++) {
+            for (let min = 0; min < 60; min += intervaloMinutos) {
+                let horarioString = `${String(hora).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+                const ocupado = agendamentosExistentes.find(a => {
+                    const h = new Date(a.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+                    return h === horarioString;
                 });
-                body.innerHTML = html + '</div>';
-            } else {
-                body.innerHTML = "<p style='text-align:center; margin-top:50px'>Módulo em desenvolvimento.</p>";
+                slots.push({ hora: horarioString, status: ocupado ? 'ocupado' : 'disponivel', dados: ocupado || null });
             }
         }
+        return slots;
+    }
 
-        async function generateContent() {
-            const input = document.getElementById('cmd-input').value;
-            const chat = document.getElementById('chat-criar');
-            if(!input) return;
-            const div = document.createElement('div'); div.className = 'msg-user'; div.innerText = input;
-            chat.appendChild(div);
-            document.getElementById('cmd-input').value = "";
-            chat.scrollTop = chat.scrollHeight;
+    // --- LÓGICA DO SISTEMA ---
+    async function init() {
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('s');
+        const userType = params.get('u') || 'cliente';
+
+        if (!slug) {
+            document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Slug ausente (?s=slug)</p>";
+            return;
         }
 
-        window.onload = init;
-    </script>
+        const { data, error } = await supabaseClient
+            .from('estabelecimentos')
+            .select('*')
+            .eq('slug', slug)
+            .single();
+
+        if (data) {
+            dadosEstabelecimento = data;
+            document.getElementById('salon-name').innerText = data.nome_fantasia;
+            renderTabs(userType);
+        } else {
+            document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
+        }
+    }
+
+    function renderTabs(userType) {
+        const PERFIS = {
+            cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
+            funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
+            dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
+        };
+        const tabsContainer = document.getElementById('dynamic-tabs');
+        tabsContainer.innerHTML = ''; 
+        const abas = PERFIS[userType] || PERFIS['cliente'];
+        abas.forEach((aba, index) => {
+            const tab = document.createElement('div');
+            tab.className = `tab ${index === 0 ? 'active' : ''}`;
+            tab.innerText = aba.label;
+            tab.onclick = () => switchTab(aba.id, tab);
+            tabsContainer.appendChild(tab);
+        });
+        if(abas.length > 0) switchTab(abas[0].id, tabsContainer.firstChild);
+    }
+
+    async function switchTab(viewId, element) {
+        if (!dadosEstabelecimento) return;
+
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        const body = document.getElementById('view-body');
+        document.getElementById('view-title').innerText = viewId.toUpperCase();
+        body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando dados...</p>";
+
+        const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
+
+        if (viewId === 'servicos') {
+            const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id);
+            let html = '<div class="services-grid">';
+            data?.forEach(s => {
+                html += `<div class="service-card"><h3>${s.nome}</h3><p>${s.descricao || ''}</p><span class="service-price">R$ ${s.preco}</span></div>`;
+            });
+            body.innerHTML = html + '</div>';
+
+        } else if (viewId === 'agenda') {
+            const { data: ocupados } = await supabaseClient
+                .from('agendamentos')
+                .select('*, profissionais(nome), servicos(nome)')
+                .eq('estabelecimento_id', dadosEstabelecimento.id);
+
+            const grade = calcularLacunas(ocupados || [], 9, 18, 60);
+            let html = '<div class="agenda-list">';
+            
+            grade.forEach(slot => {
+                if (slot.status === 'ocupado') {
+                    const nomePrincipal = (userType === 'dono' || userType === 'funcionario') ? slot.dados.cliente_nome : "HORÁRIO OCUPADO";
+                    const servicoNome = (userType === 'dono' || userType === 'funcionario') ? (slot.dados.servicos?.nome || 'Ocupado') : "Indisponível";
+                    html += `<div class="agenda-item" style="opacity: 0.6;"><div class="agenda-time">${slot.hora}</div><div class="agenda-details"><h4>${nomePrincipal}</h4><span>${servicoNome}</span></div></div>`;
+                } else {
+                    html += `<div class="agenda-item" style="border-left: 3px solid #2ecc71; cursor: pointer;"><div class="agenda-time" style="color: #2ecc71;">${slot.hora}</div><div class="agenda-details"><h4 style="color: #2ecc71;">DISPONÍVEL</h4><span>Livre para agendar</span></div></div>`;
+                }
+            });
+            body.innerHTML = html + '</div>';
+
+        } else {
+            body.innerHTML = "<p style='text-align:center; margin-top:50px'>Módulo em desenvolvimento.</p>";
+        }
+    }
+
+    window.onload = init;
+</script>
 </body>
 </html>

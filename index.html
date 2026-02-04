@@ -379,7 +379,7 @@ async function switchTabLite(viewId, element) {
     const body = document.getElementById('view-body');
     body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando...</p>";
 
-    else if (viewId === 'agenda') {
+    if (viewId === 'agenda') {
         title.innerText = "AGENDA";
         const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
         const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome), servicos(nome)').eq('estabelecimento_id', dadosEstabelecimento.id).order('data_hora_inicio');

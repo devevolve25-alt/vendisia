@@ -360,34 +360,33 @@ async function switchTabLite(viewId, element) {
         body.innerHTML = html + '</div>';
     } 
     else if (viewId === 'agenda') {
-    title.innerText = "AGENDA";
-    const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
-    const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome), servicos(nome)').eq('estabelecimento_id', dadosEstabelecimento.id).order('data_hora_inicio');
-    
-    let html = '<div class="agenda-list">';
-    data?.forEach(item => {
-        const hora = new Date(item.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-        // Lógica de privacidade:
-        const exibirPrivado = (userType === 'dono' || userType === 'funcionario');
-        const nomeExibido = exibirPrivado ? item.cliente_nome : "HORÁRIO OCUPADO";
-        const servicoExibido = exibirPrivado ? (item.servicos?.nome || 'Serviço') : "Indisponível";
+        title.innerText = "AGENDA";
+        const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
+        const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome), servicos(nome)').eq('estabelecimento_id', dadosEstabelecimento.id).order('data_hora_inicio');
+        
+        let html = '<div class="agenda-list">';
+        data?.forEach(item => {
+            const hora = new Date(item.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            const exibirPrivado = (userType === 'dono' || userType === 'funcionario');
+            const nomeExibido = exibirPrivado ? item.cliente_nome : "HORÁRIO OCUPADO";
+            const servicoExibido = exibirPrivado ? (item.servicos?.nome || 'Serviço') : "Indisponível";
 
-        html += `
-            <div class="agenda-item" style="opacity: ${exibirPrivado ? '1' : '0.7'};">
-                <div class="agenda-time">${hora}</div>
-                <div class="agenda-details">
-                    <h4>${nomeExibido}</h4>
-                    <span>${servicoExibido}</span>
-                    ${exibirPrivado ? `<span class="prof-tag">${item.profissionais?.nome || 'Geral'}</span>` : ''}
-                </div>
-            </div>`;
-    });
-    body.innerHTML = html + '</div>';
-        } else {
+            html += `
+                <div class="agenda-item" style="opacity: ${exibirPrivado ? '1' : '0.7'};">
+                    <div class="agenda-time">${hora}</div>
+                    <div class="agenda-details">
+                        <h4>${nomeExibido}</h4>
+                        <span>${servicoExibido}</span>
+                        ${exibirPrivado ? `<span class="prof-tag">${item.profissionais?.nome || 'Geral'}</span>` : ''}
+                    </div>
+                </div>`;
+        });
+        body.innerHTML = html + '</div>';
+    } else {
         title.innerText = viewId.toUpperCase();
         body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
     }
-} // <--- ESTA CHAVE É VITAL PARA NÃO DAR O ERRO "Unexpected end of input"
+}
 
 // Configuração de Perfis (Constante)
 const PERFIS = {

@@ -293,17 +293,7 @@
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-// função nova inserida
-        function calcularLacunas(ocupados, inicio = 9, fim = 18) {
-    let slots = [];
-    for (let h = inicio; h < fim; h++) {
-        let hora = `${String(h).padStart(2, '0')}:00`;
-        let dados = ocupados.find(a => new Date(a.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) === hora);
-        slots.push({ hora, status: dados ? 'ocupado' : 'livre', dados });
-    }
-    return slots;
-}
-// função nova inserida
+
 let dadosEstabelecimento = null;
 
 // 2. Função do Chat (Independente do Banco)
@@ -384,7 +374,6 @@ async function switchTabLite(viewId, element) {
         body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
     }
 }
-    
 
 // Configuração de Perfis (Constante)
 const PERFIS = {

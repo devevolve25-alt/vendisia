@@ -413,7 +413,9 @@ async function switchTabLite(viewId, element) {
         title.innerText = "SERVIÇOS";
         const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
         
-        let html = '<div class="servicos-list" style="padding: 15px;">';
+        // Removi o "let" daqui para evitar o erro de "Identifier 'html' has already been declared"
+        html = '<div class="servicos-list" style="padding: 15px;">'; 
+        
         data?.forEach(s => {
             html += `
                 <div class="servico-card" style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">

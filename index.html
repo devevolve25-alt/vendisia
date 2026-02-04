@@ -295,30 +295,35 @@ const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
-    let slots = [];
-    let atual = new Date(`2000-01-01T${abertura}`);
-    const fim = new Date(`2000-01-01T${fechamento}`);
-    while (atual < fim) {
-        const horaTexto = atual.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        const ocupado = agendados.find(a => new Date(a.data_hora_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) === horaTexto);
-        slots.push({ hora: horaTexto, dados: ocupado || null });
-        atual.setMinutes(atual.getMinutes() + (intervalo || 60));
-    }
-    return slots;
-}
+    const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;
+    const gradeCompleta = [];
 
-    function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
-    let slots = [];
-    let atual = new Date(`2000-01-01T${abertura}`);
-    const fim = new Date(`2000-01-01T${fechamento}`);
+    for (let i = 0; i < diasParaGerar; i++) {
+        const dataReferencia = new Date();
+        dataReferencia.setDate(dataReferencia.getDate() + i);
+        const dataISO = dataReferencia.toISOString().split('T')[0];
 
-    while (atual < fim) {
-        const horaTexto = atual.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        const ocupado = agendados.find(a => new Date(a.data_hora_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) === horaTexto);
-        slots.push({ hora: horaTexto, dados: ocupado || null });
-        atual.setMinutes(atual.getMinutes() + intervalo);
+        let horaAtual = abertura;
+        while (horaAtual < fechamento) {
+            const dataHoraSlot = `${dataISO}T${horaAtual}:00`;
+            
+            // Procura se existe agendamento neste dia e hora específica
+            const agendamento = agendados.find(a => a.data_hora_inicio.startsWith(`${dataISO}T${horaAtual}`));
+
+            gradeCompleta.push({
+                data: dataISO,
+                hora: horaAtual,
+                dados: agendamento || null
+            });
+
+            // Incrementa o horário baseado no intervalo (ex: 09:00 -> 09:30)
+            let [h, m] = horaAtual.split(':').map(Number);
+            m += intervalo;
+            if (m >= 60) { h++; m -= 60; }
+            horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
     }
-    return slots;
+    return gradeCompleta;
 }
 
 let dadosEstabelecimento = null;
@@ -378,19 +383,46 @@ async function switchTabLite(viewId, element) {
     const title = document.getElementById('view-title');
     const body = document.getElementById('view-body');
     body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando...</p>";
+    let dataSelecionada = new Date().toISOString().split('T')[0];
+    window.periodoAgenda = window.periodoAgenda || 'dia';
+    
+    let htmlFiltros = `
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+            <button onclick="window.periodoAgenda='dia'; switchTabLite('agenda', document.querySelector('.tab[onclick*=\\'agenda\\']'))" 
+                style="padding: 6px 12px; border-radius: 15px; border: 1px solid #2ecc71; font-size: 0.8em; background: ${window.periodoAgenda === 'dia' ? '#2ecc71' : 'transparent'}; color: white;">Dia</button>
+            <button onclick="window.periodoAgenda='semana'; switchTabLite('agenda', document.querySelector('.tab[onclick*=\\'agenda\\']'))" 
+                style="padding: 6px 12px; border-radius: 15px; border: 1px solid #2ecc71; font-size: 0.8em; background: ${window.periodoAgenda === 'semana' ? '#2ecc71' : 'transparent'}; color: white;">Semana</button>
+        </div>`;
 
     if (viewId === 'agenda') {
         title.innerText = "AGENDA";
         const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
-        const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome), servicos(nome)').eq('estabelecimento_id', dadosEstabelecimento.id).order('data_hora_inicio');
-        
+const diasRange = window.periodoAgenda === 'semana' ? 7 : 0;
+    const dataFim = new Date();
+    dataFim.setDate(new Date().getDate() + diasRange);
+    const dataFimISO = dataFim.toISOString().split('T')[0];
+
+    const { data } = await supabaseClient.from('agendamentos')
+        .select('*, profissionais(nome), servicos(nome)')
+        .eq('estabelecimento_id', dadosEstabelecimento.id)
+        .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
+        .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
+        .order('data_hora_inicio');        
         const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, dadosEstabelecimento.intervalo_slot, data || []);
         
         let html = '<div class="agenda-list">';
+        let ultimaData = "";
+
         grade.forEach(slot => {
+            // Adiciona cabeçalho de data na visão semanal
+            if (window.periodoAgenda === 'semana' && slot.data !== ultimaData) {
+                const dataFormatada = new Date(slot.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' });
+                html += `<div style="grid-column: 1/-1; background: rgba(255,255,255,0.1); padding: 8px; margin-top: 15px; border-radius: 5px; font-size: 0.8em; text-transform: uppercase; color: #2ecc71;">${dataFormatada}</div>`;
+                ultimaData = slot.data;
+            }
+
             const exibirPrivado = (userType === 'dono' || userType === 'funcionario');
             const estaOcupado = slot.dados !== null;
-            
             const nomeExibido = estaOcupado ? (exibirPrivado ? slot.dados.cliente_nome : "INDISPONÍVEL") : "DISPONÍVEL";
             const servicoExibido = estaOcupado ? (exibirPrivado ? (slot.dados.servicos?.nome || 'Serviço') : "Horário reservado") : "Toque para agendar";
             const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
@@ -399,9 +431,8 @@ async function switchTabLite(viewId, element) {
                 <div class="agenda-item" style="border-left: 4px solid ${corStatus}; opacity: ${estaOcupado && !exibirPrivado ? '0.6' : '1'}">
                     <div class="agenda-time">${slot.hora}</div>
                     <div class="agenda-details">
-                        <h4 style="color: ${estaOcupado ? 'inherit' : corStatus}">${nomeExibido}</h4>
-                        <span>${servicoExibido}</span>
-                        ${estaOcupado && exibirPrivado ? `<span class="prof-tag">${slot.dados.profissionais?.nome || 'Geral'}</span>` : ''}
+                        <h4 style="color: ${estaOcupado ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
+                        <span style="font-size: 0.85em; opacity: 0.7;">${servicoExibido}</span>
                     </div>
                 </div>`;
         });

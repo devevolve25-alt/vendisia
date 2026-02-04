@@ -27,6 +27,7 @@
             overflow: hidden;
         }
 
+        /* HEADER */
         .page-header {
             width: 100%;
             max-width: 1400px;
@@ -43,6 +44,7 @@
         .brand-tagline { font-family: 'Bebas Neue'; font-size: 0.9rem; color: #fff; letter-spacing: 3px; margin-top: 3px; }
         .header-headline { font-family: 'Bebas Neue'; font-size: 1.2rem; text-align: center; color: #fff; opacity: 0.8; }
 
+        /* CONTAINER */
         .studio-container {
             flex: 1;
             display: grid;
@@ -54,6 +56,7 @@
             min-height: 0;
         }
 
+        /* CHAT */
         .chat-column {
             background: var(--chat-bg);
             border: 1px solid rgba(212, 175, 55, 0.2);
@@ -117,6 +120,7 @@
             border-radius: 4px;
         }
 
+        /* PREVIEW / DISPLAY */
         .preview-column {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.05);
@@ -131,7 +135,6 @@
             background: rgba(0,0,0,0.3);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             overflow-x: auto;
-            min-height: 45px;
         }
 
         .tab {
@@ -162,6 +165,7 @@
             font-family: 'Montserrat', sans-serif;
         }
 
+        /* SERVICES GRID */
         .services-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -178,9 +182,17 @@
         }
 
         .service-card h3 { font-family: 'Bebas Neue'; font-size: 1.6rem; color: var(--creative-color); margin-bottom: 10px; }
+        .service-card p { font-size: 0.85rem; opacity: 0.7; margin-bottom: 20px; }
         .service-price { font-family: 'Bebas Neue'; font-size: 1.8rem; }
 
-        .agenda-list { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        /* AGENDA TIMELINE (Modo Lista) */
+        .agenda-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
         .agenda-item {
             display: grid;
             grid-template-columns: 80px 1fr;
@@ -190,11 +202,47 @@
             border-radius: 10px;
             padding: 15px;
             box-shadow: 0 0 10px var(--gold-glow);
+            transition: all 0.3s ease;
         }
 
-        .agenda-time { font-family: 'Bebas Neue'; font-size: 1.4rem; color: var(--creative-color); border-right: 1px solid rgba(212, 175, 55, 0.3); padding-right: 10px; }
-        .agenda-details { padding-left: 20px; }
-        .prof-tag { background: rgba(212, 175, 55, 0.1); color: var(--creative-color); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 10px; border: 1px solid rgba(212, 175, 55, 0.3); }
+        .agenda-item:hover {
+            border-color: var(--creative-color);
+            box-shadow: 0 0 15px var(--gold-glow);
+        }
+
+        .agenda-time {
+            font-family: 'Bebas Neue';
+            font-size: 1.4rem;
+            color: var(--creative-color);
+            border-right: 1px solid rgba(212, 175, 55, 0.3);
+            padding-right: 10px;
+        }
+
+        .agenda-details {
+            padding-left: 20px;
+        }
+
+        .agenda-details h4 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .agenda-details span {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .prof-tag {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--creative-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-left: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
 
         @media (max-width: 1000px) {
             body { overflow-y: auto; height: auto; }
@@ -211,21 +259,21 @@
             <img src="merc_face.png" alt="Logo" class="brand-logo">
             <div class="brand-text-wrapper">
                 <span class="brand-name">VENDISIA</span>
-                <span class="brand-tagline" id="salon-name">LITE ECOSYSTEM</span>
+                <span class="brand-tagline">LITE ECOSYSTEM</span>
             </div>
         </div>
-        <h2 class="header-headline" id="page-title">Interface MercurIA</h2>
+        <h2 class="header-headline">Interface MercurIA</h2>
     </header>
 
     <main class="studio-container">
         <section class="chat-column">
             <div class="chat-header">MERCURIA LITE</div>
             <div class="chat-messages" id="chat-criar">
-                <div class="msg-bot">Olá. Sou a MercurIA. Como posso ajudar você hoje?</div>
+                <div class="msg-bot">Olá. Sou a MercurIA. Como posso gerenciar sua agenda hoje?</div>
             </div>
             <div class="input-area">
-                <textarea id="cmd-input" placeholder="Digite sua mensagem..."></textarea>
-                <button class="btn-generate" onclick="generateContent()">ENVIAR MENSAGEM</button>
+                <textarea id="cmd-input" placeholder="Digite seu comando..."></textarea>
+                <button class="btn-generate" onclick="generateContent()">ENVIAR COMANDO</button>
             </div>
         </section>
 
@@ -234,140 +282,108 @@
             <div class="display-area" id="display-content">
                 <div class="proposal-paper" id="text-view">
                     <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>
-                    <div id="view-body">
-                        <p style="text-align: center; opacity: 0.5;">Carregando sistema...</p>
-                    </div>
+                    <div id="view-body"></div>
                 </div>
             </div>
         </section>
     </main>
 
     <script>
-    // --- CONFIGURAÇÃO ---
-    const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let dadosEstabelecimento = null;
+    // 1. Configuração (Sempre no topo)
+const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- FUNÇÕES GLOBAIS (Devem estar fora de tudo para o HTML enxergar) ---
-    function generateContent() {
-        const input = document.getElementById('cmd-input').value;
-        const chat = document.getElementById('chat-criar');
-        if(!input) return;
-        const div = document.createElement('div'); 
-        div.className = 'msg-user'; 
-        div.innerText = input;
-        chat.appendChild(div);
-        document.getElementById('cmd-input').value = "";
-        chat.scrollTop = chat.scrollHeight;
+let dadosEstabelecimento = null;
+
+// 2. Função do Chat (Independente do Banco)
+function generateContent() {
+    const input = document.getElementById('cmd-input').value;
+    const chat = document.getElementById('chat-criar');
+    if(!input) return;
+    const div = document.createElement('div'); 
+    div.className = 'msg-user'; 
+    div.innerText = input;
+    chat.appendChild(div);
+    document.getElementById('cmd-input').value = "";
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// 3. Inicialização e Busca no Banco
+async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('s');
+    if (!slug) {
+        document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Slug ausente (?s=slug)</p>";
+        return;
     }
-
-    function calcularLacunas(agendamentosExistentes, horaInicio = 9, horaFim = 18, intervaloMinutos = 60) {
-        let slots = [];
-        for (let hora = horaInicio; hora < horaFim; hora++) {
-            for (let min = 0; min < 60; min += intervaloMinutos) {
-                let horarioString = `${String(hora).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-                const ocupado = agendamentosExistentes.find(a => {
-                    const h = new Date(a.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-                    return h === horarioString;
-                });
-                slots.push({ hora: horarioString, status: ocupado ? 'ocupado' : 'disponivel', dados: ocupado || null });
-            }
-        }
-        return slots;
+    const { data } = await supabaseClient.from('estabelecimentos').select('*').eq('slug', slug).single();
+    if (data) {
+        dadosEstabelecimento = data;
+        document.getElementById('salon-name').innerText = data.nome_fantasia;
+        setupTabs(); 
+    } else {
+        document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
     }
+}
 
-    // --- LÓGICA DO SISTEMA ---
-    async function init() {
-        const params = new URLSearchParams(window.location.search);
-        const slug = params.get('s');
-        const userType = params.get('u') || 'cliente';
+// 4. Gerenciador de Abas
+function setupTabs() {
+    const params = new URLSearchParams(window.location.search);
+    const userType = params.get('u') || 'cliente'; 
+    const tabsContainer = document.getElementById('dynamic-tabs');
+    const abasPermitidas = PERFIS[userType];
+    tabsContainer.innerHTML = '';
+    abasPermitidas.forEach((aba, index) => {
+        const tabElement = document.createElement('div');
+        tabElement.className = `tab ${index === 0 ? 'active' : ''}`;
+        tabElement.innerText = aba.label;
+        tabElement.onclick = () => switchTabLite(aba.id, tabElement);
+        tabsContainer.appendChild(tabElement);
+    });
+    if(abasPermitidas.length > 0) switchTabLite(abasPermitidas[0].id, tabsContainer.firstChild);
+}
 
-        if (!slug) {
-            document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Slug ausente (?s=slug)</p>";
-            return;
-        }
+// 5. Troca de Conteúdo (Real do Banco)
+async function switchTabLite(viewId, element) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    element.classList.add('active');
+    const title = document.getElementById('view-title');
+    const body = document.getElementById('view-body');
+    body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando...</p>";
 
-        const { data, error } = await supabaseClient
-            .from('estabelecimentos')
-            .select('*')
-            .eq('slug', slug)
-            .single();
-
-        if (data) {
-            dadosEstabelecimento = data;
-            document.getElementById('salon-name').innerText = data.nome_fantasia;
-            renderTabs(userType);
-        } else {
-            document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
-        }
-    }
-
-    function renderTabs(userType) {
-        const PERFIS = {
-            cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
-            funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
-            dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
-        };
-        const tabsContainer = document.getElementById('dynamic-tabs');
-        tabsContainer.innerHTML = ''; 
-        const abas = PERFIS[userType] || PERFIS['cliente'];
-        abas.forEach((aba, index) => {
-            const tab = document.createElement('div');
-            tab.className = `tab ${index === 0 ? 'active' : ''}`;
-            tab.innerText = aba.label;
-            tab.onclick = () => switchTab(aba.id, tab);
-            tabsContainer.appendChild(tab);
+    if (viewId === 'servicos') {
+        title.innerText = "SERVIÇOS";
+        const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id);
+        let html = '<div class="services-grid">';
+        data?.forEach(s => html += `<div class="service-card"><h3>${s.nome}</h3><p>${s.descricao || ''}</p><span class="service-price">R$ ${s.preco}</span></div>`);
+        body.innerHTML = html + '</div>';
+    } 
+    else if (viewId === 'agenda') {
+        title.innerText = "AGENDA";
+        const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome), servicos(nome)').eq('estabelecimento_id', dadosEstabelecimento.id).order('data_hora_inicio');
+        let html = '<div class="agenda-list">';
+        data?.forEach(item => {
+            const hora = new Date(item.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            html += `<div class="agenda-item"><div class="agenda-time">${hora}</div><div class="agenda-details"><h4>${item.cliente_nome}</h4><span>${item.servicos?.nome || 'Serviço'}</span><span class="prof-tag">${item.profissionais?.nome || 'Geral'}</span></div></div>`;
         });
-        if(abas.length > 0) switchTab(abas[0].id, tabsContainer.firstChild);
+        body.innerHTML = html + '</div>';
     }
-
-    async function switchTab(viewId, element) {
-        if (!dadosEstabelecimento) return;
-
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        if(element) element.classList.add('active');
-
-        const body = document.getElementById('view-body');
-        document.getElementById('view-title').innerText = viewId.toUpperCase();
-        body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando dados...</p>";
-
-        const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
-
-        if (viewId === 'servicos') {
-            const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id);
-            let html = '<div class="services-grid">';
-            data?.forEach(s => {
-                html += `<div class="service-card"><h3>${s.nome}</h3><p>${s.descricao || ''}</p><span class="service-price">R$ ${s.preco}</span></div>`;
-            });
-            body.innerHTML = html + '</div>';
-
-        } else if (viewId === 'agenda') {
-            const { data: ocupados } = await supabaseClient
-                .from('agendamentos')
-                .select('*, profissionais(nome), servicos(nome)')
-                .eq('estabelecimento_id', dadosEstabelecimento.id);
-
-            const grade = calcularLacunas(ocupados || [], 9, 18, 60);
-            let html = '<div class="agenda-list">';
-            
-            grade.forEach(slot => {
-                if (slot.status === 'ocupado') {
-                    const nomePrincipal = (userType === 'dono' || userType === 'funcionario') ? slot.dados.cliente_nome : "HORÁRIO OCUPADO";
-                    const servicoNome = (userType === 'dono' || userType === 'funcionario') ? (slot.dados.servicos?.nome || 'Ocupado') : "Indisponível";
-                    html += `<div class="agenda-item" style="opacity: 0.6;"><div class="agenda-time">${slot.hora}</div><div class="agenda-details"><h4>${nomePrincipal}</h4><span>${servicoNome}</span></div></div>`;
-                } else {
-                    html += `<div class="agenda-item" style="border-left: 3px solid #2ecc71; cursor: pointer;"><div class="agenda-time" style="color: #2ecc71;">${slot.hora}</div><div class="agenda-details"><h4 style="color: #2ecc71;">DISPONÍVEL</h4><span>Livre para agendar</span></div></div>`;
-                }
-            });
-            body.innerHTML = html + '</div>';
-
-        } else {
-            body.innerHTML = "<p style='text-align:center; margin-top:50px'>Módulo em desenvolvimento.</p>";
-        }
+    else {
+        title.innerText = viewId.toUpperCase();
+        body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
     }
+}
 
-    window.onload = init;
-</script>
+// Configuração de Perfis (Constante)
+const PERFIS = {
+    cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
+    funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
+    dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
+};
+
+// Disparo Inicial
+window.onload = init;
+    </script>
 </body>
 </html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VENDISIA | LITE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --chat-bg: #0c1320;
+            --creative-color: #d4af37; 
+            --gold-glow: rgba(212, 175, 55, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .page-header {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto 15px auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+        }
+
+        .brand-block { display: flex; align-items: center; gap: 12px; }
+        .brand-logo { width: 45px; height: auto; }
+        .brand-text-wrapper { display: flex; flex-direction: column; }
+        .brand-name { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--creative-color); line-height: 0.9; letter-spacing: 2px; }
+        .brand-tagline { font-family: 'Bebas Neue'; font-size: 0.9rem; color: #fff; letter-spacing: 3px; margin-top: 3px; }
+        .header-headline { font-family: 'Bebas Neue'; font-size: 1.2rem; text-align: center; color: #fff; opacity: 0.8; }
+
+        .studio-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            min-height: 0;
+        }
+
+        .chat-column {
+            background: var(--chat-bg);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 12px;
+            background: rgba(212, 175, 55, 0.1);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            font-family: 'Bebas Neue';
+            font-size: 1.1rem;
+            color: var(--creative-color);
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .msg-bot { border-left: 2px solid var(--creative-color); padding-left: 10px; color: #cbd5e1; }
+        .msg-user { color: var(--creative-color); font-weight: 600; text-align: right; }
+
+        .input-area {
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        textarea {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 4px;
+            padding: 10px;
+            color: white;
+            font-family: 'Montserrat';
+            resize: none;
+            height: 70px;
+            outline: none;
+        }
+
+        .btn-generate {
+            background: var(--creative-color);
+            color: #000;
+            border: none;
+            padding: 10px;
+            font-family: 'Bebas Neue';
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .preview-column {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .preview-tabs {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            overflow-x: auto;
+            min-height: 45px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            font-family: 'Bebas Neue';
+            cursor: pointer;
+            opacity: 0.5;
+            white-space: nowrap;
+        }
+
+        .tab.active { opacity: 1; color: var(--creative-color); border-bottom: 2px solid var(--creative-color); }
+
+        .display-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .proposal-paper {
+            background: transparent;
+            color: #ffffff;
+            width: 100%;
+            max-width: 850px;
+            min-height: 800px;
+            padding: 20px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 10px var(--gold-glow);
+        }
+
+        .service-card h3 { font-family: 'Bebas Neue'; font-size: 1.6rem; color: var(--creative-color); margin-bottom: 10px; }
+        .service-price { font-family: 'Bebas Neue'; font-size: 1.8rem; }
+
+        .agenda-list { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .agenda-item {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+
+        .agenda-time { font-family: 'Bebas Neue'; font-size: 1.4rem; color: var(--creative-color); border-right: 1px solid rgba(212, 175, 55, 0.3); padding-right: 10px; }
+        .agenda-details { padding-left: 20px; }
+        .prof-tag { background: rgba(212, 175, 55, 0.1); color: var(--creative-color); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 10px; border: 1px solid rgba(212, 175, 55, 0.3); }
+
+        @media (max-width: 1000px) {
+            body { overflow-y: auto; height: auto; }
+            .studio-container { grid-template-columns: 1fr; display: flex; flex-direction: column; }
+            .chat-column { height: 300px; }
+            .preview-column { min-height: 600px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <div class="brand-block">
+            <img src="merc_face.png" alt="Logo" class="brand-logo">
+            <div class="brand-text-wrapper">
+                <span class="brand-name">VENDISIA</span>
+                <span class="brand-tagline" id="salon-name">LITE ECOSYSTEM</span>
+            </div>
+        </div>
+        <h2 class="header-headline" id="page-title">Interface MercurIA</h2>
+    </header>
+
+    <main class="studio-container">
+        <section class="chat-column">
+            <div class="chat-header">MERCURIA LITE</div>
+            <div class="chat-messages" id="chat-criar">
+                <div class="msg-bot">Olá. Sou a MercurIA. Como posso ajudar você hoje?</div>
+            </div>
+            <div class="input-area">
+                <textarea id="cmd-input" placeholder="Digite sua mensagem..."></textarea>
+                <button class="btn-generate" onclick="generateContent()">ENVIAR MENSAGEM</button>
+            </div>
+        </section>
+
+        <section class="preview-column">
+            <div class="preview-tabs" id="dynamic-tabs">
+                </div>
+            <div class="display-area" id="display-content">
+                <div class="proposal-paper" id="text-view">
+                    <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>
+                    <div id="view-body">
+                        <p style="text-align: center; opacity: 0.5;">Carregando sistema...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- INSIRA SEUS DADOS DO SUPABASE AQUI ---
+        const SUPABASE_URL = 'SUA_URL';
+        const SUPABASE_KEY = 'SUA_KEY';
+        // -----------------------------------------
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let dadosEstabelecimento = null;
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('s');
+            const userType = params.get('u') || 'cliente';
+
+            if (!slug) {
+                document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Slug ausente (?s=slug)</p>";
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('estabelecimentos')
+                .select('*')
+                .eq('slug', slug)
+                .single();
+
+            if (data) {
+                dadosEstabelecimento = data;
+                document.getElementById('salon-name').innerText = data.nome_fantasia;
+                renderTabs(userType);
+            } else {
+                document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
+            }
+        }
+
+        function renderTabs(userType) {
+            const PERFIS = {
+                cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
+                funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
+                dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
+            };
+
+            const tabsContainer = document.getElementById('dynamic-tabs');
+            tabsContainer.innerHTML = ''; 
+
+            const abas = PERFIS[userType] || PERFIS['cliente'];
+
+            abas.forEach((aba, index) => {
+                const tab = document.createElement('div');
+                tab.className = `tab ${index === 0 ? 'active' : ''}`;
+                tab.innerText = aba.label;
+                tab.onclick = () => switchTab(aba.id, tab);
+                tabsContainer.appendChild(tab);
+            });
+
+            if(abas.length > 0) switchTab(abas[0].id, tabsContainer.firstChild);
+        }
+
+        async function switchTab(viewId, element) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if(element) element.classList.add('active');
+
+            const body = document.getElementById('view-body');
+            document.getElementById('view-title').innerText = viewId.toUpperCase();
+            body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando dados...</p>";
+
+            if (viewId === 'servicos') {
+                const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id);
+                let html = '<div class="services-grid">';
+                data?.forEach(s => html += `<div class="service-card"><h3>${s.nome}</h3><p>${s.descricao || ''}</p><span class="service-price">R$ ${s.preco}</span></div>`);
+                body.innerHTML = html + '</div>';
+            } else if (viewId === 'agenda') {
+                const { data } = await supabaseClient.from('agendamentos').select('*, profissionais(nome)').eq('estabelecimento_id', dadosEstabelecimento.id).order('data_hora_inicio');
+                let html = '<div class="agenda-list">';
+                data?.forEach(item => {
+                    const hora = new Date(item.data_hora_inicio).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+                    html += `<div class="agenda-item"><div class="agenda-time">${hora}</div><div class="agenda-details"><h4>${item.cliente_nome}</h4><span>Serviço ID: ${item.servico_id}</span><span class="prof-tag">${item.profissionais?.nome || 'Geral'}</span></div></div>`;
+                });
+                body.innerHTML = html + '</div>';
+            } else {
+                body.innerHTML = "<p style='text-align:center; margin-top:50px'>Módulo em desenvolvimento.</p>";
+            }
+        }
+
+        async function generateContent() {
+            const input = document.getElementById('cmd-input').value;
+            const chat = document.getElementById('chat-criar');
+            if(!input) return;
+            const div = document.createElement('div'); div.className = 'msg-user'; div.innerText = input;
+            chat.appendChild(div);
+            document.getElementById('cmd-input').value = "";
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

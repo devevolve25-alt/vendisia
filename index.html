@@ -388,10 +388,10 @@ async function switchTabLite(viewId, element) {
     
     let htmlFiltros = `
         <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
-            <button onclick="window.periodoAgenda='dia'; switchTabLite('agenda', document.querySelector('.tab[onclick*=\\'agenda\\']'))" 
-                style="padding: 6px 12px; border-radius: 15px; border: 1px solid #2ecc71; font-size: 0.8em; background: ${window.periodoAgenda === 'dia' ? '#2ecc71' : 'transparent'}; color: white;">Dia</button>
-            <button onclick="window.periodoAgenda='semana'; switchTabLite('agenda', document.querySelector('.tab[onclick*=\\'agenda\\']'))" 
-                style="padding: 6px 12px; border-radius: 15px; border: 1px solid #2ecc71; font-size: 0.8em; background: ${window.periodoAgenda === 'semana' ? '#2ecc71' : 'transparent'}; color: white;">Semana</button>
+            <button onclick="window.periodoAgenda='dia'; switchTabLite('agenda', document.querySelector('.tab.active'))" 
+                style="padding: 8px 15px; border-radius: 20px; border: 1px solid #2ecc71; background: ${window.periodoAgenda === 'dia' ? '#2ecc71' : 'transparent'}; color: white; cursor: pointer;">Dia</button>
+            <button onclick="window.periodoAgenda='semana'; switchTabLite('agenda', document.querySelector('.tab.active'))" 
+                style="padding: 8px 15px; border-radius: 20px; border: 1px solid #2ecc71; background: ${window.periodoAgenda === 'semana' ? '#2ecc71' : 'transparent'}; color: white; cursor: pointer;">Semana</button>
         </div>`;
 
     if (viewId === 'agenda') {

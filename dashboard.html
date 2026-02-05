@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Administrativo | IA Agendamentos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        body { background-color: #121212 !important; color: white !important; font-family: sans-serif; }
+        .loader-overlay { display: none; } /* Desligando o loader para teste */
+        .pai-card { border: 1px solid #333; margin: 10px; padding: 15px; border-radius: 10px; background: #1e1e1e; }
+        .filhos-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .filho-card { flex: 1; min-width: 140px; background: #2a2a2a; padding: 10px; border-radius: 8px; text-align: center; }
+        .wide { flex-basis: 100%; }
+        .valor-central { font-size: 1.2rem; font-weight: bold; color: #2ecc71; }
+        
+        .btn-filtro {
+    background: #1e1e1e;
+    color: #888;
+    border: 1px solid #333;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: 0.3s;
+    white-space: nowrap;
+}
+.btn-filtro.active {
+    background: var(--primary);
+    color: #121212;
+    font-weight: bold;
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+    </style>
+</head>
+<body>
+
+    <header style="padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between;">
+        <div>
+            <h1 style="font-size: 1.2rem; margin: 0; color: #2ecc71;">BARBEARIA PREMIUM</h1>
+            <small>DASHBOARD</small>
+        </div>
+        <select id="select-salao" style="background: #333; color: white; border-radius: 5px; padding: 5px;">
+            <option value="">Selecionar Unidade</option>
+        </select>
+    </header>
+
+    <main class="dash-content">
+    
+    	<section class="pai-card destaque-style">
+            <h2 class="pai-title">Faturamento</h2>
+            <div class="filhos-grid">
+                <div class="filho-card">
+                    <span class="label-sup">Hoje</span>
+                    <div class="valor-central">R$ 0,00</div>
+                    <span class="label-inf">↑ 10% vs ontem</span>
+                </div>
+                <div class="filho-card">
+                    <span class="label-sup">Semana</span>
+                    <div class="valor-central">R$ 0,00</div>
+                    <span class="label-inf">↑ 5% vs sem. ant.</span>
+                </div>
+                <div class="filho-card wide">
+                    <span class="label-sup">Mês Atual</span>
+                    <div class="valor-central">R$ 0,00</div>
+                    <span class="label-inf">Meta: 85%</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="pai-card destaque-style">
+            <h2 class="pai-title"><i data-lucide="calendar"></i> Agendamentos</h2>
+<div class="filhos-grid">
+    <div class="filho-card">
+        <span class="label-sup">IA (Hoje)</span>
+        <div class="valor-central" id="ag-ia-hoje">0</div>
+        <span class="label-inf positivo" id="comp-ia-hoje">↑ 2 vs ontem</span>
+    </div>
+    <div class="filho-card">
+        <span class="label-sup">Manual (Hoje)</span>
+        <div class="valor-central" id="ag-man-hoje">0</div>
+        <span class="label-inf negativa" id="comp-man-hoje">↓ 1 vs ontem</span>
+    </div>
+    
+    <div class="filho-card">
+        <span class="label-sup">IA (Semana)</span>
+        <div class="valor-central" id="ag-ia-semana">0</div>
+        <span class="label-inf positivo" id="comp-ia-semana">↑ 15% vs sem. ant.</span>
+    </div>
+    <div class="filho-card">
+        <span class="label-sup">Manual (Semana)</span>
+        <div class="valor-central" id="ag-man-semana">0</div>
+        <span class="label-inf" id="comp-man-semana">Estável</span>
+    </div>
+
+    <div class="filho-card wide">
+        <span class="label-sup">IA (Total do Mês)</span>
+        <div class="valor-central" id="ag-ia-mes">0</div>
+        <span class="label-inf positivo" id="comp-ia-mes">Economia de 40h de recepção</span>
+    </div>
+</div>
+        </section>
+        
+        <section class="pai-card destaque-style">
+    <h2 class="pai-title"><i data-lucide="users"></i> Performance de Equipe</h2>
+    <div class="filhos-grid">
+        <div class="filho-card" style="border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow);">
+            <span class="label-sup">Destaque do Mês</span>
+            <div class="valor-central" id="top-barbeiro">---</div>
+            <span class="label-inf">Líder em faturamento</span>
+        </div>
+        
+        <div class="filho-card">
+            <span class="label-sup">Total Comissões</span>
+            <div class="valor-central" id="total-comissao">R$ 0,00</div>
+            <span class="label-inf">Acumulado do período</span>
+        </div>
+
+        <div class="filho-card wide">
+            <span class="label-sup">Comissão por Profissional</span>
+            <div id="lista-comissoes" style="width: 100%; margin-top: 10px; font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #333;">
+                    <span>Aguardando dados...</span>
+                    <strong>---</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+        <section class="pai-card destaque-style">
+            <h2 class="pai-title">Status da IA</h2>
+            <div class="filho-card wide">
+    <div class="ia-status-badge">
+        <span class="status-dot online"></span> Ativa e Operando
+    </div>
+    <textarea id="ia-saudacao-input" 
+          style="width: 100%; box-sizing: border-box; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 8px; padding: 12px; margin: 15px 0; font-family: inherit; font-size: 0.85rem; resize: none;" 
+          rows="3" 
+          placeholder="Digite a saudação da IA..."></textarea>
+    
+    <button id="btn-salvar-ia" class="btn-config-ia">Salvar Saudação</button>
+</div>
+        </section>
+    </main>
+
+    <nav style="position: fixed; bottom: 0; width: 100%; background: #181818; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #333;">
+        <a href="#" style="color: #2ecc71; text-decoration: none; font-size: 0.8rem;">Início</a>
+        <a href="#" style="color: #888; text-decoration: none; font-size: 0.8rem;">Serviços</a>
+        <a href="#" style="color: #888; text-decoration: none; font-size: 0.8rem;">Sair</a>
+    </nav>
+
+    <script src="dashboard.js"></script>
+    
+    <script>
+        if (typeof lucide !== 'undefined') { 
+            lucide.createIcons(); 
+        }
+    </script>
+</body>
+</html>

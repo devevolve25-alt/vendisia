@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso Administrativo - Sistema de Agendamento</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-color: #2ecc71; /* O verde do seu sistema */
+            --bg-color: #121212;      /* Fundo escuro */
+            --card-bg: #1e1e1e;       /* Fundo do card de login */
+            --text-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #333;
+        }
+
+        .login-card h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .login-card p {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            color: #333;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, background-color 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-google:hover {
+            background-color: #f1f1f1;
+            transform: translateY(-2px);
+        }
+
+        .btn-google img {
+            width: 20px;
+            margin-right: 12px;
+        }
+
+        .footer-link {
+            margin-top: 20px;
+            display: block;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h1>Painel do Usuário</h1>
+        <p>Gerencie seus agendamentos, profissionais e serviços com facilidade.</p>
+
+        <button onclick="loginComGoogle()" class="btn-google">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo">
+            Entrar com Google
+        </button>
+
+        <a href="index.html" class="footer-link">← Voltar para a Agenda</a>
+    </div>
+
+    <script>
+        // Use um nome diferente para a instância para evitar conflitos com a biblioteca
+const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
+const SUPABASE_ANON_KEY = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function loginComGoogle() {
+    const { data, error } = await _supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            // AJUSTE: Redireciona direto para o Dashboard após o login
+            redirectTo: window.location.origin + '/dashboard.html'
+        }
+    });
+
+    if (error) {
+        console.error('Erro no login:', error.message);
+        alert('Erro ao tentar conectar com o Google: ' + error.message);
+    }
+}
+    </script>
+</body>
+</html>

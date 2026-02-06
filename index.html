@@ -330,6 +330,22 @@
                                     <button class="btn-generate" style="width: 100%; margin-top: 10px;">ATUALIZAR CONFIGURAÇÕES</button>
                                 </div>
                             </div>
+
+<div class="service-card" style="margin-bottom: 20px;">
+    <h3>Novo Serviço</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+        <input type="text" id="new-servico-nome" placeholder="Nome do Serviço (ex: Corte de Cabelo)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <textarea id="new-servico-desc" placeholder="Descrição para a MercurIA saber como vender este serviço..." style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
+        
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="new-servico-preco" placeholder="Preço (R$)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+            <input type="number" id="new-servico-duracao" placeholder="Duração (Minutos)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        </div>
+        
+        <button class="btn-generate" id="btn-salvar-servico" style="width: 100%; margin-top: 10px;">+ CADASTRAR SERVIÇO</button>
+    </div>
+</div>
+                            
      <div class="service-card" style="margin-bottom: 20px;">
     <h3>Novo Profissional</h3>
     <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">

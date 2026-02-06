@@ -351,7 +351,43 @@
             <option value="">Pausar Profissional...</option>
         </select>
     </div>
+<div class="cards-container-gestao">
+            
+            <div class="service-card" style="margin-bottom: 20px;">
+    <h3>Dados do Empreendedor</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+        <input type="text" id="perf-nome-completo" placeholder="Nome Completo" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="perf-cpf" placeholder="CPF" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="email" id="perf-email-contato" placeholder="E-mail de Contato" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+    </div>
+</div>
 
+<div class="service-card" style="margin-bottom: 20px;">
+    <h3>Dados do Estabelecimento</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+        <input type="text" id="edit-razao-social" placeholder="Razão Social" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="edit-nome-fantasia" placeholder="Nome Fantasia" style="width:100%; padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff;">
+        <input type="text" id="edit-cnpj" placeholder="CNPJ" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="edit-whatsapp" placeholder="WhatsApp Comercial (Apenas Números)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="edit-endereco-completo" placeholder="Endereço Completo" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">ABERTURA</label>
+                <input type="time" id="edit-hora-abertura" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">FECHAMENTO</label>
+                <input type="time" id="edit-hora-fechamento" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+            </div>
+        </div>
+
+        <input type="number" id="edit-intervalo-slot" placeholder="Intervalo (minutos)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <button class="btn-generate" style="width: 100%; margin-top: 10px;">ATUALIZAR CONFIGURAÇÕES</button>
+    </div>
+</div>
+
+        </div> </div> </div> 
    
 <div id="view-body"></div>
 

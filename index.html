@@ -418,14 +418,36 @@ function setupTabs() {
 }
 
 // 5. Troca de Conteúdo (Real do Banco)
+// 5. Troca de Conteúdo (Real do Banco)
 async function switchTabLite(viewId, element) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     element.classList.add('active');
+    
     const title = document.getElementById('view-title');
     const body = document.getElementById('view-body');
+    const abaGestao = document.getElementById('aba-gestao');
+
+    // 1. Esconde a aba de gestão por padrão ao trocar de aba
+    if (abaGestao) abaGestao.style.display = 'none';
+
+    // 2. Lógica para a aba Dashboard
+    if (viewId === 'dashboard') {
+        title.innerText = "CONFIGURAÇÕES DE GESTÃO";
+        // Remove apenas a mensagem "Buscando..." se ela existir, preservando o HTML
+        const p = body.querySelector('p');
+        if (p && p.innerText.includes("Buscando")) p.remove();
+        
+        if (abaGestao) abaGestao.style.display = 'block';
+        return; // Interrompe para não executar a limpeza do body abaixo
+    }
+
+    // 3. Limpeza necessária apenas para as outras abas dinâmicas
     body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando...</p>";
+    
     let dataSelecionada = new Date().toISOString().split('T')[0];
     window.periodoAgenda = window.periodoAgenda || 'dia';
+    
+    // ... restante do seu código (htmlFiltros, agenda, etc)
     
     let htmlFiltros = `
         <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">

@@ -353,31 +353,55 @@
     </div>
 
     <div class="cards-container-gestao">
-        
-        <div class="service-card" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
-            <h3 style="color: var(--creative-color); font-family: 'Bebas Neue';">Dados do Estabelecimento</h3>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
-                <input type="text" id="edit-nome-salao" placeholder="Nome Fantasia" style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff;">
-                <input type="text" id="edit-endereco" placeholder="Endereço" style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff;">
-                <button class="btn-generate" style="width: 100%; margin-top: 10px; cursor: pointer;">ATUALIZAR DADOS</button>
-            </div>
-        </div>
 
-        <div class="service-card" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
-            <h3 style="color: var(--creative-color); font-family: 'Bebas Neue';">Novo Serviço</h3>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
-                <input type="text" id="new-servico-nome" placeholder="Nome do Serviço" style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff;">
-                <textarea id="new-servico-desc" placeholder="Descrição para a IA" style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="new-servico-preco" placeholder="R$" style="flex:1; padding:12px; background:#000; border:1px solid #333; color:#fff;">
-                    <input type="number" id="new-servico-tempo" placeholder="Minutos" style="flex:1; padding:12px; background:#000; border:1px solid #333; color:#fff;">
-                </div>
-                <button class="btn-generate" style="width: 100%; margin-top: 10px; cursor: pointer;">+ INCLUIR SERVIÇO</button>
-            </div>
-        </div>
-
+<div class="service-card" style="margin-bottom: 20px;">
+    <h3>Dados do Empreendedor</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+        <input type="text" id="perf-nome-completo" placeholder="Nome Completo" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="perf-cpf" placeholder="CPF" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="email" id="perf-email-contato" placeholder="E-mail de Contato" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
     </div>
 </div>
+
+<div class="service-card" style="margin-bottom: 20px;">
+    <h3>Dados do Estabelecimento</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+        <input type="text" id="edit-razao-social" placeholder="Razão Social" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="edit-nome-fantasia" placeholder="Nome Fantasia" style="width:100%; padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff;">
+        <input type="text" id="edit-cnpj" placeholder="CNPJ" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="edit-whatsapp" placeholder="WhatsApp Comercial (Apenas Números)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="edit-endereco-completo" placeholder="Endereço Completo" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">ABERTURA</label>
+                <input type="time" id="edit-hora-abertura" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">FECHAMENTO</label>
+                <input type="time" id="edit-hora-fechamento" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+            </div>
+        </div>
+
+        <input type="number" id="edit-intervalo-slot" placeholder="Intervalo (minutos)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <button class="btn-generate" id="btn-salvar-gestao" style="width: 100%; margin-top: 10px;">ATUALIZAR CONFIGURAÇÕES</button>
+    </div>
+</div>
+
+<div class="service-card" style="margin-bottom: 20px;">
+    <h3>Novo Serviço</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+        <input type="text" id="new-servico-nome" placeholder="Nome do Serviço" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <textarea id="new-servico-desc" placeholder="Descrição para a IA" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="new-servico-preco" placeholder="R$" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+            <input type="number" id="new-servico-tempo" placeholder="Min" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        </div>
+        <button class="btn-generate" id="btn-incluir-servico" style="width: 100%; margin-top: 10px;">+ INCLUIR SERVIÇO</button>
+    </div>
+</div>
+        
+    </div>
 <div id="view-body"></div>
 
 </section>

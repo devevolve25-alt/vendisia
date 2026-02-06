@@ -446,6 +446,23 @@ async function switchTabLite(viewId, element) {
     
     let dataSelecionada = new Date().toISOString().split('T')[0];
     window.periodoAgenda = window.periodoAgenda || 'dia';
+
+    // ... (depois do bloco de Dashboard que você já inseriu)
+
+    if (viewId === 'agenda') {
+        title.innerText = "AGENDA";
+        // ... (seu código de busca da agenda)
+    } 
+    
+    // Certifique-se de que aqui existe um ELSE IF e não apenas IF
+    else if (viewId === 'servicos') {
+        title.innerText = "SERVIÇOS";
+        const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
+        
+        let htmlServ = '<div class="servicos-list" style="padding: 15px;">'; 
+        // ... (resto do loop de serviços)
+        body.innerHTML = htmlServ + '</div>';
+    }
     
     // ... restante do seu código (htmlFiltros, agenda, etc)
     

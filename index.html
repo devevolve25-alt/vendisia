@@ -284,29 +284,48 @@
             <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>
             
             <div id="view-body">
-                
-                <div id="aba-gestao" style="display: none;">
-                    
-                    <div class="grid-selects-rapidos" style="margin-bottom: 25px;">
-                        <select id="status-estabelecimento" class="input-clean-alt">
-                            <option value="true">Salão: Aberto</option>
-                            <option value="false">Salão: Fechado</option>
-                        </select>
-                        <select id="select-desativar-servico" class="input-clean-alt">
-                            <option value="">Pausar Serviço...</option>
-                        </select>
-                        <select id="select-desativar-prof" class="input-clean-alt">
-                            <option value="">Pausar Profissional...</option>
-                        </select>
-                    </div>
+    <div id="aba-gestao" style="display: none;">
+        
+        <div class="grid-selects-rapidos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 25px;">
+            <select id="status-estabelecimento" style="padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff; border-radius:5px;">
+                <option value="true">Salão: Aberto</option>
+                <option value="false">Salão: Fechado</option>
+            </select>
+            <select id="select-desativar-servico" style="padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
+                <option value="">Pausar Serviço...</option>
+            </select>
+            <select id="select-desativar-prof" style="padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
+                <option value="">Pausar Profissional...</option>
+            </select>
+        </div>
 
-                    <div class="cards-container-gestao">
-                        </div>
+        <div class="cards-container-gestao">
+            
+            <div class="service-card" style="margin-bottom: 20px;">
+                <h3>Dados do Estabelecimento</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                    <input type="text" id="edit-nome-salao" placeholder="Nome Fantasia" style="width:100%; padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff;">
+                    <input type="text" id="edit-endereco" placeholder="Endereço" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                    <button class="btn-generate" style="width: 100%; margin-top: 10px;">ATUALIZAR DADOS</button>
                 </div>
-
             </div>
+
+            <div class="service-card" style="margin-bottom: 20px;">
+                <h3>Novo Serviço</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                    <input type="text" id="new-servico-nome" placeholder="Nome do Serviço" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                    <textarea id="new-servico-desc" placeholder="Descrição para a IA" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="new-servico-preco" placeholder="Preço (R$)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                        <input type="number" id="new-servico-tempo" placeholder="Tempo (min)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                    </div>
+                    <button class="btn-generate" style="width: 100%; margin-top: 10px;">+ INCLUIR SERVIÇO</button>
+                </div>
+            </div>
+
         </div>
     </div>
+</div>
 </section>
     </main>
 

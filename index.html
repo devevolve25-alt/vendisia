@@ -278,14 +278,36 @@
         </section>
 
         <section class="preview-column">
-            <div class="preview-tabs" id="dynamic-tabs"></div>
-            <div class="display-area" id="display-content">
-                <div class="proposal-paper" id="text-view">
-                    <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>
-                    <div id="view-body"></div>
+    <div class="preview-tabs" id="dynamic-tabs"></div>
+    <div class="display-area" id="display-content">
+        <div class="proposal-paper" id="text-view">
+            <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>
+            
+            <div id="view-body">
+                
+                <div id="aba-gestao" style="display: none;">
+                    
+                    <div class="grid-selects-rapidos" style="margin-bottom: 25px;">
+                        <select id="status-estabelecimento" class="input-clean-alt">
+                            <option value="true">Salão: Aberto</option>
+                            <option value="false">Salão: Fechado</option>
+                        </select>
+                        <select id="select-desativar-servico" class="input-clean-alt">
+                            <option value="">Pausar Serviço...</option>
+                        </select>
+                        <select id="select-desativar-prof" class="input-clean-alt">
+                            <option value="">Pausar Profissional...</option>
+                        </select>
+                    </div>
+
+                    <div class="cards-container-gestao">
+                        </div>
                 </div>
+
             </div>
-        </section>
+        </div>
+    </div>
+</section>
     </main>
 
     <script>

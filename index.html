@@ -325,6 +325,48 @@
 
         </div> </div> </div> 
 
+<div id="aba-gestao" style="display: none; padding: 20px;">
+    
+    <div class="grid-selects-rapidos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 25px;">
+        <select id="status-estabelecimento" style="padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff; border-radius:5px;">
+            <option value="true">Salão: Aberto</option>
+            <option value="false">Salão: Fechado</option>
+        </select>
+        <select id="select-desativar-servico" style="padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
+            <option value="">Pausar Serviço...</option>
+        </select>
+        <select id="select-desativar-prof" style="padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
+            <option value="">Pausar Profissional...</option>
+        </select>
+    </div>
+
+    <div class="cards-container-gestao">
+        
+        <div class="service-card" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
+            <h3 style="color: var(--creative-color); font-family: 'Bebas Neue';">Dados do Estabelecimento</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                <input type="text" id="edit-nome-salao" placeholder="Nome Fantasia" style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff;">
+                <input type="text" id="edit-endereco" placeholder="Endereço" style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff;">
+                <button class="btn-generate" style="width: 100%; margin-top: 10px; cursor: pointer;">ATUALIZAR DADOS</button>
+            </div>
+        </div>
+
+        <div class="service-card" style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
+            <h3 style="color: var(--creative-color); font-family: 'Bebas Neue';">Novo Serviço</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                <input type="text" id="new-servico-nome" placeholder="Nome do Serviço" style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff;">
+                <textarea id="new-servico-desc" placeholder="Descrição para a IA" style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="new-servico-preco" placeholder="R$" style="flex:1; padding:12px; background:#000; border:1px solid #333; color:#fff;">
+                    <input type="number" id="new-servico-tempo" placeholder="Minutos" style="flex:1; padding:12px; background:#000; border:1px solid #333; color:#fff;">
+                </div>
+                <button class="btn-generate" style="width: 100%; margin-top: 10px; cursor: pointer;">+ INCLUIR SERVIÇO</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div id="view-body"></div>
 
 </section>
     </main>

@@ -58,13 +58,18 @@
 
         /* CHAT */
         .chat-column {
-            background: var(--chat-bg);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+    background: var(--chat-bg); /* Garante a cor sólida definida no :root */
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    max-height: calc(100vh - 120px);
+    position: sticky;
+    top: 0;
+    z-index: 10; /* Garante que ele fique visualmente "acima" do conteúdo que rola */
+}
 
         .chat-header {
             padding: 12px;

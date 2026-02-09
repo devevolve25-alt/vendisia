@@ -298,10 +298,20 @@
     box-shadow: 0 0 10px var(--gold-glow);
 }
 
-.btn-chat:hover {
+/* Este estilo só será aplicado em computadores (dispositivos com mouse) */
+@media (hover: hover) {
+    .btn-chat:hover {
+        background: var(--creative-color);
+        color: #000;
+        box-shadow: 0 0 20px var(--creative-color);
+    }
+}
+
+/* Para dispositivos móveis, usamos o estado :active (enquanto o dedo pressiona) */
+.btn-chat:active {
     background: var(--creative-color);
     color: #000;
-    box-shadow: 0 0 20px var(--creative-color);
+    transform: scale(0.98); /* Leve feedback de clique */
 }
     </style>
 </head>

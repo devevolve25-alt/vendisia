@@ -283,6 +283,26 @@
             .chat-column { height: 300px; }
             .preview-column { min-height: 600px; }
         }
+
+        .btn-chat {
+    background: #000; /* Fundo escuro */
+    color: var(--creative-color); /* Texto amarelo/dourado */
+    border: 1px solid var(--creative-color);
+    padding: 10px;
+    font-family: 'Bebas Neue';
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    /* Efeito de Glow */
+    box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.btn-chat:hover {
+    background: var(--creative-color);
+    color: #000;
+    box-shadow: 0 0 20px var(--creative-color);
+}
     </style>
 </head>
 <body>
@@ -308,7 +328,7 @@
             </div>
             <div class="input-area">
                 <textarea id="cmd-input" placeholder="Digite seu comando..."></textarea>
-                <button class="btn-generate" onclick="generateContent()">ENVIAR COMANDO</button>
+                <button class="btn-chat" onclick="generateContent()">ENVIAR COMANDO</button>
             </div>
         </section>
 

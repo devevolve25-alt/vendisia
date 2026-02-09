@@ -3,81 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VENDISIA | Landing Page</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400&display=swap" rel="stylesheet">
+    <title>VENDISIA | Vendas e Agendamentos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #000000;
             --creative-color: #d4af37;
-            --gold-glow: rgba(212, 175, 55, 0.3);
+            --gold-glow: rgba(212, 175, 55, 0.2);
         }
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
             background-color: var(--bg-color);
             color: #ffffff;
             font-family: 'Montserrat', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            line-height: 1.6;
         }
 
-        .hero-container {
+        /* HERO SECTION */
+        .hero {
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
             padding: 20px;
+            background: radial-gradient(circle at center, #111 0%, #000 70%);
         }
 
         h1 {
             font-family: 'Bebas Neue';
-            font-size: clamp(2.5rem, 8vw, 5rem); /* Ajusta conforme o tamanho da tela */
+            font-size: clamp(3rem, 10vw, 6rem);
             color: var(--creative-color);
-            letter-spacing: 4px;
-            margin-bottom: 30px;
-            text-shadow: 0 0 15px var(--gold-glow);
+            letter-spacing: 5px;
+            text-shadow: 0 0 20px var(--gold-glow);
+            margin-bottom: 10px;
         }
 
-        .btn-acesso {
-            display: inline-block;
-            padding: 15px 40px;
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* PLANOS SECTION */
+        .planos-container {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 30px;
+            flex-wrap: wrap;
+            padding: 50px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .plano-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 15px;
+            padding: 40px 30px;
+            width: 320px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .plano-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--creative-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* DESTAQUE PARA O PLANO B */
+        .plano-card.destaque {
+            border: 1px solid var(--creative-color);
+            box-shadow: 0 0 30px var(--gold-glow);
+            transform: scale(1.05);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .plano-card h2 {
             font-family: 'Bebas Neue';
-            font-size: 1.5rem;
-            color: #000;
-            background-color: var(--creative-color);
+            font-size: 2.5rem;
+            color: var(--creative-color);
+            margin-bottom: 15px;
+        }
+
+        .preco {
+            font-family: 'Bebas Neue';
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .preco span {
+            font-size: 1rem;
+            opacity: 0.6;
+        }
+
+        .plano-card ul {
+            list-style: none;
+            margin-bottom: 30px;
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .plano-card ul li {
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+        }
+
+        .plano-card ul li::before {
+            content: "✓";
+            color: var(--creative-color);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .btn-plano {
+            display: block;
+            padding: 15px;
+            background: transparent;
+            color: var(--creative-color);
+            border: 1px solid var(--creative-color);
             text-decoration: none;
+            font-family: 'Bebas Neue';
+            font-size: 1.4rem;
             border-radius: 5px;
             transition: all 0.3s ease;
-            box-shadow: 0 0 20px var(--gold-glow);
         }
 
-        .btn-acesso:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px var(--creative-color);
+        .btn-plano:hover {
+            background: var(--creative-color);
+            color: #000;
         }
 
-        /* Efeito sutil de movimento no fundo */
-        .bg-glow {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: var(--gold-glow);
-            filter: blur(100px);
-            border-radius: 50%;
-            z-index: -1;
+        .destaque .btn-plano {
+            background: var(--creative-color);
+            color: #000;
+        }
+
+        @media (max-width: 768px) {
+            .plano-card.destaque { transform: scale(1); }
+            .planos-container { gap: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-glow"></div>
+    <section class="hero">
+        <h1>VENDISIA</h1>
+        <p>VENDAS E AGENDAMENTOS INTELIGENTES</p>
+    </section>
 
-    <div class="hero-container">
-        <h1>VENDISIA - VENDAS E AGENDAMENTOS</h1>
-        <a href="https://vendisia.ia.br/acesso.html" class="btn-acesso">ENTRAR NO SISTEMA</a>
-    </div>
+    <section class="planos-container">
+        <div class="plano-card">
+            <h2>PLANO A</h2>
+            <div class="preco">R$ 49<span>/mês</span></div>
+            <ul>
+                <li>Agenda Inteligente MercurIA</li>
+                <li>1 Profissional</li>
+                <li>Link de Agendamento</li>
+                <li>Gestão de Serviços</li>
+            </ul>
+            <a href="acesso.html?plano=A" class="btn-plano">ASSINAR AGORA</a>
+        </div>
+
+        <div class="plano-card destaque">
+            <h2>PLANO B</h2>
+            <div class="preco">R$ 89<span>/mês</span></div>
+            <ul>
+                <li>Tudo do Plano A</li>
+                <li>Até 5 Profissionais</li>
+                <li>Dashboard Financeiro</li>
+                <li>Relatórios de Comissões</li>
+            </ul>
+            <a href="acesso.html?plano=B" class="btn-plano">ASSINAR AGORA</a>
+        </div>
+
+        <div class="plano-card">
+            <h2>PLANO C</h2>
+            <div class="preco">R$ 149<span>/mês</span></div>
+            <ul>
+                <li>Profissionais Ilimitados</li>
+                <li>Múltiplas Unidades</li>
+                <li>Suporte Prioritário 24h</li>
+                <li>IA Treinada para Vendas</li>
+            </ul>
+            <a href="acesso.html?plano=C" class="btn-plano">ASSINAR AGORA</a>
+        </div>
+    </section>
 
 </body>
 </html>

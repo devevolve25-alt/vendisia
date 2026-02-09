@@ -185,6 +185,34 @@
         .service-card p { font-size: 0.85rem; opacity: 0.7; margin-bottom: 20px; }
         .service-price { font-family: 'Bebas Neue'; font-size: 1.8rem; }
 
+        /* Redução da altura do Header */
+.page-header {
+    margin: 0 auto 10px auto; /* Reduzi a margem inferior */
+    padding: 5px 0; /* Padding mais apertado */
+}
+
+.brand-name { font-size: 1.5rem; } /* Diminuí levemente a fonte */
+.brand-logo { width: 35px; } /* Logo menor */
+
+/* Ajuste do Chat para não rolar com a tela */
+.chat-column {
+    height: 100%; /* Ocupa a altura total da coluna */
+    max-height: calc(100vh - 120px); /* Trava a altura para não crescer com o conteúdo */
+    position: sticky;
+    top: 0;
+}
+
+/* Correção de vazamento nos inputs (Grid Interno dos Cards) */
+.service-card div[style*="display: flex"] {
+    flex-wrap: wrap; /* Faz os itens quebrarem linha se não couberem */
+    gap: 8px !important;
+}
+
+.service-card input, .service-card select {
+    min-width: 120px; /* Garante que o input não fique minúsculo */
+    flex: 1; /* Faz eles crescerem igualmente */
+}
+
         /* AGENDA TIMELINE (Modo Lista) */
         .agenda-list {
             display: flex;

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VENDISIA | CriarIA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #000000;
+            --chat-bg: #0c1320;
+            --creative-color: #a55eea; /* Violeta Elétrico */
+            --creative-accent: #fd79a8;
+            --gold-border: #d4af37;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            overflow: hidden; /* Desktop mantém o scroll interno */
+        }
+
+        /* Header Padrão Vendisia */
+        .page-header {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto 15px auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+        }
+
+        .brand-block { display: flex; align-items: center; gap: 12px; }
+        .brand-logo { width: 45px; height: auto; }
+        .brand-text-wrapper { display: flex; flex-direction: column; }
+        .brand-name { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--creative-color); line-height: 0.9; letter-spacing: 2px; }
+        .brand-tagline { font-family: 'Bebas Neue'; font-size: 0.9rem; color: #fff; letter-spacing: 3px; margin-top: 3px; }
+        .header-headline { font-family: 'Bebas Neue'; font-size: 1.2rem; text-align: center; color: #fff; opacity: 0.8; }
+
+        /* Estrutura de Estúdio */
+        .studio-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            min-height: 0;
+        }
+
+        /* Lado Esquerdo: Chat */
+        .chat-column {
+            background: var(--chat-bg);
+            border: 1px solid rgba(165, 94, 234, 0.3);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 12px;
+            background: rgba(165, 94, 234, 0.1);
+            border-bottom: 1px solid rgba(165, 94, 234, 0.2);
+            font-family: 'Bebas Neue';
+            font-size: 1.1rem;
+            color: var(--creative-color);
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .msg-bot { border-left: 2px solid var(--creative-color); padding-left: 10px; color: #cbd5e1; margin-bottom: 5px; }
+        .msg-user { color: var(--creative-color); font-weight: 600; text-align: right; margin-bottom: 5px; }
+
+        .input-area {
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        textarea {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(165, 94, 234, 0.2);
+            border-radius: 4px;
+            padding: 10px;
+            color: white;
+            font-family: 'Montserrat';
+            resize: none;
+            height: 70px;
+            outline: none;
+        }
+
+        .btn-generate {
+            background: var(--creative-color);
+            color: #000;
+            border: none;
+            padding: 10px;
+            font-family: 'Bebas Neue';
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Lado Direito: Preview */
+        .preview-column {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .preview-tabs {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            overflow-x: auto; /* Permite scroll das abas se necessário no mobile */
+        }
+
+        .tab {
+            padding: 12px 20px;
+            font-family: 'Bebas Neue';
+            cursor: pointer;
+            opacity: 0.5;
+            white-space: nowrap;
+        }
+
+        .tab.active { opacity: 1; color: var(--creative-color); border-bottom: 2px solid var(--creative-color); }
+
+        .display-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .proposal-paper {
+            background: #fff;
+            color: #333;
+            width: 100%;
+            max-width: 800px;
+            min-height: 800px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-family: 'Montserrat', serif;
+            line-height: 1.6;
+            border-radius: 2px;
+            overflow-wrap: break-word;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1;
+            background: #1a1a1a;
+            border: 1px solid var(--creative-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* RESPONSIVIDADE MOBILE */
+        @media (max-width: 1000px) {
+            body { overflow-y: auto; height: auto; }
+            .page-header { grid-template-columns: 1fr; text-align: center; gap: 10px; }
+            .brand-block { justify-content: center; }
+            .studio-container { grid-template-columns: 1fr; display: flex; flex-direction: column; }
+            .chat-column { height: 450px; } /* Chat com altura fixa no mobile */
+            .preview-column { min-height: 600px; margin-top: 10px; }
+            .proposal-paper { padding: 25px 15px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <div class="brand-block">
+            <img src="merc_face.png" alt="Logo" class="brand-logo">
+            <div class="brand-text-wrapper">
+                <span class="brand-name">VENDISIA</span>
+                <span class="brand-tagline">IA ECOSYSTEM</span>
+            </div>
+        </div>
+        <h2 class="header-headline">Laboratório de Criação CriarIA</h2>
+        <div class="spacer"></div>
+    </header>
+
+    <main class="studio-container">
+        <section class="chat-column">
+            <div class="chat-header">COMANDOS CRIATIVOS</div>
+            <div class="chat-messages" id="chat-criar">
+                <div class="msg-bot">Olá, sou CriarIA. O que vamos materializar hoje? Posso forjar posts, vídeos e propostas comerciais.</div>
+            </div>
+            <div class="input-area">
+                <textarea id="cmd-input" placeholder="O que deseja criar?"></textarea>
+                <button class="btn-generate" onclick="generateContent()">GERAR CONTEÚDO</button>
+            </div>
+        </section>
+
+        <section class="preview-column">
+            <div class="preview-tabs">
+                <div class="tab active" onclick="switchTab('text', this)">DOCUMENTOS</div>
+                <div class="tab" onclick="switchTab('image', this)">POSTS / IMAGENS</div>
+                <div class="tab" onclick="switchTab('viral', this)">SCANNER VIRAL</div>
+            </div>
+            
+            <div class="display-area" id="display-content">
+                <div class="proposal-paper" id="text-view">
+                    <h1 style="text-align: center; margin-bottom: 30px; font-family: 'Bebas Neue';">PROPOSTA COMERCIAL</h1>
+                    <p>A inteligência artificial do ecossistema VENDISIA está pronta para ser integrada ao seu negócio.</p>
+                    <p>Aguardando comandos para gerar o detalhamento técnico...</p>
+                </div>
+                <div class="image-preview" id="image-view" style="display: none;">
+                    <span style="color: #444; font-family: 'Bebas Neue';">PREVIEW DA CRIAÇÃO VISUAL</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    function switchTab(type, element) {
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+
+        const textView = document.getElementById('text-view');
+        const imageView = document.getElementById('image-view');
+
+        if(type === 'text') {
+            textView.style.display = 'block';
+            imageView.style.display = 'none';
+        } else {
+            textView.style.display = 'none';
+            imageView.style.display = 'flex';
+        }
+    }
+
+    async function generateContent() {
+        const input = document.getElementById('cmd-input').value;
+        const chat = document.getElementById('chat-criar');
+        const textView = document.getElementById('text-view');
+
+        if(!input) return;
+
+        // 1. Exibe a mensagem do usuário
+        const userDiv = document.createElement('div');
+        userDiv.className = 'msg-user';
+        userDiv.innerText = input;
+        chat.appendChild(userDiv);
+        document.getElementById('cmd-input').value = "";
+        chat.scrollTop = chat.scrollHeight;
+
+        // 2. Mensagem de processamento
+        const botDivLoading = document.createElement('div');
+        botDivLoading.className = 'msg-bot';
+        botDivLoading.innerText = "[CriarIA]: Processando sua solicitação criativa... Renderizando no painel.";
+        chat.appendChild(botDivLoading);
+
+        try {
+            // ---------------------------------------------------------
+            // COLE SUA URL DO WEBHOOK DO N8N PARA CRIARIA ABAIXO:
+            const WEBHOOK_URL_CRIARIA = "https://powerfulkiwi-n8n.cloudfy.live/webhook/e6e02f08-0cfd-4759-b93a-ee9cc4465d5b"; 
+            // ---------------------------------------------------------
+
+            const response = await fetch(WEBHOOK_URL_CRIARIA, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    message: input,
+                    entity: "CriarIA",
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            const data = await response.json();
+
+            // 3. Atualiza o chat com o status final
+            const botDivSuccess = document.createElement('div');
+            botDivSuccess.className = 'msg-bot';
+            botDivSuccess.innerText = "[CriarIA]: Materialização concluída. Veja o resultado no Dossiê.";
+            chat.appendChild(botDivSuccess);
+
+            // 4. Injeta o conteúdo gerado (texto/proposta) no painel de visualização
+            // Assume que o n8n retorna { "output": "HTML ou Texto da proposta" }
+            if (data.output) {
+                textView.innerHTML = data.output;
+            }
+
+        } catch (error) {
+            console.error("Erro na criação:", error);
+            const eDiv = document.createElement('div');
+            eDiv.className = 'msg-bot';
+            eDiv.style.color = "#ff4d4d";
+            eDiv.innerText = "[ERRO]: Falha na conexão com o laboratório criativo.";
+            chat.appendChild(eDiv);
+        } finally {
+            chat.scrollTop = chat.scrollHeight;
+        }
+    }
+</script>
+</body>
+</html>

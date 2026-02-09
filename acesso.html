@@ -48,106 +48,122 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // CONFIGURAÇÃO SUPABASE
+const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let userLogado = null;
-        const urlParams = new URLSearchParams(window.location.search);
-        const planoEscolhido = urlParams.get('plano') || 'A'; // Padrão para Plano A
+let userLogado = null;
+const urlParams = new URLSearchParams(window.location.search);
+const planoEscolhido = urlParams.get('plano') || 'A';
 
-        // MOSTRAR TELA ESPECÍFICA
-        function showStep(stepId) {
-            document.getElementById('step-loading').classList.remove('active');
-            document.getElementById('step-login').classList.remove('active');
-            document.getElementById('step-cadastro').classList.remove('active');
-            document.getElementById(stepId).classList.add('active');
+// 1. VERIFICAR STATUS DO USUÁRIO AO CARREGAR
+async function checkUser() {
+    try {
+        // Busca a sessão atual de forma mais direta
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) throw error;
+
+        if (!session) {
+            // Se não tem sessão, mostra o botão de login imediatamente
+            showStep('step-login');
+        } else {
+            // Usuário está logado
+            userLogado = session.user;
+            verificarEstabelecimento();
         }
+    } catch (err) {
+        console.error("Erro ao verificar usuário:", err);
+        showStep('step-login'); // Em caso de erro, permite que ele tente o login
+    }
+}
 
-        // 1. INICIALIZAÇÃO
-        async function init() {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                
-                if (!session) {
-                    showStep('step-login');
-                } else {
-                    userLogado = session.user;
-                    verificarEstabelecimento();
-                }
-            } catch (err) {
-                console.error("Erro ao iniciar:", err);
-                showStep('step-login');
-            }
+// 2. LOGIN COM GOOGLE
+async function loginGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { 
+            redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
         }
+    });
+    if (error) alert("Erro ao conectar com Google: " + error.message);
+}
 
-        // 2. LOGIN
-        async function loginGoogle() {
-            await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { 
-                    redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
-                }
-            });
+// 3. VERIFICAR SE JÁ TEM ESTABELECIMENTO NO BANCO
+async function verificarEstabelecimento() {
+    const { data, error } = await supabase
+        .from('estabelecimentos')
+        .select('slug, status_pagamento')
+        .eq('dono_id', userLogado.id)
+        .maybeSingle(); // maybeSingle evita erro caso não encontre nada
+
+    if (data) {
+        if (data.status_pagamento === 'pago') {
+            window.location.href = `agenda.html?s=${data.slug}&u=dono`;
+        } else {
+            // Caso tenha cadastro mas não pagou, poderíamos mostrar o link de checkout
+            alert('Cadastro localizado! Redirecionando para área de pagamento...');
+            showStep('step-cadastro'); // Ou uma nova div de checkout
         }
+    } else {
+        // Usuário novo: Mostra tela de criação do salão
+        showStep('step-cadastro');
+    }
+}
 
-        // 3. VERIFICAR SE JÁ EXISTE NO BANCO
-        async function verificarEstabelecimento() {
-            const { data, error } = await supabase
-                .from('estabelecimentos')
-                .select('slug, status_pagamento')
-                .eq('dono_id', userLogado.id)
-                .maybeSingle(); // Usamos maybeSingle para não disparar erro se não encontrar
+// 4. LÓGICA DE SLUG AUTOMÁTICO
+function updateSlug() {
+    const nome = document.getElementById('nome-salao').value;
+    const slug = nome.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    
+    document.getElementById('slug-text').innerText = slug;
+    return slug;
+}
 
-            if (data) {
-                // Usuário já cadastrado
-                window.location.href = `agenda.html?s=${data.slug}&u=dono`;
-            } else {
-                // Usuário novo
-                showStep('step-cadastro');
-            }
-        }
+// 5. FINALIZAR CADASTRO
+async function finalizarCadastro() {
+    const nomeFantasia = document.getElementById('nome-salao').value;
+    const slug = updateSlug();
 
-        // 4. SLUG
-        function updateSlug() {
-            const nome = document.getElementById('nome-salao').value;
-            const slug = nome.toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-z0-9]/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^-|-$/g, '');
-            document.getElementById('slug-text').innerText = slug;
-            return slug;
-        }
+    if (!nomeFantasia || nomeFantasia.length < 3) {
+        return alert('Por favor, digite um nome válido para o seu negócio.');
+    }
 
-        // 5. SALVAR NO BANCO
-        async function finalizarCadastro() {
-            const nomeFantasia = document.getElementById('nome-salao').value;
-            const slug = updateSlug();
+    const { error } = await supabase
+        .from('estabelecimentos')
+        .insert([{
+            dono_id: userLogado.id,
+            nome_fantasia: nomeFantasia,
+            slug: slug,
+            plano_ativo: planoEscolhido,
+            status_pagamento: 'pendente'
+        }]);
 
-            if (!nomeFantasia || nomeFantasia.length < 3) return alert('Por favor, digite um nome válido.');
+    if (error) {
+        console.error(error);
+        alert('Este nome de link já está em uso ou houve um erro na conexão.');
+    } else {
+        alert(`Sucesso! Registro do Plano ${planoEscolhido} criado. Redirecionando para o pagamento...`);
+        // Aqui entrará a lógica do link de checkout futuramente
+    }
+}
 
-            const { error } = await supabase
-                .from('estabelecimentos')
-                .insert([{
-                    dono_id: userLogado.id,
-                    nome_fantasia: nomeFantasia,
-                    slug: slug,
-                    plano_ativo: planoEscolhido,
-                    status_pagamento: 'pendente'
-                }]);
+// AUX: TROCA DE TELAS
+function showStep(stepId) {
+    document.getElementById('step-loading').classList.remove('active');
+    document.getElementById('step-login').classList.remove('active');
+    document.getElementById('step-cadastro').classList.remove('active');
+    
+    document.getElementById(stepId).classList.add('active');
+}
 
-            if (error) {
-                alert('Erro: Este nome de link já está em uso ou houve um erro de conexão.');
-            } else {
-                alert(`Sucesso! Plano ${planoEscolhido} selecionado. Redirecionando para pagamento...`);
-                // Futuro: window.location.href = link_pagamento;
-            }
-        }
-
-        // Disparo ao carregar o DOM
-        document.addEventListener('DOMContentLoaded', init);
+window.onload = checkUser;
     </script>
 </body>
 </html>

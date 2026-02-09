@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VENDISIA | LITE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="agenda.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="agenda.js"></script>
+    
+</head>
+<body>
+
+    <header class="page-header">
+    <div class="brand-block">
+        <img src="" alt="Logo" class="brand-logo" id="salon-logo-display" style="max-height: 50px; width: auto;">
+    </div>
+    
+    <div class="brand-text-wrapper" style="display: flex; justify-content: center; align-items: center;">
+        <span class="brand-name" id="salon-name" style="font-family: 'Bebas Neue'; font-size: 2.2rem; color: var(--creative-color); letter-spacing: 2px;">
+            CARREGANDO...
+        </span>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;"></div>
+</header>
+    <main class="studio-container">
+        <section class="chat-column">
+            <div class="chat-header">MERCURIA LITE</div>
+            <div class="chat-messages" id="chat-criar">
+                <div class="msg-bot">Olá. Sou a MercurIA. Como posso gerenciar sua agenda hoje?</div>
+            </div>
+            <div class="input-area">
+                <textarea id="cmd-input" placeholder="Digite seu comando..."></textarea>
+                <button class="btn-chat" onclick="generateContent()">ENVIAR COMANDO</button>
+            </div>
+        </section>
+
+        <section class="preview-column">
+            <div class="preview-tabs" id="dynamic-tabs"></div>
+            <div class="display-area" id="display-content">
+                <div class="proposal-paper" id="text-view">
+                    <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>
+                    
+                    <div id="aba-gestao" style="display: none;">
+                        <div class="grid-selects-rapidos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 25px;">
+                            <select id="status-estabelecimento" style="padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff; border-radius:5px;">
+                                <option value="true">Salão: Aberto</option>
+                                <option value="false">Salão: Fechado</option>
+                            </select>
+                            <select id="select-desativar-servico" style="padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
+                                <option value="">Pausar Serviço...</option>
+                            </select>
+                            <select id="select-desativar-prof" style="padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
+                                <option value="">Pausar Profissional...</option>
+                            </select>
+                        </div>
+
+                        <div class="cards-container-gestao">
+                            <div class="service-card" style="margin-bottom: 20px;">
+                                <h3>Dados do Empreendedor</h3>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                                    <input type="text" id="perf-nome-completo" placeholder="Nome Completo" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <input type="text" id="perf-cpf" placeholder="CPF" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <input type="email" id="perf-email-contato" placeholder="E-mail de Contato" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                </div>
+                            </div>
+
+                            <div class="service-card" style="margin-bottom: 20px;">
+                                <h3>Dados do Estabelecimento</h3>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                                    <input type="text" id="edit-razao-social" placeholder="Razão Social" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <input type="text" id="edit-nome-fantasia" placeholder="Nome Fantasia" style="width:100%; padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff;">
+                                    <input type="text" id="edit-cnpj" placeholder="CNPJ" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <input type="text" id="edit-whatsapp" placeholder="WhatsApp Comercial (Apenas Números)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <input type="text" id="edit-endereco-completo" placeholder="Endereço Completo" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    
+                                    <div style="display: flex; gap: 10px;">
+                                        <div style="flex: 1;">
+                                            <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">ABERTURA</label>
+                                            <input type="time" id="edit-hora-abertura" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">FECHAMENTO</label>
+                                            <input type="time" id="edit-hora-fechamento" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                        </div>
+                                    </div>
+                                    <input type="number" id="edit-intervalo-slot" placeholder="Intervalo (minutos)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <button class="btn-generate" style="width: 100%; margin-top: 10px;">ATUALIZAR CONFIGURAÇÕES</button>
+                                </div>
+                            </div>
+
+<div class="service-card" style="margin-bottom: 20px;">
+    <h3>Novo Serviço</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+        <input type="text" id="new-servico-nome" placeholder="Nome do Serviço (ex: Corte de Cabelo)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <textarea id="new-servico-desc" placeholder="Descrição para a MercurIA saber como vender este serviço..." style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
+        
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="new-servico-preco" placeholder="Preço (R$)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+            <input type="number" id="new-servico-duracao" placeholder="Duração (Minutos)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        </div>
+        
+        <button class="btn-generate" id="btn-salvar-servico" style="width: 100%; margin-top: 10px;">+ CADASTRAR SERVIÇO</button>
+    </div>
+</div>
+                            
+     <div class="service-card" style="margin-bottom: 20px;">
+    <h3>Novo Profissional</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+        <input type="text" id="new-prof-nome" placeholder="Nome do Profissional" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="new-prof-especialidade" placeholder="Especialidade (ex: Barbeiro, Colorista)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        <input type="text" id="new-prof-whatsapp" placeholder="WhatsApp do Profissional (com DDD)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        
+        <div style="display: flex; gap: 10px;">
+            <select id="new-prof-tipo-remuneracao" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                <option value="comissao">Comissão (%)</option>
+                <option value="fixo">Salário Fixo</option>
+            </select>
+            <input type="number" id="new-prof-comissao" placeholder="Valor/Porcentagem" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+        </div>
+
+        <button class="btn-generate" id="btn-salvar-prof" style="width: 100%; margin-top: 10px;">+ CADASTRAR PROFISSIONAL</button>
+    </div>
+</div>
+                        </div>
+                    </div> 
+
+                    <div id="view-body"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

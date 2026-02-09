@@ -3,124 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso Administrativo - Sistema de Agendamento</title>
+    <title>VENDISIA | Acesso ao Sistema</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --primary-color: #2ecc71; /* O verde do seu sistema */
-            --bg-color: #121212;      /* Fundo escuro */
-            --card-bg: #1e1e1e;       /* Fundo do card de login */
-            --text-color: #ffffff;
-        }
+        :root { --bg: #000; --gold: #d4af37; --card: #0c1320; }
+        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .acesso-box { background: var(--card); padding: 40px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.2); width: 100%; max-width: 400px; text-align: center; }
+        h1 { font-family: 'Bebas Neue'; color: var(--gold); font-size: 2.5rem; margin-bottom: 10px; }
+        p { opacity: 0.7; font-size: 0.9rem; margin-bottom: 25px; }
+        
+        /* Containers de Estados */
+        #step-login, #step-cadastro, #step-loading { display: none; }
+        .active { display: block !important; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .login-card {
-            background-color: var(--card-bg);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid #333;
-        }
-
-        .login-card h1 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-
-        .login-card p {
-            color: #888;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
-        .btn-google {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: white;
-            color: #333;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.2s, background-color 0.2s;
-            text-decoration: none;
-        }
-
-        .btn-google:hover {
-            background-color: #f1f1f1;
-            transform: translateY(-2px);
-        }
-
-        .btn-google img {
-            width: 20px;
-            margin-right: 12px;
-        }
-
-        .footer-link {
-            margin-top: 20px;
-            display: block;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-size: 13px;
-        }
-
-        .footer-link:hover {
-            text-decoration: underline;
-        }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; box-sizing: border-box; }
+        .btn-acao { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; font-family: 'Bebas Neue'; font-size: 1.2rem; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .btn-acao:hover { opacity: 0.9; transform: scale(1.02); }
+        .slug-preview { font-size: 0.8rem; color: var(--gold); margin-top: -10px; margin-bottom: 15px; text-align: left; }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <h1>Painel do Usuário</h1>
-        <p>Gerencie seus agendamentos, profissionais e serviços com facilidade.</p>
+    <div class="acesso-box">
+        <h1>VENDISIA</h1>
 
-        <button onclick="loginComGoogle()" class="btn-google">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo">
-            Entrar com Google
-        </button>
+        <div id="step-loading" class="active">
+            <p>Verificando autenticação...</p>
+        </div>
 
-        <a href="index.html" class="footer-link">← Voltar para a Agenda</a>
+        <div id="step-login">
+            <p>Para continuar, acesse sua conta Google.</p>
+            <button class="btn-acao" onclick="loginGoogle()">ENTRAR COM GOOGLE</button>
+        </div>
+
+        <div id="step-cadastro">
+            <p>Defina o nome do seu negócio para gerar seu link exclusivo.</p>
+            <input type="text" id="nome-salao" placeholder="Nome do seu Salão/Barbearia" oninput="updateSlug()">
+            <div class="slug-preview">Link: vendisia.ia.br/agenda.html?s=<span id="slug-text">...</span></div>
+            <button class="btn-acao" onclick="finalizarCadastro()">CRIAR MEU SISTEMA</button>
+        </div>
     </div>
 
     <script>
-        // Use um nome diferente para a instância para evitar conflitos com a biblioteca
-const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
-const SUPABASE_ANON_KEY = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // CONFIGURAÇÃO SUPABASE
+        const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function loginComGoogle() {
-    const { data, error } = await _supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-            // AJUSTE: Redireciona direto para o Dashboard após o login
-            redirectTo: window.location.origin + '/dashboard.html'
+        let userLogado = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const planoEscolhido = urlParams.get('plano') || 'lite';
+
+        // 1. VERIFICAR STATUS DO USUÁRIO AO CARREGAR
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                showStep('step-login');
+            } else {
+                userLogado = user;
+                verificarEstabelecimento();
+            }
         }
-    });
 
-    if (error) {
-        console.error('Erro no login:', error.message);
-        alert('Erro ao tentar conectar com o Google: ' + error.message);
-    }
-}
+        // 2. LOGIN COM GOOGLE
+        async function loginGoogle() {
+            await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.href }
+            });
+        }
+
+        // 3. VERIFICAR SE JÁ TEM ESTABELECIMENTO
+        async function verificarEstabelecimento() {
+            const { data, error } = await supabase
+                .from('estabelecimentos')
+                .select('slug, status_pagamento')
+                .eq('dono_id', userLogado.id)
+                .single();
+
+            if (data) {
+                // Se já existe e pagou, vai para agenda. Se não pagou, vai para o plano
+                if (data.status_pagamento === 'pago') {
+                    window.location.href = `agenda.html?s=${data.slug}&u=dono`;
+                } else {
+                    alert('Aguardando confirmação de pagamento...');
+                    // Aqui você redirecionaria para o link de checkout do Mercado Pago/Stripe
+                }
+            } else {
+                showStep('step-cadastro');
+            }
+        }
+
+        // 4. LÓGICA DE SLUG AUTOMÁTICO
+        function updateSlug() {
+            const nome = document.getElementById('nome-salao').value;
+            const slug = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            document.getElementById('slug-text').innerText = slug;
+            return slug;
+        }
+
+        // 5. FINALIZAR CADASTRO (INSERT NO BANCO)
+        async function finalizarCadastro() {
+            const nomeFantasia = document.getElementById('nome-salao').value;
+            const slug = updateSlug();
+
+            if (!nomeFantasia) return alert('Por favor, digite o nome do salão.');
+
+            const { error } = await supabase
+                .from('estabelecimentos')
+                .insert([{
+                    dono_id: userLogado.id,
+                    nome_fantasia: nomeFantasia,
+                    slug: slug,
+                    plano_ativo: planoEscolhido,
+                    status_pagamento: 'pendente'
+                }]);
+
+            if (error) {
+                console.error(error);
+                alert('Erro ao criar: Este nome de link já pode estar em uso.');
+            } else {
+                // REDIRECIONAR PARA PAGAMENTO (Simulação)
+                alert(`Sucesso! Criando registro no Plano ${planoEscolhido.toUpperCase()}. Redirecionando para pagamento...`);
+                // window.location.href = "LINK_DO_GATEWAY_AQUI";
+            }
+        }
+
+        // AUX: TROCA DE TELAS
+        function showStep(stepId) {
+            document.querySelectorAll('.acesso-box > div').forEach(div => div.classList.remove('active'));
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        window.onload = checkUser;
     </script>
 </body>
 </html>

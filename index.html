@@ -1,629 +1,83 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>    
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VENDISIA | LITE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>VENDISIA | Landing Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #000000;
-            --chat-bg: #0c1320;
-            --creative-color: #d4af37; 
-            --gold-glow: rgba(212, 175, 55, 0.2);
+            --creative-color: #d4af37;
+            --gold-glow: rgba(212, 175, 55, 0.3);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             background-color: var(--bg-color);
             color: #ffffff;
             font-family: 'Montserrat', sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            overflow: hidden;
-        }
-
-        /* HEADER */
-        .page-header {
-            width: 100%;
-            max-width: 1400px;
-            margin: 0 auto 15px auto;
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            align-items: center;
-        }
-
-        .brand-block { display: flex; align-items: center; gap: 12px; }
-        .brand-logo { width: 45px; height: auto; }
-        .brand-text-wrapper { display: flex; flex-direction: column; }
-        .brand-name { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--creative-color); line-height: 0.9; letter-spacing: 2px; }
-        .brand-tagline { font-family: 'Bebas Neue'; font-size: 0.9rem; color: #fff; letter-spacing: 3px; margin-top: 3px; }
-        .header-headline { font-family: 'Bebas Neue'; font-size: 1.2rem; text-align: center; color: #fff; opacity: 0.8; }
-
-        /* CONTAINER */
-        .studio-container {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-            max-width: 1400px;
-            width: 100%;
-            margin: 0 auto;
-            min-height: 0;
-        }
-
-        /* CHAT */
-        .chat-column {
-    background: var(--chat-bg); /* Garante a cor sólida definida no :root */
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    height: 100%;
-    max-height: calc(100vh - 120px);
-    position: sticky;
-    top: 0;
-    z-index: 10; /* Garante que ele fique visualmente "acima" do conteúdo que rola */
-}
-
-        .chat-header {
-            padding: 12px;
-            background: rgba(212, 175, 55, 0.1);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-            font-family: 'Bebas Neue';
-            font-size: 1.1rem;
-            color: var(--creative-color);
-            text-align: center;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            font-size: 0.85rem;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .msg-bot { border-left: 2px solid var(--creative-color); padding-left: 10px; color: #cbd5e1; }
-        .msg-user { color: var(--creative-color); font-weight: 600; text-align: right; }
-
-        .input-area {
-            padding: 12px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        textarea {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 4px;
-            padding: 10px;
-            color: white;
-            font-family: 'Montserrat';
-            resize: none;
-            height: 70px;
-            outline: none;
-        }
-
-        .btn-generate {
-            background: var(--creative-color);
-            color: #000;
-            border: none;
-            padding: 10px;
-            font-family: 'Bebas Neue';
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        /* PREVIEW / DISPLAY */
-        .preview-column {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .preview-tabs {
-            display: flex;
-            background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            overflow-x: auto;
-        }
-
-        .tab {
-            padding: 12px 20px;
-            font-family: 'Bebas Neue';
-            cursor: pointer;
-            opacity: 0.5;
-            white-space: nowrap;
-        }
-
-        .tab.active { opacity: 1; color: var(--creative-color); border-bottom: 2px solid var(--creative-color); }
-
-        .display-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
             display: flex;
             justify-content: center;
-        }
-
-        .proposal-paper {
-            background: transparent;
-            color: #ffffff;
-            width: 100%;
-            max-width: 850px;
-            min-height: 800px;
-            padding: 20px;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        /* SERVICES GRID */
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .service-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 10px var(--gold-glow);
-        }
-
-        .service-card h3 { font-family: 'Bebas Neue'; font-size: 1.6rem; color: var(--creative-color); margin-bottom: 10px; }
-        .service-card p { font-size: 0.85rem; opacity: 0.7; margin-bottom: 20px; }
-        .service-price { font-family: 'Bebas Neue'; font-size: 1.8rem; }
-
-        /* Redução da altura do Header */
-.page-header {
-    margin: 0 auto 10px auto; /* Reduzi a margem inferior */
-    padding: 5px 0; /* Padding mais apertado */
-}
-
-.brand-name { font-size: 1.5rem; } /* Diminuí levemente a fonte */
-.brand-logo { width: 35px; } /* Logo menor */
-
-/* Ajuste do Chat para não rolar com a tela */
-.chat-column {
-    height: 100%; /* Ocupa a altura total da coluna */
-    max-height: calc(100vh - 120px); /* Trava a altura para não crescer com o conteúdo */
-    position: sticky;
-    top: 0;
-}
-
-/* Correção de vazamento nos inputs (Grid Interno dos Cards) */
-.service-card div[style*="display: flex"] {
-    flex-wrap: wrap; /* Faz os itens quebrarem linha se não couberem */
-    gap: 8px !important;
-}
-
-.service-card input, .service-card select {
-    min-width: 120px; /* Garante que o input não fique minúsculo */
-    flex: 1; /* Faz eles crescerem igualmente */
-}
-
-        /* AGENDA TIMELINE (Modo Lista) */
-        .agenda-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .agenda-item {
-            display: grid;
-            grid-template-columns: 80px 1fr;
             align-items: center;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 0 10px var(--gold-glow);
-            transition: all 0.3s ease;
+            overflow: hidden;
         }
 
-        .agenda-item:hover {
-            border-color: var(--creative-color);
-            box-shadow: 0 0 15px var(--gold-glow);
+        .hero-container {
+            text-align: center;
+            padding: 20px;
         }
 
-        .agenda-time {
+        h1 {
             font-family: 'Bebas Neue';
-            font-size: 1.4rem;
+            font-size: clamp(2.5rem, 8vw, 5rem); /* Ajusta conforme o tamanho da tela */
             color: var(--creative-color);
-            border-right: 1px solid rgba(212, 175, 55, 0.3);
-            padding-right: 10px;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px var(--gold-glow);
         }
 
-        .agenda-details {
-            padding-left: 20px;
+        .btn-acesso {
+            display: inline-block;
+            padding: 15px 40px;
+            font-family: 'Bebas Neue';
+            font-size: 1.5rem;
+            color: #000;
+            background-color: var(--creative-color);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--gold-glow);
         }
 
-        .agenda-details h4 {
-            font-size: 1rem;
-            margin-bottom: 4px;
+        .btn-acesso:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px var(--creative-color);
         }
 
-        .agenda-details span {
-            font-size: 0.8rem;
-            opacity: 0.6;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* Efeito sutil de movimento no fundo */
+        .bg-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: var(--gold-glow);
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: -1;
         }
-
-        .prof-tag {
-            background: rgba(212, 175, 55, 0.1);
-            color: var(--creative-color);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 10px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
-
-        @media (max-width: 1000px) {
-            body { overflow-y: auto; height: auto; }
-            .studio-container { grid-template-columns: 1fr; display: flex; flex-direction: column; }
-            .chat-column { height: 300px; }
-            .preview-column { min-height: 600px; }
-        }
-
-        .btn-chat {
-    background: #000; /* Fundo escuro */
-    color: var(--creative-color); /* Texto amarelo/dourado */
-    border: 1px solid var(--creative-color);
-    padding: 10px;
-    font-family: 'Bebas Neue';
-    font-size: 1.2rem;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    /* Efeito de Glow */
-    box-shadow: 0 0 10px var(--gold-glow);
-}
-
-/* Este estilo só será aplicado em computadores (dispositivos com mouse) */
-@media (hover: hover) {
-    .btn-chat:hover {
-        background: var(--creative-color);
-        color: #000;
-        box-shadow: 0 0 20px var(--creative-color);
-    }
-}
-
-/* Para dispositivos móveis, usamos o estado :active (enquanto o dedo pressiona) */
-.btn-chat:active {
-    background: var(--creative-color);
-    color: #000;
-    transform: scale(0.98); /* Leve feedback de clique */
-}
     </style>
 </head>
 <body>
 
-    <header class="page-header">
-    <div class="brand-block">
-        <img src="" alt="Logo" class="brand-logo" id="salon-logo-display" style="max-height: 50px; width: auto;">
-    </div>
-    
-    <div class="brand-text-wrapper" style="display: flex; justify-content: center; align-items: center;">
-        <span class="brand-name" id="salon-name" style="font-family: 'Bebas Neue'; font-size: 2.2rem; color: var(--creative-color); letter-spacing: 2px;">
-            CARREGANDO...
-        </span>
+    <div class="bg-glow"></div>
+
+    <div class="hero-container">
+        <h1>VENDISIA - VENDAS E AGENDAMENTOS</h1>
+        <a href="https://vendisia.ia.br/acesso.html" class="btn-acesso">ENTRAR NO SISTEMA</a>
     </div>
 
-    <div style="display: flex; justify-content: flex-end;"></div>
-</header>
-    <main class="studio-container">
-        <section class="chat-column">
-            <div class="chat-header">MERCURIA LITE</div>
-            <div class="chat-messages" id="chat-criar">
-                <div class="msg-bot">Olá. Sou a MercurIA. Como posso gerenciar sua agenda hoje?</div>
-            </div>
-            <div class="input-area">
-                <textarea id="cmd-input" placeholder="Digite seu comando..."></textarea>
-                <button class="btn-chat" onclick="generateContent()">ENVIAR COMANDO</button>
-            </div>
-        </section>
-
-        <section class="preview-column">
-            <div class="preview-tabs" id="dynamic-tabs"></div>
-            <div class="display-area" id="display-content">
-                <div class="proposal-paper" id="text-view">
-                    <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>
-                    
-                    <div id="aba-gestao" style="display: none;">
-                        <div class="grid-selects-rapidos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 25px;">
-                            <select id="status-estabelecimento" style="padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff; border-radius:5px;">
-                                <option value="true">Salão: Aberto</option>
-                                <option value="false">Salão: Fechado</option>
-                            </select>
-                            <select id="select-desativar-servico" style="padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
-                                <option value="">Pausar Serviço...</option>
-                            </select>
-                            <select id="select-desativar-prof" style="padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
-                                <option value="">Pausar Profissional...</option>
-                            </select>
-                        </div>
-
-                        <div class="cards-container-gestao">
-                            <div class="service-card" style="margin-bottom: 20px;">
-                                <h3>Dados do Empreendedor</h3>
-                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
-                                    <input type="text" id="perf-nome-completo" placeholder="Nome Completo" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                    <input type="text" id="perf-cpf" placeholder="CPF" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                    <input type="email" id="perf-email-contato" placeholder="E-mail de Contato" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                </div>
-                            </div>
-
-                            <div class="service-card" style="margin-bottom: 20px;">
-                                <h3>Dados do Estabelecimento</h3>
-                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
-                                    <input type="text" id="edit-razao-social" placeholder="Razão Social" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                    <input type="text" id="edit-nome-fantasia" placeholder="Nome Fantasia" style="width:100%; padding:10px; background:#000; border:1px solid var(--creative-color); color:#fff;">
-                                    <input type="text" id="edit-cnpj" placeholder="CNPJ" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                    <input type="text" id="edit-whatsapp" placeholder="WhatsApp Comercial (Apenas Números)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                    <input type="text" id="edit-endereco-completo" placeholder="Endereço Completo" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                    
-                                    <div style="display: flex; gap: 10px;">
-                                        <div style="flex: 1;">
-                                            <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">ABERTURA</label>
-                                            <input type="time" id="edit-hora-abertura" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                        </div>
-                                        <div style="flex: 1;">
-                                            <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">FECHAMENTO</label>
-                                            <input type="time" id="edit-hora-fechamento" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                        </div>
-                                    </div>
-                                    <input type="number" id="edit-intervalo-slot" placeholder="Intervalo (minutos)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                    <button class="btn-generate" style="width: 100%; margin-top: 10px;">ATUALIZAR CONFIGURAÇÕES</button>
-                                </div>
-                            </div>
-
-<div class="service-card" style="margin-bottom: 20px;">
-    <h3>Novo Serviço</h3>
-    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
-        <input type="text" id="new-servico-nome" placeholder="Nome do Serviço (ex: Corte de Cabelo)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        <textarea id="new-servico-desc" placeholder="Descrição para a MercurIA saber como vender este serviço..." style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
-        
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="new-servico-preco" placeholder="Preço (R$)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-            <input type="number" id="new-servico-duracao" placeholder="Duração (Minutos)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        </div>
-        
-        <button class="btn-generate" id="btn-salvar-servico" style="width: 100%; margin-top: 10px;">+ CADASTRAR SERVIÇO</button>
-    </div>
-</div>
-                            
-     <div class="service-card" style="margin-bottom: 20px;">
-    <h3>Novo Profissional</h3>
-    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
-        <input type="text" id="new-prof-nome" placeholder="Nome do Profissional" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        <input type="text" id="new-prof-especialidade" placeholder="Especialidade (ex: Barbeiro, Colorista)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        <input type="text" id="new-prof-whatsapp" placeholder="WhatsApp do Profissional (com DDD)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        
-        <div style="display: flex; gap: 10px;">
-            <select id="new-prof-tipo-remuneracao" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                <option value="comissao">Comissão (%)</option>
-                <option value="fixo">Salário Fixo</option>
-            </select>
-            <input type="number" id="new-prof-comissao" placeholder="Valor/Porcentagem" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        </div>
-
-        <button class="btn-generate" id="btn-salvar-prof" style="width: 100%; margin-top: 10px;">+ CADASTRAR PROFISSIONAL</button>
-    </div>
-</div>
-                        </div>
-                    </div> 
-
-                    <div id="view-body"></div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <script>
-    // 1. Configuração (Sempre no topo)
-    const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
-        const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;
-        const gradeCompleta = [];
-
-        for (let i = 0; i < diasParaGerar; i++) {
-            const dataReferencia = new Date();
-            dataReferencia.setDate(dataReferencia.getDate() + i);
-            const dataISO = dataReferencia.toISOString().split('T')[0];
-
-            let horaAtual = abertura;
-            while (horaAtual < fechamento) {
-                const dataHoraSlot = `${dataISO}T${horaAtual}:00`;
-                const agendamento = agendados.find(a => a.data_hora_inicio.startsWith(`${dataISO}T${horaAtual}`));
-
-                gradeCompleta.push({
-                    data: dataISO,
-                    hora: horaAtual,
-                    dados: agendamento || null
-                });
-
-                let [h, m] = horaAtual.split(':').map(Number);
-                m += intervalo;
-                if (m >= 60) { h++; m -= 60; }
-                horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-            }
-        }
-        return gradeCompleta;
-    }
-
-    let dadosEstabelecimento = null;
-
-    function generateContent() {
-        const input = document.getElementById('cmd-input').value;
-        const chat = document.getElementById('chat-criar');
-        if(!input) return;
-        const div = document.createElement('div'); 
-        div.className = 'msg-user'; 
-        div.innerText = input;
-        chat.appendChild(div);
-        document.getElementById('cmd-input').value = "";
-        chat.scrollTop = chat.scrollHeight;
-    }
-
-    async function init() {
-        const params = new URLSearchParams(window.location.search);
-        const slug = params.get('s');
-        if (!slug) {
-            document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Slug ausente (?s=slug)</p>";
-            return;
-        }
-        const { data } = await supabaseClient.from('estabelecimentos').select('*').eq('slug', slug).single();
-        if (data) {
-            dadosEstabelecimento = data;
-            document.getElementById('salon-name').innerText = data.nome_fantasia;
-            setupTabs(); 
-        } else {
-            document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
-        }
-    }
-
-    function setupTabs() {
-        const params = new URLSearchParams(window.location.search);
-        const userType = params.get('u') || 'cliente'; 
-        const tabsContainer = document.getElementById('dynamic-tabs');
-        const abasPermitidas = PERFIS[userType];
-        tabsContainer.innerHTML = '';
-        abasPermitidas.forEach((aba, index) => {
-            const tabElement = document.createElement('div');
-            tabElement.className = `tab ${index === 0 ? 'active' : ''}`;
-            tabElement.innerText = aba.label;
-            tabElement.onclick = () => switchTabLite(aba.id, tabElement);
-            tabsContainer.appendChild(tabElement);
-        });
-        if(abasPermitidas.length > 0) switchTabLite(abasPermitidas[0].id, tabsContainer.firstChild);
-    }
-
-    async function switchTabLite(viewId, element) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        element.classList.add('active');
-        
-        const title = document.getElementById('view-title');
-        const body = document.getElementById('view-body');
-        const abaGestao = document.getElementById('aba-gestao');
-
-        if (abaGestao) abaGestao.style.display = 'none';
-
-        if (viewId === 'dashboard') {
-            title.innerText = "CONFIGURAÇÕES DE GESTÃO";
-            body.innerHTML = ""; 
-            if (abaGestao) abaGestao.style.display = 'block';
-            return; 
-        }
-
-        body.innerHTML = "<p style='text-align:center; opacity:0.5'>Buscando...</p>";
-        let dataSelecionada = new Date().toISOString().split('T')[0];
-        window.periodoAgenda = window.periodoAgenda || 'dia';
-
-        let htmlFiltros = `
-            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
-                <button onclick="window.periodoAgenda='dia'; switchTabLite('agenda', document.querySelector('.tab.active'))" 
-                    style="padding: 8px 15px; border-radius: 20px; border: 1px solid #2ecc71; background: ${window.periodoAgenda === 'dia' ? '#2ecc71' : 'transparent'}; color: white; cursor: pointer;">Dia</button>
-                <button onclick="window.periodoAgenda='semana'; switchTabLite('agenda', document.querySelector('.tab.active'))" 
-                    style="padding: 8px 15px; border-radius: 20px; border: 1px solid #2ecc71; background: ${window.periodoAgenda === 'semana' ? '#2ecc71' : 'transparent'}; color: white; cursor: pointer;">Semana</button>
-            </div>`;
-
-        if (viewId === 'agenda') {
-            title.innerText = "AGENDA";
-            const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
-            const diasRange = window.periodoAgenda === 'semana' ? 7 : 0;
-            const dataFim = new Date();
-            dataFim.setDate(new Date().getDate() + diasRange);
-            const dataFimISO = dataFim.toISOString().split('T')[0];
-
-            const { data } = await supabaseClient.from('agendamentos')
-                .select('*, profissionais(nome), servicos(nome)')
-                .eq('estabelecimento_id', dadosEstabelecimento.id)
-                .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
-                .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
-                .order('data_hora_inicio');        
-            
-            const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, dadosEstabelecimento.intervalo_slot, data || []);
-            
-            let htmlAgenda = '<div class="agenda-list">';
-            let ultimaData = "";
-
-            grade.forEach(slot => {
-                if (window.periodoAgenda === 'semana' && slot.data !== ultimaData) {
-                    const dataFormatada = new Date(slot.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' });
-                    htmlAgenda += `<div style="grid-column: 1/-1; background: rgba(255,255,255,0.1); padding: 8px; margin-top: 15px; border-radius: 5px; font-size: 0.8em; text-transform: uppercase; color: #2ecc71;">${dataFormatada}</div>`;
-                    ultimaData = slot.data;
-                }
-
-                const exibirPrivado = (userType === 'dono' || userType === 'funcionario');
-                const estaOcupado = slot.dados !== null;
-                const nomeExibido = estaOcupado ? (exibirPrivado ? slot.dados.cliente_nome : "INDISPONÍVEL") : "DISPONÍVEL";
-                const servicoExibido = estaOcupado ? (exibirPrivado ? (slot.dados.servicos?.nome || 'Serviço') : "Horário reservado") : "Toque para agendar";
-                const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
-
-                htmlAgenda += `
-                    <div class="agenda-item" style="border-left: 4px solid ${corStatus}; opacity: ${estaOcupado && !exibirPrivado ? '0.6' : '1'}">
-                        <div class="agenda-time">${slot.hora}</div>
-                        <div class="agenda-details">
-                            <h4 style="color: ${estaOcupado ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
-                            <span style="font-size: 0.85em; opacity: 0.7;">${servicoExibido}</span>
-                        </div>
-                    </div>`;
-            });
-            body.innerHTML = htmlFiltros + htmlAgenda + '</div>';
-        }
-
-        else if (viewId === 'servicos') {
-            title.innerText = "SERVIÇOS";
-            const { data } = await supabaseClient.from('servicos').select('*').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
-            
-            let htmlServ = '<div class="servicos-list" style="padding: 15px;">'; 
-            data?.forEach(s => {
-                htmlServ += `
-                    <div class="servico-card" style="padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                        <div style="text-align: left;">
-                            <h4 style="margin: 0; color: #fff;">${s.nome}</h4>
-                            <span style="font-size: 0.9em; opacity: 0.6; color: #fff;">${s.duracao || 60} min</span>
-                        </div>
-                        <div style="font-weight: bold; color: #2ecc71;">R$ ${s.preco}</div>
-                    </div>`;
-            });
-            body.innerHTML = htmlServ + (data?.length ? '</div>' : '<p style="text-align:center; opacity:0.5">Nenhum serviço cadastrado.</p>');
-        }
-        else {
-            title.innerText = viewId.toUpperCase();
-            body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
-        }
-    }
-
-    const PERFIS = {
-        cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
-        funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
-        dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
-    };
-
-    window.onload = init;
-    </script>
 </body>
 </html>

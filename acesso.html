@@ -72,15 +72,24 @@
 
         async function init() {
             try {
-                // Usando o novo nome supabaseClient
+                // Tenta pegar a sessão atual
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 
-                if (!session) {
-                    showStep('step-login');
-                } else {
+                if (session) {
                     userLogado = session.user;
                     verificarEstabelecimento();
+                } else {
+                    showStep('step-login');
                 }
+
+                // ESCUTADOR DE MUDANÇA (Caso o redirecionamento demore a processar)
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_IN' && session) {
+                        userLogado = session.user;
+                        verificarEstabelecimento();
+                    }
+                });
+
             } catch (err) {
                 console.error("Erro ao iniciar:", err);
                 showStep('step-login');

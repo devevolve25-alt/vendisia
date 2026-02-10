@@ -176,13 +176,18 @@
         async function finalizarCadastro() {
     console.log("Botão clicado! Iniciando processo...");
 
-    // 1. Captura os elementos com proteção (evita o erro 'null')
-    const inputNome = document.getElementById('edit-nome-fantasia');
-    const inputSlug = document.getElementById('perf-slug');
+    // 1. Captura os elementos corretos baseados no seu HTML
+    const inputNome = document.getElementById('nome-salao'); // ID correto do seu HTML
+    const spanSlug = document.getElementById('slug-text');   // Onde o slug aparece visualmente
 
-    // 2. Extrai os valores ou define padrões caso os IDs não existam no HTML
+    // 2. Extrai os valores
     const nomeFantasia = inputNome ? inputNome.value : "";
-    const slug = inputSlug ? inputSlug.value : "salao-" + Math.floor(Math.random() * 10000);
+    
+    // Se o span do slug estiver vazio ou for "...", gera um slug de emergência
+    let slug = spanSlug ? spanSlug.innerText : "";
+    if (!slug || slug === "...") {
+        slug = updateSlug(); // Tenta gerar chamando sua função
+    }
 
     const linksPagamento = {
         'A': 'https://www.asaas.com/c/ns94wxuzn2xxj7u2',
@@ -190,14 +195,12 @@
         'C': 'https://www.asaas.com/c/2suoi4lxc769lior'
     };
 
-    // Validação simples
     if (!nomeFantasia) {
         alert('Por favor, digite o nome do salão.');
         return;
     }
 
     try {
-        // Verifica se a variável global userLogado existe
         if (!userLogado || !userLogado.id) {
             throw new Error("Usuário não identificado. Tente fazer login novamente.");
         }
@@ -215,19 +218,17 @@
 
         if (error) throw error;
 
-        // 4. Abre o pagamento (com fallback para plano A se planoEscolhido for nulo)
+        // 4. Abre o pagamento em nova aba
         const chavePlano = planoEscolhido || 'A';
         const urlPagamento = linksPagamento[chavePlano];
-        
-        console.log("Abrindo pagamento para o plano:", chavePlano);
         window.open(urlPagamento, '_blank');
 
-        // 5. Redireciona
-        alert('Cadastro realizado! O pagamento foi aberto em uma nova guia.');
+        // 5. Redireciona a aba atual
+        alert('Cadastro realizado! O link de pagamento foi aberto em uma nova aba.');
         window.location.href = `agenda.html?s=${slug}&u=dono`;
 
     } catch (err) {
-        console.error("Erro completo no fluxo:", err);
+        console.error("Erro completo:", err);
         alert('Ocorreu um problema: ' + err.message);
     }
 }

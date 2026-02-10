@@ -224,7 +224,7 @@ function popularCamposGestao() {
     document.getElementById('edit-razao-social').value = dadosEstabelecimento.razao_social || "";
     document.getElementById('edit-cnpj').value = dadosEstabelecimento.cnpj || "";
     document.getElementById('edit-whatsapp').value = dadosEstabelecimento.whatsapp || "";
-    document.getElementById('edit-endereco-completo').value = dadosEstabelecimento.endereco || "";
+    document.getElementById('edit-endereco-completo').value = dadosEstabelecimento.endereco_completo || "";
     document.getElementById('edit-hora-abertura').value = dadosEstabelecimento.hora_abertura || "08:00";
     document.getElementById('edit-hora-fechamento').value = dadosEstabelecimento.hora_fechamento || "18:00";
     document.getElementById('edit-intervalo-slot').value = dadosEstabelecimento.intervalo_slot || 30;
@@ -236,7 +236,7 @@ async function atualizarDadosGerais() {
         razao_social: document.getElementById('edit-razao-social').value,
         cnpj: document.getElementById('edit-cnpj').value,
         whatsapp: document.getElementById('edit-whatsapp').value,
-        endereco: document.getElementById('edit-endereco-completo').value,
+        endereco_completo: document.getElementById('edit-endereco-completo').value,
         hora_abertura: document.getElementById('edit-hora-abertura').value,
         hora_fechamento: document.getElementById('edit-hora-fechamento').value,
         intervalo_slot: parseInt(document.getElementById('edit-intervalo-slot').value)

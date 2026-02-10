@@ -106,22 +106,25 @@
         }
 
         async function loginEmail() {
-            const email = document.getElementById('email-acesso').value;
-            if (!email) return alert("Por favor, digite seu e-mail.");
+    const email = document.getElementById('email-acesso').value;
+    if (!email) return alert("Por favor, digite seu e-mail.");
 
-            const { error } = await supabaseClient.auth.signInWithOtp({
-                email: email,
-                options: {
-                    emailRedirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido
-                }
-            });
+    // O segredo está aqui: forçar o retorno para acesso.html com o parâmetro do plano
+    const redirecionamento = window.location.origin + "/acesso.html?plano=" + planoEscolhido;
 
-            if (error) {
-                alert("Erro ao enviar e-mail: " + error.message);
-            } else {
-                alert("Verifique sua caixa de entrada! Enviamos um link de acesso para o seu e-mail.");
-            }
+    const { error } = await supabaseClient.auth.signInWithOtp({
+        email: email,
+        options: {
+            emailRedirectTo: redirecionamento
         }
+    });
+
+    if (error) {
+        alert("Erro ao enviar e-mail: " + error.message);
+    } else {
+        alert("Verifique sua caixa de entrada! Enviamos um link de acesso exclusivo para você.");
+    }
+}
 
         async function verificarEstabelecimento() {
             try {

@@ -200,12 +200,15 @@ async function switchTabLite(viewId, element) {
         let htmlServ = '<div class="servicos-list" style="padding: 15px;">'; 
         listaServicos?.forEach(s => {
             htmlServ += `
-                <div class="servico-card" style="padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                    <div style="text-align: left;">
-                        <h4 style="margin: 0; color: #fff;">${s.nome}</h4>
-                        <span style="font-size: 0.9em; opacity: 0.6; color: #fff;">${s.duracao_minutos || 60} min</span>
+                <div class="servico-card" style="padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="text-align: left;">
+                            <h4 style="margin: 0; color: #fff;">${s.nome}</h4>
+                            <span style="font-size: 0.9em; opacity: 0.6; color: #fff;">${s.duracao_minutos || 60} min</span>
+                        </div>
+                        <div style="font-weight: bold; color: #2ecc71;">R$ ${s.preco}</div>
                     </div>
-                    <div style="font-weight: bold; color: #2ecc71;">R$ ${s.preco}</div>
+                    ${s.descricao ? `<div style="font-size: 0.85rem; color: #ccc; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 4px; font-style: italic;">${s.descricao}</div>` : ''}
                 </div>`;
         });
         body.innerHTML = htmlServ + (listaServicos?.length ? '</div>' : '<p style="text-align:center; opacity:0.5">Nenhum serviço cadastrado.</p>');

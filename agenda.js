@@ -57,7 +57,6 @@ async function init() {
     const { data: estab, error } = await supabaseClient.from('estabelecimentos').select('*').eq('slug', slug).single();
     
     if (estab) {
-        // --- VERIFICAÇÃO DE TRIAL / PAGAMENTO ---
         const hoje = new Date();
         const dataExpiracao = estab.trial_expires_at ? new Date(estab.trial_expires_at) : null;
 
@@ -75,16 +74,30 @@ async function init() {
         dadosEstabelecimento = estab;
         document.getElementById('salon-name').innerText = estab.nome_fantasia;
 
-        // --- LÓGICA DE PLANOS E VISIBILIDADE ---
         const btnDashboard = document.getElementById('container-link-dashboard');
         if (btnDashboard) {
             btnDashboard.style.display = (estab.plano_ativo === 'C') ? 'block' : 'none';
         }
 
+        // Vincular eventos de clique aos botões de salvamento
+        vincularEventosGestao();
+
         setupTabs(); 
     } else {
         document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
     }
+}
+
+// Conecta os botões do HTML às funções do JS
+function vincularEventosGestao() {
+    const btnUpdateConfig = document.getElementById('btn-atualizar-config');
+    if(btnUpdateConfig) btnUpdateConfig.onclick = atualizarDadosGerais;
+
+    const btnAddServico = document.getElementById('btn-salvar-servico');
+    if(btnAddServico) btnAddServico.onclick = cadastrarServico;
+
+    const btnAddProf = document.getElementById('btn-salvar-prof');
+    if(btnAddProf) btnAddProf.onclick = cadastrarProfissional;
 }
 
 function setupTabs() {
@@ -116,7 +129,10 @@ async function switchTabLite(viewId, element) {
     if (viewId === 'dashboard') {
         title.innerText = "CONFIGURAÇÕES DE GESTÃO";
         body.innerHTML = ""; 
-        if (abaGestao) abaGestao.style.display = 'block';
+        if (abaGestao) {
+            abaGestao.style.display = 'block';
+            popularCamposGestao();
+        }
         return; 
     }
 
@@ -197,6 +213,89 @@ async function switchTabLite(viewId, element) {
     else {
         title.innerText = viewId.toUpperCase();
         body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
+    }
+}
+
+// --- FUNÇÕES DO DASHBOARD (PERSISTÊNCIA) ---
+
+function popularCamposGestao() {
+    if (!dadosEstabelecimento) return;
+    document.getElementById('edit-nome-fantasia').value = dadosEstabelecimento.nome_fantasia || "";
+    document.getElementById('edit-razao-social').value = dadosEstabelecimento.razao_social || "";
+    document.getElementById('edit-cnpj').value = dadosEstabelecimento.cnpj || "";
+    document.getElementById('edit-whatsapp').value = dadosEstabelecimento.whatsapp || "";
+    document.getElementById('edit-endereco-completo').value = dadosEstabelecimento.endereco || "";
+    document.getElementById('edit-hora-abertura').value = dadosEstabelecimento.hora_abertura || "08:00";
+    document.getElementById('edit-hora-fechamento').value = dadosEstabelecimento.hora_fechamento || "18:00";
+    document.getElementById('edit-intervalo-slot').value = dadosEstabelecimento.intervalo_slot || 30;
+}
+
+async function atualizarDadosGerais() {
+    const novosDados = {
+        nome_fantasia: document.getElementById('edit-nome-fantasia').value,
+        razao_social: document.getElementById('edit-razao-social').value,
+        cnpj: document.getElementById('edit-cnpj').value,
+        whatsapp: document.getElementById('edit-whatsapp').value,
+        endereco: document.getElementById('edit-endereco-completo').value,
+        hora_abertura: document.getElementById('edit-hora-abertura').value,
+        hora_fechamento: document.getElementById('edit-hora-fechamento').value,
+        intervalo_slot: parseInt(document.getElementById('edit-intervalo-slot').value)
+    };
+
+    const { error } = await supabaseClient
+        .from('estabelecimentos')
+        .update(novosDados)
+        .eq('id', dadosEstabelecimento.id);
+
+    if (error) alert("Erro: " + error.message);
+    else {
+        alert("Configurações salvas!");
+        dadosEstabelecimento = { ...dadosEstabelecimento, ...novosDados };
+        document.getElementById('salon-name').innerText = novosDados.nome_fantasia;
+    }
+}
+
+async function cadastrarServico() {
+    const nome = document.getElementById('new-servico-nome').value;
+    const preco = parseFloat(document.getElementById('new-servico-preco').value);
+    const duracao = parseInt(document.getElementById('new-servico-duracao').value);
+    const descricao = document.getElementById('new-servico-desc').value;
+
+    if (!nome || !preco) return alert("Preencha Nome e Preço.");
+
+    const { error } = await supabaseClient.from('servicos').insert([{
+        estabelecimento_id: dadosEstabelecimento.id,
+        nome, preco, duracao, descricao
+    }]);
+
+    if (error) alert("Erro: " + error.message);
+    else {
+        alert("Serviço adicionado!");
+        document.getElementById('new-servico-nome').value = "";
+        document.getElementById('new-servico-preco').value = "";
+        document.getElementById('new-servico-duracao').value = "";
+        document.getElementById('new-servico-desc').value = "";
+    }
+}
+
+async function cadastrarProfissional() {
+    const nome = document.getElementById('new-prof-nome').value;
+    const especialidade = document.getElementById('new-prof-especialidade').value;
+    const whatsapp = document.getElementById('new-prof-whatsapp').value;
+
+    if (!nome) return alert("Nome é obrigatório.");
+
+    const { error } = await supabaseClient.from('profissionais').insert([{
+        estabelecimento_id: dadosEstabelecimento.id,
+        nome, especialidade, whatsapp
+    }]);
+
+    if (error) alert("Erro: " + error.message);
+    else {
+        alert("Profissional adicionado!");
+        document.getElementById('new-prof-nome').value = "";
+        document.getElementById('new-prof-especialidade').value = "";
+        document.getElementById('new-prof-whatsapp').value = "";
     }
 }
 

@@ -35,9 +35,14 @@
         </div>
 
         <div id="step-login">
-            <p>Para continuar, acesse sua conta Google.</p>
-            <button class="btn-acao" onclick="loginGoogle()">ENTRAR COM GOOGLE</button>
-        </div>
+    <p>Para continuar, acesse sua conta.</p>
+    <button class="btn-acao" onclick="loginGoogle()" style="margin-bottom: 15px;">ENTRAR COM GOOGLE</button>
+    
+    <div style="margin: 15px 0; opacity: 0.5; font-size: 0.8rem;">— OU VIA E-MAIL —</div>
+    
+    <input type="email" id="email-acesso" placeholder="Seu melhor e-mail">
+    <button class="btn-acao" onclick="loginEmail()" style="background: transparent; color: var(--gold); border: 1px solid var(--gold);">RECEBER LINK DE ACESSO</button>
+</div>
 
         <div id="step-cadastro">
             <p>Defina o nome do seu negócio para gerar seu link exclusivo.</p>
@@ -90,6 +95,24 @@
                 }
             });
         }
+
+        async function loginEmail() {
+    const email = document.getElementById('email-acesso').value;
+    if (!email) return alert("Por favor, digite seu e-mail.");
+
+    const { error } = await supabaseClient.auth.signInWithOtp({
+        email: email,
+        options: {
+            emailRedirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido
+        }
+    });
+
+    if (error) {
+        alert("Erro ao enviar e-mail: " + error.message);
+    } else {
+        alert("Verifique sua caixa de entrada! Enviamos um link de acesso para o seu e-mail.");
+    }
+}
 
         async function verificarEstabelecimento() {
             const { data, error } = await supabaseClient

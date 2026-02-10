@@ -203,7 +203,7 @@ async function switchTabLite(viewId, element) {
                 <div class="servico-card" style="padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
                     <div style="text-align: left;">
                         <h4 style="margin: 0; color: #fff;">${s.nome}</h4>
-                        <span style="font-size: 0.9em; opacity: 0.6; color: #fff;">${s.duracao || 60} min</span>
+                        <span style="font-size: 0.9em; opacity: 0.6; color: #fff;">${s.duracao_minutos || 60} min</span>
                     </div>
                     <div style="font-weight: bold; color: #2ecc71;">R$ ${s.preco}</div>
                 </div>`;
@@ -265,7 +265,10 @@ async function cadastrarServico() {
 
     const { error } = await supabaseClient.from('servicos').insert([{
         estabelecimento_id: dadosEstabelecimento.id,
-        nome, preco, duracao, descricao
+        nome: nome,
+        preco: preco,
+        descricao: descricao,
+        duracao_minutos: duracao 
     }]);
 
     if (error) alert("Erro: " + error.message);

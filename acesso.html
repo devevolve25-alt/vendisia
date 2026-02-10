@@ -174,6 +174,13 @@
     const nomeFantasia = document.getElementById('nome-salao').value;
     const slug = updateSlug();
 
+    // Defina seus links de pagamento aqui
+    const linksPagamento = {
+        'Conecta Fácil': 'https://www.asaas.com/c/ns94wxuzn2xxj7u2',
+        'Agenda Pro': 'https://www.asaas.com/c/9abkx5vuzzsv416t',
+        'Gestão Total': 'https://www.asaas.com/c/2suoi4lxc769lior'
+    };
+
     if (!nomeFantasia || nomeFantasia.length < 3) return alert('Por favor, digite um nome válido.');
 
     const { error } = await supabaseClient
@@ -187,12 +194,13 @@
         }]);
 
     if (error) {
-        console.error("ERRO DETALHADO:", error);
-        // Agora o alert vai te dizer o motivo real enviado pelo banco
-        alert(`Erro do Banco: ${error.message} (${error.code})`);
+        alert('Erro ao salvar: ' + error.message);
     } else {
-        alert(`Sucesso! Plano ${planoEscolhido} selecionado.`);
-        window.location.href = `agenda.html?s=${slug}&u=dono`;
+        alert(`Sistema criado! Vamos te redirecionar para o pagamento do Plano ${planoEscolhido}.`);
+        
+        // Redireciona para o link de pagamento baseado no plano
+        const checkoutUrl = linksPagamento[planoEscolhido];
+        window.location.href = checkoutUrl;
     }
 }
 

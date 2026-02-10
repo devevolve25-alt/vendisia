@@ -174,36 +174,39 @@
         }
 
         async function finalizarCadastro() {
-    const nomeFantasia = document.getElementById('nome-salao').value;
-    const slug = updateSlug();
+    const nomeFantasia = document.getElementById('edit-nome-fantasia').value;
+    const slug = document.getElementById('perf-slug')?.value || ""; // Pega o slug gerado
 
-    // Defina seus links de pagamento aqui
     const linksPagamento = {
         'A': 'https://www.asaas.com/c/ns94wxuzn2xxj7u2',
         'B': 'https://www.asaas.com/c/9abkx5vuzzsv416t',
         'C': 'https://www.asaas.com/c/2suoi4lxc769lior'
     };
 
-    if (!nomeFantasia || nomeFantasia.length < 3) return alert('Por favor, digite um nome válido.');
+    if (!nomeFantasia) return alert('Por favor, digite o nome do salão.');
 
+    // 1. Salva no Supabase
     const { error } = await supabaseClient
         .from('estabelecimentos')
         .insert([{
             dono_id: userLogado.id,
             nome_fantasia: nomeFantasia,
             slug: slug,
-            plano_ativo: planoEscolhido,
+            plano_ativo: planoEscolhido, // A, B ou C
             status_pagamento: 'pendente'
         }]);
 
     if (error) {
         alert('Erro ao salvar: ' + error.message);
     } else {
-        alert(`Sistema criado! Vamos te redirecionar para o pagamento do Plano ${planoEscolhido}.`);
+        // 2. Abre o link de pagamento em uma NOVA ABA
+        const urlPagamento = linksPagamento[planoEscolhido];
+        window.open(urlPagamento, '_blank');
+
+        // 3. Avisa o usuário e redireciona a ABA ATUAL para a agenda
+        alert('Cadastro realizado! O link de pagamento foi aberto em uma nova aba. Vamos te levar para sua agenda agora.');
         
-        // Redireciona para o link de pagamento baseado no plano
-        const checkoutUrl = linksPagamento[planoEscolhido];
-        window.location.href = checkoutUrl;
+        window.location.href = `agenda.html?s=${slug}&u=dono`;
     }
 }
 

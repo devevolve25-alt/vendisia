@@ -57,6 +57,21 @@ async function init() {
     const { data: estab, error } = await supabaseClient.from('estabelecimentos').select('*').eq('slug', slug).single();
     
     if (estab) {
+        // --- VERIFICAÇÃO DE TRIAL / PAGAMENTO ---
+        const hoje = new Date();
+        const dataExpiracao = estab.trial_expires_at ? new Date(estab.trial_expires_at) : null;
+
+        if (estab.status_pagamento !== 'pago' && dataExpiracao && hoje > dataExpiracao) {
+            document.body.innerHTML = `
+                <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000; color:#fff; text-align:center; padding:20px; font-family:'Montserrat';">
+                    <h1 style="color:#d4af37; font-family:'Bebas Neue'; font-size: 3rem;">PERÍODO DE TESTE ENCERRADO</h1>
+                    <p style="opacity:0.8; margin-bottom: 25px;">Seus 7 dias gratuitos acabaram. Para continuar usando a VENDISIA, regularize sua assinatura.</p>
+                    <a href="https://vendisia.ia.br" style="padding:15px 30px; background:#d4af37; color:#000; text-decoration:none; font-family:'Bebas Neue'; font-size:1.2rem; border-radius:5px;">ASSINAR AGORA</a>
+                </div>
+            `;
+            return;
+        }
+
         dadosEstabelecimento = estab;
         document.getElementById('salon-name').innerText = estab.nome_fantasia;
 
@@ -125,7 +140,6 @@ async function switchTabLite(viewId, element) {
         dataFim.setDate(new Date().getDate() + diasRange);
         const dataFimISO = dataFim.toISOString().split('T')[0];
 
-        // Resolvido conflito de nome da variável 'data'
         const { data: agendamentos } = await supabaseClient.from('agendamentos')
             .select('*, profissionais(nome), servicos(nome)')
             .eq('estabelecimento_id', dadosEstabelecimento.id)

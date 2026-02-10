@@ -106,34 +106,55 @@
         }
 
         async function loginEmail() {
-    const email = document.getElementById('email-acesso').value;
-    if (!email) return alert("Por favor, digite seu e-mail.");
+            const email = document.getElementById('email-acesso').value;
+            if (!email) return alert("Por favor, digite seu e-mail.");
 
-    const { error } = await supabaseClient.auth.signInWithOtp({
-        email: email,
-        options: {
-            emailRedirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido
+            const { error } = await supabaseClient.auth.signInWithOtp({
+                email: email,
+                options: {
+                    emailRedirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido
+                }
+            });
+
+            if (error) {
+                alert("Erro ao enviar e-mail: " + error.message);
+            } else {
+                alert("Verifique sua caixa de entrada! Enviamos um link de acesso para o seu e-mail.");
+            }
         }
-    });
-
-    if (error) {
-        alert("Erro ao enviar e-mail: " + error.message);
-    } else {
-        alert("Verifique sua caixa de entrada! Enviamos um link de acesso para o seu e-mail.");
-    }
-}
 
         async function verificarEstabelecimento() {
-            const { data, error } = await supabaseClient
-                .from('estabelecimentos')
-                .select('slug, status_pagamento')
-                .eq('dono_id', userLogado.id)
-                .maybeSingle();
+            try {
+                // PASSO 4: Verifica/Cria o registro na tabela Perfis antes de qualquer coisa
+                let { data: perfil } = await supabaseClient
+                    .from('perfis')
+                    .select('id')
+                    .eq('id', userLogado.id)
+                    .maybeSingle();
 
-            if (data) {
-                window.location.href = `agenda.html?s=${data.slug}&u=dono`;
-            } else {
-                showStep('step-cadastro');
+                if (!perfil) {
+                    const { error: errorPerfil } = await supabaseClient
+                        .from('perfis')
+                        .insert([{ id: userLogado.id, email_contato: userLogado.email }]);
+                    
+                    if (errorPerfil) throw errorPerfil;
+                }
+
+                // PASSO 5: Verifica se já existe estabelecimento vinculado ao Perfil
+                const { data, error } = await supabaseClient
+                    .from('estabelecimentos')
+                    .select('slug, status_pagamento')
+                    .eq('dono_id', userLogado.id)
+                    .maybeSingle();
+
+                if (data) {
+                    window.location.href = `agenda.html?s=${data.slug}&u=dono`;
+                } else {
+                    showStep('step-cadastro');
+                }
+            } catch (err) {
+                console.error("Erro no fluxo de verificação:", err);
+                alert("Erro ao processar perfil de acesso.");
             }
         }
 
@@ -174,5 +195,6 @@
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
+    
 </body>
 </html>

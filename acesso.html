@@ -174,8 +174,15 @@
         }
 
         async function finalizarCadastro() {
-    const nomeFantasia = document.getElementById('edit-nome-fantasia').value;
-    const slug = document.getElementById('perf-slug')?.value || ""; // Pega o slug gerado
+    console.log("Botão clicado! Iniciando processo...");
+
+    // 1. Captura os elementos com proteção (evita o erro 'null')
+    const inputNome = document.getElementById('edit-nome-fantasia');
+    const inputSlug = document.getElementById('perf-slug');
+
+    // 2. Extrai os valores ou define padrões caso os IDs não existam no HTML
+    const nomeFantasia = inputNome ? inputNome.value : "";
+    const slug = inputSlug ? inputSlug.value : "salao-" + Math.floor(Math.random() * 10000);
 
     const linksPagamento = {
         'A': 'https://www.asaas.com/c/ns94wxuzn2xxj7u2',
@@ -183,30 +190,45 @@
         'C': 'https://www.asaas.com/c/2suoi4lxc769lior'
     };
 
-    if (!nomeFantasia) return alert('Por favor, digite o nome do salão.');
+    // Validação simples
+    if (!nomeFantasia) {
+        alert('Por favor, digite o nome do salão.');
+        return;
+    }
 
-    // 1. Salva no Supabase
-    const { error } = await supabaseClient
-        .from('estabelecimentos')
-        .insert([{
-            dono_id: userLogado.id,
-            nome_fantasia: nomeFantasia,
-            slug: slug,
-            plano_ativo: planoEscolhido, // A, B ou C
-            status_pagamento: 'pendente'
-        }]);
+    try {
+        // Verifica se a variável global userLogado existe
+        if (!userLogado || !userLogado.id) {
+            throw new Error("Usuário não identificado. Tente fazer login novamente.");
+        }
 
-    if (error) {
-        alert('Erro ao salvar: ' + error.message);
-    } else {
-        // 2. Abre o link de pagamento em uma NOVA ABA
-        const urlPagamento = linksPagamento[planoEscolhido];
+        // 3. Salva no Supabase
+        const { error } = await supabaseClient
+            .from('estabelecimentos')
+            .insert([{
+                dono_id: userLogado.id,
+                nome_fantasia: nomeFantasia,
+                slug: slug,
+                plano_ativo: planoEscolhido || 'A',
+                status_pagamento: 'pendente'
+            }]);
+
+        if (error) throw error;
+
+        // 4. Abre o pagamento (com fallback para plano A se planoEscolhido for nulo)
+        const chavePlano = planoEscolhido || 'A';
+        const urlPagamento = linksPagamento[chavePlano];
+        
+        console.log("Abrindo pagamento para o plano:", chavePlano);
         window.open(urlPagamento, '_blank');
 
-        // 3. Avisa o usuário e redireciona a ABA ATUAL para a agenda
-        alert('Cadastro realizado! O link de pagamento foi aberto em uma nova aba. Vamos te levar para sua agenda agora.');
-        
+        // 5. Redireciona
+        alert('Cadastro realizado! O pagamento foi aberto em uma nova guia.');
         window.location.href = `agenda.html?s=${slug}&u=dono`;
+
+    } catch (err) {
+        console.error("Erro completo no fluxo:", err);
+        alert('Ocorreu um problema: ' + err.message);
     }
 }
 

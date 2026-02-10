@@ -50,13 +50,14 @@
     <script>
         const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Renomeado para supabaseClient para evitar conflito com a biblioteca global
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let userLogado = null;
         const urlParams = new URLSearchParams(window.location.search);
-        const planoEscolhido = urlParams.get('plano') || 'A'; // Padrão para Plano A
+        const planoEscolhido = urlParams.get('plano') || 'A';
 
-        // MOSTRAR TELA ESPECÍFICA
         function showStep(stepId) {
             document.getElementById('step-loading').classList.remove('active');
             document.getElementById('step-login').classList.remove('active');
@@ -64,10 +65,10 @@
             document.getElementById(stepId).classList.add('active');
         }
 
-        // 1. INICIALIZAÇÃO
         async function init() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                // Usando o novo nome supabaseClient
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 
                 if (!session) {
                     showStep('step-login');
@@ -81,9 +82,8 @@
             }
         }
 
-        // 2. LOGIN
         async function loginGoogle() {
-            await supabase.auth.signInWithOAuth({
+            await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: { 
                     redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
@@ -91,24 +91,20 @@
             });
         }
 
-        // 3. VERIFICAR SE JÁ EXISTE NO BANCO
         async function verificarEstabelecimento() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('estabelecimentos')
                 .select('slug, status_pagamento')
                 .eq('dono_id', userLogado.id)
-                .maybeSingle(); // Usamos maybeSingle para não disparar erro se não encontrar
+                .maybeSingle();
 
             if (data) {
-                // Usuário já cadastrado
                 window.location.href = `agenda.html?s=${data.slug}&u=dono`;
             } else {
-                // Usuário novo
                 showStep('step-cadastro');
             }
         }
 
-        // 4. SLUG
         function updateSlug() {
             const nome = document.getElementById('nome-salao').value;
             const slug = nome.toLowerCase()
@@ -121,14 +117,13 @@
             return slug;
         }
 
-        // 5. SALVAR NO BANCO
         async function finalizarCadastro() {
             const nomeFantasia = document.getElementById('nome-salao').value;
             const slug = updateSlug();
 
             if (!nomeFantasia || nomeFantasia.length < 3) return alert('Por favor, digite um nome válido.');
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('estabelecimentos')
                 .insert([{
                     dono_id: userLogado.id,
@@ -142,11 +137,9 @@
                 alert('Erro: Este nome de link já está em uso ou houve um erro de conexão.');
             } else {
                 alert(`Sucesso! Plano ${planoEscolhido} selecionado. Redirecionando para pagamento...`);
-                // Futuro: window.location.href = link_pagamento;
             }
         }
 
-        // Disparo ao carregar o DOM
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>

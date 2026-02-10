@@ -171,27 +171,30 @@
         }
 
         async function finalizarCadastro() {
-            const nomeFantasia = document.getElementById('nome-salao').value;
-            const slug = updateSlug();
+    const nomeFantasia = document.getElementById('nome-salao').value;
+    const slug = updateSlug();
 
-            if (!nomeFantasia || nomeFantasia.length < 3) return alert('Por favor, digite um nome válido.');
+    if (!nomeFantasia || nomeFantasia.length < 3) return alert('Por favor, digite um nome válido.');
 
-            const { error } = await supabaseClient
-                .from('estabelecimentos')
-                .insert([{
-                    dono_id: userLogado.id,
-                    nome_fantasia: nomeFantasia,
-                    slug: slug,
-                    plano_ativo: planoEscolhido,
-                    status_pagamento: 'pendente'
-                }]);
+    const { error } = await supabaseClient
+        .from('estabelecimentos')
+        .insert([{
+            dono_id: userLogado.id,
+            nome_fantasia: nomeFantasia,
+            slug: slug,
+            plano_ativo: planoEscolhido,
+            status_pagamento: 'pendente'
+        }]);
 
-            if (error) {
-                alert('Erro: Este nome de link já está em uso ou houve um erro de conexão.');
-            } else {
-                alert(`Sucesso! Plano ${planoEscolhido} selecionado. Redirecionando para pagamento...`);
-            }
-        }
+    if (error) {
+        console.error("ERRO DETALHADO:", error);
+        // Agora o alert vai te dizer o motivo real enviado pelo banco
+        alert(`Erro do Banco: ${error.message} (${error.code})`);
+    } else {
+        alert(`Sucesso! Plano ${planoEscolhido} selecionado.`);
+        window.location.href = `agenda.html?s=${slug}&u=dono`;
+    }
+}
 
         document.addEventListener('DOMContentLoaded', init);
     </script>

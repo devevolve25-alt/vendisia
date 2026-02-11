@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes e edição de cadastros - 3
+//atualizado para calculo de comissoes e edição de cadastros - 4
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -29,7 +29,7 @@ async function carregarDadosIniciais(donoId) {
         // Configura o link de volta para a agenda do dono
         const linkAgenda = document.getElementById('link-voltar-agenda');
         if (linkAgenda) {
-            linkAgenda.href = `index.html?s=${slug}&u=dono`;
+            linkAgenda.href = `agenda.html?s=${slug}&u=dono`;
         }
 
         atualizarDashboard(salaoIdAtual);

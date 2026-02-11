@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - atualizacao para dashboard - 1
+// 1. Configuração (Sempre no topo) - atualizacao para exibição na agenda -1
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);

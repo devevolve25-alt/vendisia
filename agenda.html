@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="agenda.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="agenda.js"></script>
-    
 </head>
 <body>
 
@@ -140,6 +139,31 @@
             </div>
         </section>
     </main>
+
+    <div id="modal-agendamento" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; padding: 20px;">
+        <div style="background:#111; padding:25px; border:1px solid var(--creative-color); border-radius:10px; width:100%; max-width:400px; font-family:'Montserrat';">
+            <h2 style="font-family:'Bebas Neue'; color:var(--creative-color); margin-bottom:15px; letter-spacing: 1px;">Novo Agendamento</h2>
+            <p id="info-slot" style="font-size:0.85rem; margin-bottom:20px; color:#888; border-bottom: 1px solid #333; padding-bottom: 10px;"></p>
+            
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" id="agend-nome" placeholder="Seu Nome" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                <input type="text" id="agend-whatsapp" placeholder="Seu WhatsApp" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                
+                <select id="agend-servico" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                    <option value="">Selecione o Serviço...</option>
+                </select>
+
+                <select id="agend-profissional" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                    <option value="">Selecione o Profissional...</option>
+                </select>
+
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button onclick="fecharModal()" style="flex:1; padding:12px; background:#333; color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight: 600;">CANCELAR</button>
+                    <button onclick="confirmarAgendamento()" style="flex:1; padding:12px; background:var(--creative-color); color:#000; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">CONFIRMAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

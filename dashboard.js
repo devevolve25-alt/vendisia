@@ -1,4 +1,4 @@
-//atualizado para exibição no dashboard - 1
+//atualizado para exibição no dashboard - 2
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -51,29 +51,15 @@ async function atualizarDashboard(salaoId) {
             if (inputIA) inputIA.value = estab.ia_saudacao || "";
         }
 
-        // 2. BUSCA FINANCEIRA (Ajustada para ser compatível com o formato ISO da agenda)
+        // 2. BUSCA FINANCEIRA
         const { data: movs } = await supabaseClient
             .from('movimentacoes_financeiras')
             .select('valor, data_movimentacao, profissional_id')
             .eq('estabelecimento_id', salaoId)
-            .gte('data_movimentacao', inicioMes); // Puxa tudo do mês
+            .gte('data_movimentacao', inicioMes)
+            .lt('data_movimentacao', inicioProxMes);
 
-        // --- CÁLCULOS FINANCEIROS ---
-        // Usamos includes(hojeISO) para ignorar se a data no banco tem "T", "Z" ou espaços
-        const fatHoje = movs?.filter(m => 
-            m.data_movimentacao && m.data_movimentacao.includes(hojeISO)
-        ).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
-
-        const fatMes = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
-
-        if (document.getElementById('fat-hoje')) {
-            document.getElementById('fat-hoje').innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        }
-        if (document.getElementById('fat-mes')) {
-            document.getElementById('fat-mes').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        }
-
-        // 3. BUSCA AGENDAMENTOS (Unificada)
+        // 3. BUSCA AGENDAMENTOS
         const { data: agsMes } = await supabaseClient
             .from('agendamentos')
             .select('id, data_hora_inicio') 
@@ -87,15 +73,23 @@ async function atualizarDashboard(salaoId) {
             .select('id, nome, tipo_remuneracao, valor_comissao_porcentagem')
             .eq('estabelecimento_id', salaoId);
 
-        // --- ATUALIZAÇÃO DOS CARDS DE FATURAMENTO ---
-        const fatHoje = movs?.filter(m => m.data_movimentacao.includes(hojeISO)).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
+        // --- CÁLCULOS FINANCEIROS (Unificados para evitar erro de sintaxe) ---
+        const fatHoje = movs?.filter(m => 
+            m.data_movimentacao && m.data_movimentacao.includes(hojeISO)
+        ).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
+
         const fatMes = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
-        // Verificando se os IDs existem antes de escrever
-        if (document.getElementById('fat-hoje')) document.getElementById('fat-hoje').innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        if (document.getElementById('fat-mes')) document.getElementById('fat-mes').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        // O card de semana pode ser preenchido com o do mês ou lógica específica depois
-        if (document.getElementById('fat-semana')) document.getElementById('fat-semana').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        // --- ATUALIZAÇÃO DOS CARDS DE FATURAMENTO ---
+        if (document.getElementById('fat-hoje')) {
+            document.getElementById('fat-hoje').innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+        if (document.getElementById('fat-mes')) {
+            document.getElementById('fat-mes').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+        if (document.getElementById('fat-semana')) {
+            document.getElementById('fat-semana').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
 
         // --- ATUALIZAÇÃO DOS CARDS DE AGENDAMENTOS ---
         const totalHoje = agsMes?.filter(a => a.data_hora_inicio && a.data_hora_inicio.includes(hojeISO)).length || 0;

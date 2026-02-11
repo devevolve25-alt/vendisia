@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo)
+// 1. Configuração (Sempre no topo) - atualizado agenda dono
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -301,6 +301,28 @@ async function confirmarAgendamento() {
         status: 'confirmado'
     };
 
+    // --- FUNÇÃO PARA CANCELAR AGENDAMENTO (DONO) ---
+async function cancelarAgendamento(agendamentoId) {
+    const confirmar = confirm("Deseja realmente CANCELAR este agendamento? Isso removerá os dados financeiros vinculados.");
+    
+    if (confirmar) {
+        // 1. Deleta a movimentação financeira vinculada
+        await supabaseClient.from('movimentacoes_financeiras').delete().eq('agendamento_id', agendamentoId);
+        
+        // 2. Deleta o agendamento
+        const { error } = await supabaseClient.from('agendamentos').delete().eq('id', agendamentoId);
+
+        if (error) {
+            alert("Erro ao cancelar: " + error.message);
+        } else {
+            alert("Agendamento cancelado com sucesso!");
+            // A atualização da tela ocorrerá via Realtime ou via chamada manual abaixo:
+            const tabAtiva = document.querySelector('.tab.active');
+            switchTabLite('agenda', tabAtiva);
+        }
+    }
+}
+
     const { data: novoAgendamento, error: errorAg } = await supabaseClient
         .from('agendamentos')
         .insert([payload])
@@ -439,5 +461,17 @@ const PERFIS = {
     funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
     dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
 };
+
+    // --- ESCUTA DE MUDANÇAS EM TEMPO REAL ---
+const monitorarAgenda = supabaseClient
+    .channel('agenda-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => {
+        // Se a aba de agenda estiver ativa, recarrega o conteúdo dela
+        const tabAtiva = document.querySelector('.tab.active');
+        if (tabAtiva && tabAtiva.innerText.includes('AGENDA')) {
+            switchTabLite('agenda', tabAtiva);
+        }
+    })
+    .subscribe();
 
 window.onload = init;

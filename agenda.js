@@ -263,28 +263,31 @@ async function confirmarAgendamento() {
         return alert("Por favor, preencha todos os campos.");
     }
 
-    const dataFormatada = `${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`;
+    const dataLimpa = `${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`;
 
-    const payload = {
-        estabelecimento_id: dadosEstabelecimento.id,
-        profissional_id: profId,
-        servico_id: servicoId, 
-        cliente_nome: nome,
-        cliente_whatsapp: whatsapp,
-        data_hora_inicio: dataFormatada,
-        status: 'confirmado'
-    };
+    // Criamos um objeto novo, do zero, para garantir que não haja propriedades fantasmas
+    const novoAgendamento = {};
+    novoAgendamento['estabelecimento_id'] = dadosEstabelecimento.id;
+    novoAgendamento['profissional_id'] = profId;
+    novoAgendamento['servico_id'] = servicoId;
+    novoAgendamento['cliente_nome'] = nome;
+    novoAgendamento['cliente_whatsapp'] = whatsapp;
+    novoAgendamento['data_hora_inicio'] = dataLimpa;
+    novoAgendamento['status'] = 'confirmado';
 
+    // O pulo do gato: usamos o .insert() sem pedir retorno de dados
     const { error } = await supabaseClient
         .from('agendamentos')
-        .insert([payload]);
+        .insert(novoAgendamento); 
 
     if (error) {
+        console.error("Erro técnico do Supabase:", error);
         alert("Erro ao agendar: " + error.message);
     } else {
         alert("Agendamento realizado com sucesso!");
         fecharModal();
-       // switchTabLite('agenda', document.querySelector('.tab.active')); 
+        // Recarregamos a página inteira para limpar qualquer cache de esquema do JS
+        location.reload(); 
     }
 }
 

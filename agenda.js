@@ -469,6 +469,13 @@ const monitorarAgenda = supabaseClient
             switchTabLite('agenda', tabAtiva);
         }
     })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes_financeiras' }, () => {
+        // Isso garante que se houver um delete financeiro, o sistema reaja
+        const tabAtiva = document.querySelector('.tab.active');
+        if (tabAtiva && tabAtiva.innerText.includes('AGENDA')) {
+            switchTabLite('agenda', tabAtiva);
+        }
+    })
     .subscribe();
 
 window.onload = init;

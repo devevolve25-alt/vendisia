@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes - 2
+//atualizado para calculo de comissoes - 2 (Versão Corrigida)
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -125,21 +125,16 @@ async function atualizarDashboard(salaoId) {
 
         if (profs && profs.length > 0) {
             profs.forEach(p => {
-                // 1. Filtra quanto este profissional faturou no total (bruto)
                 const faturamentoBrutoProf = movs?.filter(m => m.profissional_id === p.id)
                     .reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
-                // 2. Cálculo da comissão baseada no tipo de remuneração
                 let comissaoDevida = 0;
                 const tipo = p.tipo_remuneracao?.toLowerCase();
                 const valorRegra = Number(p.valor_comissao_porcentagem) || 0;
 
                 if (tipo === 'comissao' || tipo === 'percentual' || tipo === 'comissão') {
-                    // Cálculo percentual: (Faturamento * X / 100)
                     comissaoDevida = faturamentoBrutoProf * (valorRegra / 100);
                 } else {
-                    // Se for fixo, a comissão é o valor cadastrado por serviço (ou valor base)
-                    // Aqui você pode ajustar se o 'fixo' for um valor por agendamento
                     const qtdAgendamentos = agsMes?.filter(a => a.profissional_id === p.id).length || 0;
                     comissaoDevida = qtdAgendamentos * valorRegra;
                 }
@@ -147,7 +142,6 @@ async function atualizarDashboard(salaoId) {
                 totalComissoesGeral += comissaoDevida;
                 ranking[p.nome] = faturamentoBrutoProf;
 
-                // 3. Monta o HTML da lista com Faturamento Bruto vs Comissão
                 listaComissoesHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #333;">
                         <div style="display:flex; flex-direction:column;">
@@ -162,8 +156,6 @@ async function atualizarDashboard(salaoId) {
             });
         }
 
-        // --- ATUALIZAÇÃO DA INTERFACE ---
-        // 1. Profissional de Destaque (Quem mais faturou bruto)
         if (document.getElementById('top-barbeiro')) {
             const temRanking = Object.keys(ranking).length > 0;
             document.getElementById('top-barbeiro').innerText = temRanking 
@@ -171,15 +163,18 @@ async function atualizarDashboard(salaoId) {
                 : "---";
         }
 
-        // 2. Total de Comissões (O que o dono deve pagar no total)
         if (document.getElementById('total-comissao')) {
             document.getElementById('total-comissao').innerText = `R$ ${totalComissoesGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         }
 
-        // 3. Lista detalhada
         if (document.getElementById('lista-comissoes')) {
             document.getElementById('lista-comissoes').innerHTML = listaComissoesHTML || '<span style="color:#666; padding:10px; display:block;">Sem movimentações</span>';
         }
+
+    } catch (err) {
+        console.error("Erro Geral Dashboard:", err);
+    }
+}
 
 const btnSalvarIA = document.getElementById('btn-salvar-ia');
 if (btnSalvarIA) {

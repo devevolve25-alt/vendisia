@@ -17,13 +17,23 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
-            const dataHoraSlot = `${dataISO}T${horaAtual}:00`;
-            const agendamento = agendados.find(a => a.data_hora_inicio.startsWith(`${dataISO}T${horaAtual}`));
+            const dataHoraSlotString = `${dataISO}T${horaAtual}:00`;
+            const dataHoraSlotObjeto = new Date(dataHoraSlotString);
+
+            // Lógica de Bloqueio Inteligente:
+            // Verifica se o horário deste slot está entre o início e o fim de algum agendamento
+            const agendamentoEncontrado = agendados.find(a => {
+                const inicio = new Date(a.data_hora_inicio);
+                const duracao = a.servicos?.duracao_minutos || 30;
+                const fim = new Date(inicio.getTime() + duracao * 60000);
+                
+                return dataHoraSlotObjeto >= inicio && dataHoraSlotObjeto < fim;
+            });
 
             gradeCompleta.push({
                 data: dataISO,
                 hora: horaAtual,
-                dados: agendamento || null
+                dados: agendamentoEncontrado || null
             });
 
             let [h, m] = horaAtual.split(':').map(Number);
@@ -155,7 +165,7 @@ async function switchTabLite(viewId, element) {
         const dataFimISO = dataFim.toISOString().split('T')[0];
 
         const { data: agendamentos } = await supabaseClient.from('agendamentos')
-            .select('*, profissionais(nome), servicos(nome)')
+            .select('*, profissionais(nome), servicos(nome, duracao_minutos)')
             .eq('estabelecimento_id', dadosEstabelecimento.id)
             .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
             .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
@@ -179,7 +189,6 @@ async function switchTabLite(viewId, element) {
             const servicoExibido = estaOcupado ? (exibirPrivado ? (slot.dados.servicos?.nome || 'Serviço') : "Horário reservado") : "Toque para agendar";
             const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
 
-            // Habilita o clique somente em slots DISPONÍVEIS
             const acaoClique = !estaOcupado ? `onclick="abrirModalAgendamento('${slot.data}', '${slot.hora}')"` : "";
 
             htmlAgenda += `
@@ -227,13 +236,11 @@ async function abrirModalAgendamento(data, hora) {
     document.getElementById('modal-agendamento').style.display = 'flex';
     document.getElementById('info-slot').innerText = `Agendando para: ${new Date(data + 'T12:00:00').toLocaleDateString('pt-BR')} às ${hora}`;
 
-    // Carregar Serviços
     const { data: servicos } = await supabaseClient.from('servicos').select('id, nome').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
     const sSelect = document.getElementById('agend-servico');
     sSelect.innerHTML = '<option value="">Selecione o Serviço...</option>';
     servicos?.forEach(s => sSelect.innerHTML += `<option value="${s.id}">${s.nome}</option>`);
 
-    // Carregar Profissionais
     const { data: profs } = await supabaseClient.from('profissionais').select('id, nome').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
     const pSelect = document.getElementById('agend-profissional');
     pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';

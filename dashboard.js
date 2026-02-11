@@ -137,4 +137,17 @@ if (btnSalvarIA) {
 }
 
 // Inicia o processo
+
+// --- IMPLEMENTAÇÃO TEMPO REAL ---
+// Escuta alterações nas tabelas e atualiza o dashboard automaticamente
+const monitorarMudancas = supabaseClient
+    .channel('custom-all-channel')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => {
+        if (salaoIdAtual) atualizarDashboard(salaoIdAtual);
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes_financeiras' }, () => {
+        if (salaoIdAtual) atualizarDashboard(salaoIdAtual);
+    })
+    .subscribe();
+
 checkUser();

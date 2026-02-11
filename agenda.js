@@ -284,7 +284,7 @@ async function confirmarAgendamento() {
     } else {
         alert("Agendamento realizado com sucesso!");
         fecharModal();
-        switchTabLite('agenda', document.querySelector('.tab.active')); 
+       // switchTabLite('agenda', document.querySelector('.tab.active')); 
     }
 }
 

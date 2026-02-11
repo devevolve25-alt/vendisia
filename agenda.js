@@ -45,7 +45,7 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
             m += intervalo;
             if (m >= 60) { h++; m -= 60; }
             horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-        }
+        
     }
     return gradeDisponivel;
 }

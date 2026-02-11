@@ -6,9 +6,10 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let dadosEstabelecimento = null;
 let slotSelecionado = null; 
 
+// SUBSTITUA APENAS ESTA FUNÇÃO NO SEU ARQUIVO
 function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
     const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;
-    const gradeCompleta = [];
+    const gradeDisponivel = [];
 
     for (let i = 0; i < diasParaGerar; i++) {
         const dataReferencia = new Date();
@@ -17,21 +18,28 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
-            const dataHoraSlotString = `${dataISO}T${horaAtual}:00`;
-            const dataHoraSlotObjeto = new Date(dataHoraSlotString);
+            // Criamos a data do slot forçando o fuso horário local para bater com o banco
+            const dataHoraSlotObjeto = new Date(`${dataISO}T${horaAtual}:00`);
+            const tempoSlot = dataHoraSlotObjeto.getTime();
 
-            const agendamentoEncontrado = agendados.find(a => {
-                const inicio = new Date(a.data_hora_inicio);
+            // Verifica se este horário específico está "coberto" por algum agendamento
+            const estaOcupado = agendados.some(a => {
+                const inicio = new Date(a.data_hora_inicio).getTime();
                 const duracao = a.servicos?.duracao_minutos || 30;
-                const fim = new Date(inicio.getTime() + duracao * 60000);
-                return dataHoraSlotObjeto >= inicio && dataHoraSlotObjeto < fim;
+                const fim = inicio + (duracao * 60000);
+                
+                // O slot some se o tempo dele estiver entre o início (inclusive) e o fim (exclusive)
+                return tempoSlot >= inicio && tempoSlot < fim;
             });
 
-            gradeCompleta.push({
-                data: dataISO,
-                hora: horaAtual,
-                dados: agendamentoEncontrado || null
-            });
+            // Se NÃO estiver ocupado, adicionamos à grade que será exibida
+            if (!estaOcupado) {
+                gradeDisponivel.push({
+                    data: dataISO,
+                    hora: horaAtual,
+                    dados: null
+                });
+            }
 
             let [h, m] = horaAtual.split(':').map(Number);
             m += intervalo;
@@ -39,7 +47,7 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
             horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
         }
     }
-    return gradeCompleta;
+    return gradeDisponivel;
 }
 
 function generateContent() {
@@ -273,16 +281,19 @@ async function confirmarAgendamento() {
         status: 'confirmado'
     };
 
-    const { error } = await supabaseClient
-        .from('agendamentos')
-        .insert([payload]);
+    const { error } = await supabaseClient.from('agendamentos').insert([payload]);
 
     if (error) {
         alert("Erro ao agendar: " + error.message);
     } else {
         alert("Agendamento realizado com sucesso!");
         fecharModal();
-        location.reload(); 
+        
+        // Pequeno delay de 500ms para o Supabase processar a indexação antes da nova busca
+        setTimeout(() => {
+            const tabAtiva = document.querySelector('.tab.active');
+            switchTabLite('agenda', tabAtiva);
+        }, 500);
     }
 }
 

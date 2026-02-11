@@ -161,12 +161,13 @@ async function switchTabLite(viewId, element) {
         dataFim.setDate(new Date().getDate() + diasRange);
         const dataFimISO = dataFim.toISOString().split('T')[0];
 
-        const { data: agendamentos } = await supabaseClient.from('agendamentos')
-            .select('*, profissionais(nome), servicos(nome, duracao_minutos)')
-            .eq('estabelecimento_id', dadosEstabelecimento.id)
-            .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
-            .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
-            .order('data_hora_inicio');        
+        // Localize este trecho no switchTabLite e substitua:
+const { data: agendamentos } = await supabaseClient.from('agendamentos')
+    .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(nome), servicos(nome, duracao_minutos)')
+    .eq('estabelecimento_id', dadosEstabelecimento.id)
+    .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
+    .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
+    .order('data_hora_inicio');       
         
         const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, dadosEstabelecimento.intervalo_slot, agendamentos || []);
         

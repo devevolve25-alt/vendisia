@@ -246,12 +246,43 @@ async function abrirModalAgendamento(data, hora) {
     const sSelect = document.getElementById('agend-servico');
     sSelect.innerHTML = '<option value="">Selecione o Serviço...</option>';
     servicos?.forEach(s => sSelect.innerHTML += `<option value="${s.id}">${s.nome}</option>`);
-
-    const { data: profs } = await supabaseClient.from('profissionais').select('id, nome').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
-    const pSelect = document.getElementById('agend-profissional');
-    pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';
-    profs?.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+    
+    // O SELECT DE PROFISSIONAIS FICA VAZIO AQUI, AGUARDANDO A ESCOLHA DO SERVIÇO
+    document.getElementById('agend-profissional').innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
 }
+
+// <<< INSERIR O NOVO TRECHO AQUI, LOGO ABAIXO DA CHAVE DE FECHAMENTO >>>
+
+document.getElementById('agend-servico').addEventListener('change', async function() {
+    const servicoSelecionadoNome = this.options[this.selectedIndex].text;
+    const pSelect = document.getElementById('agend-profissional');
+    
+    if (!this.value) {
+        pSelect.innerHTML = '<option value="">Selecione primeiro o serviço...</option>';
+        return;
+    }
+
+    pSelect.innerHTML = '<option value="">Buscando profissionais...</option>';
+
+    const { data: profs } = await supabaseClient
+        .from('profissionais')
+        .select('id, nome, especialidade')
+        .eq('estabelecimento_id', dadosEstabelecimento.id);
+
+    const filtrados = profs.filter(p => {
+        const esp = p.especialidade?.toLowerCase() || "";
+        const serv = servicoSelecionadoNome.toLowerCase();
+        return serv.includes(esp) || esp.includes(serv);
+    });
+
+    pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';
+    
+    if (filtrados.length === 0) {
+        profs.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+    } else {
+        filtrados.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+    }
+});
 
 function fecharModal() {
     document.getElementById('modal-agendamento').style.display = 'none';

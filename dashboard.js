@@ -1,9 +1,8 @@
-//atualizado para exibição no dashboard - 5 (Sem Filtros de Data, Sem Select e com Lista de Clientes)
+//atualizado para exibição no dashboard - 5 (Corrigido)
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Variável global para armazenar o ID do salão atual
 let salaoIdAtual = null;
 
 async function checkUser() {
@@ -26,7 +25,7 @@ async function carregarDadosIniciais(donoId) {
         salaoIdAtual = saloes[0].id;
         atualizarDashboard(salaoIdAtual);
     } else {
-        console.error("Nenhum estabelecimento encontrado para este usuário.");
+        console.error("Nenhum estabelecimento encontrado.");
         const displayNome = document.getElementById('salon-name-display');
         if (displayNome) displayNome.innerText = "SEM ESTABELECIMENTO";
     }
@@ -42,18 +41,17 @@ async function atualizarDashboard(salaoId) {
         if (estab) {
             const displayNome = document.getElementById('salon-name-display');
             if (displayNome) displayNome.innerText = estab.nome_fantasia;
-            
             const inputIA = document.getElementById('ia-saudacao-input');
             if (inputIA) inputIA.value = estab.ia_saudacao || "";
         }
 
-        // 2. BUSCA FINANCEIRA (Busca bruta apenas pelo ID do salão)
+        // 2. BUSCA FINANCEIRA
         const { data: movs } = await supabaseClient
             .from('movimentacoes_financeiras')
             .select('valor, data_movimentacao, profissional_id')
             .eq('estabelecimento_id', salaoId);
 
-        // 3. BUSCA AGENDAMENTOS (Incluindo dados do cliente e profissional_id)
+        // 3. BUSCA AGENDAMENTOS
         const { data: agsMes } = await supabaseClient
             .from('agendamentos')
             .select('id, data_hora_inicio, cliente_nome, cliente_whatsapp, servico_id, profissional_id') 
@@ -78,22 +76,12 @@ async function atualizarDashboard(salaoId) {
 
         const fatTotal = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
-        // --- ATUALIZAÇÃO DOS CARDS DE FATURAMENTO ---
-        if (document.getElementById('fat-hoje')) {
-            document.getElementById('fat-hoje').innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        }
-        if (document.getElementById('fat-mes')) {
-            document.getElementById('fat-mes').innerText = `R$ ${fatTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        }
-        if (document.getElementById('fat-semana')) {
-            document.getElementById('fat-semana').innerText = `R$ ${fatTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        }
+        if (document.getElementById('fat-hoje')) document.getElementById('fat-hoje').innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        if (document.getElementById('fat-mes')) document.getElementById('fat-mes').innerText = `R$ ${fatTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        if (document.getElementById('fat-semana')) document.getElementById('fat-semana').innerText = `R$ ${fatTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
         // --- ATUALIZAÇÃO DOS CARDS DE AGENDAMENTOS ---
-        const totalHoje = agsMes?.filter(a => 
-            a.data_hora_inicio && a.data_hora_inicio.toString().includes(hojeISO)
-        ).length || 0;
-
+        const totalHoje = agsMes?.filter(a => a.data_hora_inicio && a.data_hora_inicio.toString().includes(hojeISO)).length || 0;
         const totalGeral = agsMes?.length || 0;
 
         if (document.getElementById('ag-hoje')) document.getElementById('ag-hoje').innerText = totalHoje;
@@ -108,11 +96,9 @@ async function atualizarDashboard(salaoId) {
             const dataFmt = a.data_hora_inicio ? new Date(a.data_hora_inicio).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--/--';
             const whatsLink = `https://wa.me/${a.cliente_whatsapp?.replace(/\D/g, '')}`;
             
-            // Busca o nome do profissional
             const profEncontrado = profs?.find(p => p.id === a.profissional_id);
             const nomeProf = profEncontrado ? profEncontrado.nome : `Prof. ID: ${a.profissional_id}`;
 
-            // Busca o nome do serviço (NOVIDADE AQUI)
             const servEncontrado = servicos?.find(s => s.id === a.servico_id);
             const nomeServico = servEncontrado ? servEncontrado.nome : `Serviço ID: ${a.servico_id}`;
 
@@ -122,21 +108,6 @@ async function atualizarDashboard(salaoId) {
                         <strong style="display:block; color:#2ecc71;">${a.cliente_nome || 'Cliente s/ nome'}</strong>
                         <span style="color:#ddd; display:block;">Profissional: ${nomeProf}</span>
                         <span style="color:#888;">${nomeServico} | ${dataFmt}</span>
-                    </div>
-                    <a href="${whatsLink}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:0.75rem;">WhatsApp</a>
-                </div>`;
-        });
-            
-            // Busca o nome do profissional na lista 'profs' carregada no Bloco 4
-            const profEncontrado = profs?.find(p => p.id === a.profissional_id);
-            const nomeProf = profEncontrado ? profEncontrado.nome : `ID: ${a.profissional_id}`;
-
-            listaClientesHTML += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; font-size: 0.85rem;">
-                    <div>
-                        <strong style="display:block; color:#2ecc71;">${a.cliente_nome || 'Cliente s/ nome'}</strong>
-                        <span style="color:#ddd; display:block;">Profissional: ${nomeProf}</span>
-                        <span style="color:#888;">${a.servico_id} | ${dataFmt}</span>
                     </div>
                     <a href="${whatsLink}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:0.75rem;">WhatsApp</a>
                 </div>`;
@@ -163,15 +134,9 @@ async function atualizarDashboard(salaoId) {
             listaComissoesHTML += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #333;"><span>${p.nome}</span><strong>R$ ${comissaoProf.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</strong></div>`;
         });
 
-        if (document.getElementById('top-barbeiro')) {
-            document.getElementById('top-barbeiro').innerText = Object.keys(ranking).length > 0 ? Object.keys(ranking).reduce((a, b) => ranking[a] > ranking[b] ? a : b) : "---";
-        }
-        if (document.getElementById('total-comissao')) {
-            document.getElementById('total-comissao').innerText = `R$ ${totalComissoesGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        }
-        if (document.getElementById('lista-comissoes')) {
-            document.getElementById('lista-comissoes').innerHTML = listaComissoesHTML || '<span>Sem dados</span>';
-        }
+        if (document.getElementById('top-barbeiro')) document.getElementById('top-barbeiro').innerText = Object.keys(ranking).length > 0 ? Object.keys(ranking).reduce((a, b) => ranking[a] > ranking[b] ? a : b) : "---";
+        if (document.getElementById('total-comissao')) document.getElementById('total-comissao').innerText = `R$ ${totalComissoesGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        if (document.getElementById('lista-comissoes')) document.getElementById('lista-comissoes').innerHTML = listaComissoesHTML || '<span>Sem dados</span>';
 
     } catch (err) {
         console.error("Erro Geral Dashboard:", err);
@@ -189,7 +154,6 @@ if (btnSalvarIA) {
     });
 }
 
-// --- IMPLEMENTAÇÃO TEMPO REAL ---
 const monitorarMudancas = supabaseClient
     .channel('custom-all-channel')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => {

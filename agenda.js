@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - agenda atualizada - serv-prof
+// 1. Configuração (Sempre no topo) - atualizacao para dashboard - 1
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -242,7 +242,6 @@ async function abrirModalAgendamento(data, hora) {
     
     document.getElementById('agend-profissional').innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
 
-    // Correção: Vínculo serviço-profissional dentro do fluxo do modal
     sSelect.onchange = async function() {
         const servicoSelecionadoNome = this.options[this.selectedIndex].text;
         const pSelect = document.getElementById('agend-profissional');
@@ -303,18 +302,43 @@ async function confirmarAgendamento() {
         status: 'confirmado'
     };
 
-    const { error } = await supabaseClient.from('agendamentos').insert([payload]);
+    // 1. Salva o Agendamento e obtém o ID gerado (usando .select().single())
+    const { data: novoAgendamento, error: errorAg } = await supabaseClient
+        .from('agendamentos')
+        .insert([payload])
+        .select('id')
+        .single();
 
-    if (error) {
-        alert("Erro ao agendar: " + error.message);
-    } else {
-        alert("Agendamento realizado com sucesso!");
-        fecharModal();
-        setTimeout(() => {
-            const tabAtiva = document.querySelector('.tab.active');
-            switchTabLite('agenda', tabAtiva);
-        }, 600);
+    if (errorAg) {
+        return alert("Erro ao agendar: " + errorAg.message);
     }
+
+    // 2. Busca o preço do serviço para o financeiro
+    const { data: servicoInfo } = await supabaseClient
+        .from('servicos')
+        .select('preco, nome')
+        .eq('id', servicoId)
+        .single();
+
+    // 3. Registra a movimentação financeira
+    if (novoAgendamento && servicoInfo) {
+        await supabaseClient.from('movimentacoes_financeiras').insert([{
+            estabelecimento_id: dadosEstabelecimento.id,
+            agendamento_id: novoAgendamento.id,
+            profissional_id: profId,
+            tipo: 'receita',
+            valor: servicoInfo.preco,
+            descricao: `Agendamento: ${servicoInfo.nome} - Cliente: ${nome}`,
+            data_movimentacao: new Date().toISOString()
+        }]);
+    }
+
+    alert("Agendamento realizado com sucesso!");
+    fecharModal();
+    setTimeout(() => {
+        const tabAtiva = document.querySelector('.tab.active');
+        switchTabLite('agenda', tabAtiva);
+    }, 600);
 }
 
 // --- FUNÇÕES DO DASHBOARD (PERSISTÊNCIA) ---

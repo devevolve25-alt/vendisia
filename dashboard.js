@@ -51,13 +51,27 @@ async function atualizarDashboard(salaoId) {
             if (inputIA) inputIA.value = estab.ia_saudacao || "";
         }
 
-        // 2. BUSCA FINANCEIRA
+        // 2. BUSCA FINANCEIRA (Ajustada para ser compatível com o formato ISO da agenda)
         const { data: movs } = await supabaseClient
             .from('movimentacoes_financeiras')
             .select('valor, data_movimentacao, profissional_id')
             .eq('estabelecimento_id', salaoId)
-            .gte('data_movimentacao', inicioMes)
-            .lt('data_movimentacao', inicioProxMes);
+            .gte('data_movimentacao', inicioMes); // Puxa tudo do mês
+
+        // --- CÁLCULOS FINANCEIROS ---
+        // Usamos includes(hojeISO) para ignorar se a data no banco tem "T", "Z" ou espaços
+        const fatHoje = movs?.filter(m => 
+            m.data_movimentacao && m.data_movimentacao.includes(hojeISO)
+        ).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
+
+        const fatMes = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
+
+        if (document.getElementById('fat-hoje')) {
+            document.getElementById('fat-hoje').innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+        if (document.getElementById('fat-mes')) {
+            document.getElementById('fat-mes').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
 
         // 3. BUSCA AGENDAMENTOS (Unificada)
         const { data: agsMes } = await supabaseClient

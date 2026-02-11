@@ -1,4 +1,4 @@
-//atualizado para exibição no dashboard - 3
+//atualizado para exibição no dashboard - 3 (Simplificado)
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -51,7 +51,7 @@ async function atualizarDashboard(salaoId) {
             if (inputIA) inputIA.value = estab.ia_saudacao || "";
         }
 
-        // 2. BUSCA FINANCEIRA
+        // 2. BUSCA FINANCEIRA (Focada em registros brutos do mês)
         const { data: movs } = await supabaseClient
             .from('movimentacoes_financeiras')
             .select('valor, data_movimentacao, profissional_id')
@@ -59,7 +59,7 @@ async function atualizarDashboard(salaoId) {
             .gte('data_movimentacao', inicioMes)
             .lt('data_movimentacao', inicioProxMes);
 
-        // 3. BUSCA AGENDAMENTOS
+        // 3. BUSCA AGENDAMENTOS (Focada em registros brutos do mês)
         const { data: agsMes } = await supabaseClient
             .from('agendamentos')
             .select('id, data_hora_inicio') 
@@ -73,12 +73,10 @@ async function atualizarDashboard(salaoId) {
             .select('id, nome, tipo_remuneracao, valor_comissao_porcentagem')
             .eq('estabelecimento_id', salaoId);
 
-        // --- CÁLCULOS FINANCEIROS (TRATADOS COMO TEMPO/DATE) ---
-        const fatHoje = movs?.filter(m => {
-            if (!m.data_movimentacao) return false;
-            // Converte o valor do banco para data local curta (YYYY-MM-DD) para comparar
-            return new Date(m.data_movimentacao).toLocaleDateString('sv-SE') === hojeISO;
-        }).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
+        // --- CÁLCULOS FINANCEIROS (SIMPLIFICADOS) ---
+        const fatHoje = movs?.filter(m => 
+            m.data_movimentacao && m.data_movimentacao.toString().includes(hojeISO)
+        ).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
         const fatMes = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
@@ -93,12 +91,10 @@ async function atualizarDashboard(salaoId) {
             document.getElementById('fat-semana').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         }
 
-        // --- ATUALIZAÇÃO DOS CARDS DE AGENDAMENTOS (TRATADOS COMO TEMPO/DATE) ---
-        const totalHoje = agsMes?.filter(a => {
-            if (!a.data_hora_inicio) return false;
-            // Converte o timestamp para data local curta para comparar com o dia de hoje
-            return new Date(a.data_hora_inicio).toLocaleDateString('sv-SE') === hojeISO;
-        }).length || 0;
+        // --- ATUALIZAÇÃO DOS CARDS DE AGENDAMENTOS (SIMPLIFICADOS) ---
+        const totalHoje = agsMes?.filter(a => 
+            a.data_hora_inicio && a.data_hora_inicio.toString().includes(hojeISO)
+        ).length || 0;
 
         const totalMes = agsMes?.length || 0;
 

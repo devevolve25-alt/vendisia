@@ -15,7 +15,7 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
         const dataReferencia = new Date();
 dataReferencia.setHours(0, 0, 0, 0); // ZERA HORAS, MINUTOS E SEGUNDOS
 dataReferencia.setDate(dataReferencia.getDate() + i);
-        const dataISO = dataReferencia.toISOString().split('T')[0];
+        const dataISO = dataReferencia.toLocaleDateString('sv-SE'); // Formato YYYY-MM-DD local
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {

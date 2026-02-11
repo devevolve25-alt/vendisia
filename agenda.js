@@ -269,7 +269,7 @@ async function confirmarAgendamento() {
         servico_id: servicoId,
         cliente_nome: nome,
         cliente_whatsapp: whatsapp,
-        data_hora_inicio: `${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`,,
+        data_hora_inicio: `${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`,
         status: 'confirmado'
     }]);
 

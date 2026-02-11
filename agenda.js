@@ -8,7 +8,7 @@ let slotSelecionado = null;
 
 function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
     const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;
-    const gradeDisponivel = [];
+    const gradeTotal = [];
 
     for (let i = 0; i < diasParaGerar; i++) {
         const dataReferencia = new Date();
@@ -20,20 +20,26 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
         while (horaAtual < fechamento) {
             const tempoSlot = new Date(`${dataISO}T${horaAtual.substring(0, 5)}:00`).getTime();
 
-            const estaOcupado = agendados.some(a => {
+            // Encontra se existe um agendamento para este momento exato
+            const agendamentoNoSlot = agendados.find(a => {
                 const inicio = new Date(a.data_hora_inicio).getTime();
-                const duracao = a.servicos?.duracao_minutos || 30;
-                const fim = inicio + (duracao * 60000);
-                return tempoSlot >= inicio && tempoSlot < fim;
+                return tempoSlot === inicio;
             });
 
-            if (!estaOcupado) {
-                gradeDisponivel.push({
-                    data: dataISO,
-                    hora: horaAtual,
-                    dados: null
-                });
-            }
+            gradeTotal.push({
+                data: dataISO,
+                hora: horaAtual,
+                dados: agendamentoNoSlot || null // Agora passamos os dados do agendamento para o slot
+            });
+
+            let [h, m] = horaAtual.split(':').map(Number);
+            m += intervalo;
+            if (m >= 60) { h++; m -= 60; }
+            horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
+    }
+    return gradeTotal;
+}
 
             let [h, m] = horaAtual.split(':').map(Number);
             m += intervalo;
@@ -184,18 +190,24 @@ async function switchTabLite(viewId, element) {
 
             const exibirPrivado = (userType === 'dono' || userType === 'funcionario');
             const estaOcupado = slot.dados !== null;
-            const nomeExibido = estaOcupado ? (exibirPrivado ? slot.dados.cliente_nome : "INDISPONÍVEL") : "DISPONÍVEL";
-            const servicoExibido = estaOcupado ? (exibirPrivado ? (slot.dados.servicos?.nome || 'Serviço') : "Horário reservado") : "Toque para agendar";
-            const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
 
+            // LÓGICA DE VISIBILIDADE: Se for cliente e estiver ocupado, o slot não aparece
+            if (!exibirPrivado && estaOcupado) return;
+
+            // Definição de Textos
+            const nomeExibido = estaOcupado ? slot.dados.cliente_nome : "DISPONÍVEL";
+            const servicoExibido = estaOcupado ? (slot.dados.servicos?.nome || 'Serviço') : "Toque para agendar";
+            const profExibido = estaOcupado ? ` | Prof: ${slot.dados.profissionais?.nome || '---'}` : "";
+            
+            const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
             const acaoClique = !estaOcupado ? `onclick="abrirModalAgendamento('${slot.data}', '${slot.hora}')"` : "";
 
             htmlAgenda += `
-                <div class="agenda-item" ${acaoClique} style="border-left: 4px solid ${corStatus}; opacity: ${estaOcupado && !exibirPrivado ? '0.6' : '1'}; cursor: ${estaOcupado ? 'default' : 'pointer'}">
+                <div class="agenda-item" ${acaoClique} style="border-left: 4px solid ${corStatus}; cursor: ${estaOcupado ? 'default' : 'pointer'}">
                     <div class="agenda-time">${slot.hora}</div>
                     <div class="agenda-details">
                         <h4 style="color: ${estaOcupado ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
-                        <span style="font-size: 0.85em; opacity: 0.7;">${servicoExibido}</span>
+                        <span style="font-size: 0.85em; opacity: 0.7;">${servicoExibido}${profExibido}</span>
                     </div>
                 </div>`;
         });

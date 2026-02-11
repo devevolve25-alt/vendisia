@@ -32,6 +32,35 @@
             color: #121212;
             font-weight: bold;
         }
+
+        /* --- ESTILOS DOS MODAIS --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-card {
+            background: #1e1e1e;
+            border: 1px solid #2ecc71;
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .modal-card h3 { margin-top: 0; color: #2ecc71; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .modal-card label { display: block; font-size: 0.75rem; color: #888; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; }
+        .modal-card input, .modal-card select, .modal-card textarea {
+            width: 100%; box-sizing: border-box; background: #121212; border: 1px solid #444; color: white;
+            padding: 10px; border-radius: 6px; font-family: inherit;
+        }
+        .modal-btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-cancel { flex: 1; background: transparent; border: 1px solid #444; color: #888; padding: 10px; border-radius: 6px; cursor: pointer; }
+        .btn-save { flex: 2; background: #2ecc71; border: none; color: #000; font-weight: bold; padding: 10px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -41,7 +70,7 @@
             <h1 id="salon-name-display" style="font-size: 1.2rem; margin: 0; color: #2ecc71;">CARREGANDO...</h1>
             <small>DASHBOARD ADMINISTRATIVO</small>
         </div>
-        </header>
+    </header>
 
     <main class="dash-content">
     
@@ -105,7 +134,7 @@
                 </div>
 
                 <div class="filho-card wide">
-                    <span class="label-sup">Comissão por Profissional</span>
+                    <span class="label-sup">Comissão por Profissional (Toque p/ Editar)</span>
                     <div id="lista-comissoes" style="width: 100%; margin-top: 10px; font-size: 0.85rem;">
                         <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #333;">
                             <span>Aguardando dados...</span>
@@ -117,11 +146,20 @@
         </section>
 
         <section class="pai-card destaque-style">
-    <h2 class="pai-title"><i data-lucide="user-check"></i> Próximos Clientes</h2>
-    <div id="lista-clientes-detalhe" style="max-height: 300px; overflow-y: auto;">
-        <div style="padding: 10px; text-align: center; color: #888;">Aguardando dados...</div>
-    </div>
-</section>
+            <h2 class="pai-title"><i data-lucide="user-check"></i> Próximos Clientes</h2>
+            <div id="lista-clientes-detalhe" style="max-height: 300px; overflow-y: auto;">
+                <div style="padding: 10px; text-align: center; color: #888;">Aguardando dados...</div>
+            </div>
+        </section>
+
+        <section class="pai-card destaque-style">
+            <h2 class="pai-title"><i data-lucide="scissors"></i> Gestão de Serviços</h2>
+            <div class="filho-card wide" style="text-align: left;">
+                <div id="lista-servicos-gestao" style="width: 100%; font-size: 0.85rem;">
+                    <div style="padding: 10px; color: #888;">Buscando serviços...</div>
+                </div>
+            </div>
+        </section>
 
         <section class="pai-card destaque-style">
             <h2 class="pai-title">Status da IA</h2>
@@ -139,6 +177,47 @@
         </section>
     </main>
 
+    <div id="modal-edit-prof" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Editar Profissional</h3>
+            <input type="hidden" id="edit-prof-id">
+            <label>Nome</label>
+            <input type="text" id="edit-prof-nome">
+            <label>WhatsApp</label>
+            <input type="text" id="edit-prof-whatsapp">
+            <label>Regra de Pagamento</label>
+            <select id="edit-prof-tipo">
+                <option value="comissao">Comissão (%)</option>
+                <option value="fixo">Fixo (R$ por serviço)</option>
+            </select>
+            <label>Valor da Regra (nº)</label>
+            <input type="number" id="edit-prof-valor" step="0.01">
+            <div class="modal-btn-group">
+                <button onclick="fecharModalEdit('prof')" class="btn-cancel">CANCELAR</button>
+                <button onclick="salvarEdicaoProf()" class="btn-save">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edit-serv" class="modal-overlay">
+        <div class="modal-card">
+            <h3>Editar Serviço</h3>
+            <input type="hidden" id="edit-serv-id">
+            <label>Nome do Serviço</label>
+            <input type="text" id="edit-serv-nome">
+            <label>Preço (R$)</label>
+            <input type="number" step="0.01" id="edit-serv-preco">
+            <label>Duração (minutos)</label>
+            <input type="number" id="edit-serv-duracao">
+            <label>Descrição para a IA</label>
+            <textarea id="edit-serv-descricao" rows="3"></textarea>
+            <div class="modal-btn-group">
+                <button onclick="fecharModalEdit('serv')" class="btn-cancel">CANCELAR</button>
+                <button onclick="salvarEdicaoServ()" class="btn-save">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
     <nav style="position: fixed; bottom: 0; width: 100%; background: #181818; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #333;">
         <a href="#" style="color: #2ecc71; text-decoration: none; font-size: 0.8rem;">Início</a>
         <a href="#" style="color: #888; text-decoration: none; font-size: 0.8rem;">Serviços</a>
@@ -148,6 +227,8 @@
     <script src="dashboard.js"></script>
     <script>
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        // Funções rápidas para interface
+        function fecharModalEdit(tipo) { document.getElementById(`modal-edit-${tipo}`).style.display = 'none'; }
     </script>
 </body>
 </html>

@@ -79,16 +79,13 @@ async function init() {
             btnDashboard.style.display = (estab.plano_ativo === 'C') ? 'block' : 'none';
         }
 
-        // Vincular eventos de clique aos botões de salvamento
         vincularEventosGestao();
-
         setupTabs(); 
     } else {
         document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
     }
 }
 
-// Conecta os botões do HTML às funções do JS
 function vincularEventosGestao() {
     const btnUpdateConfig = document.getElementById('btn-atualizar-config');
     if(btnUpdateConfig) btnUpdateConfig.onclick = atualizarDadosGerais;
@@ -221,8 +218,10 @@ async function switchTabLite(viewId, element) {
 
 // --- FUNÇÕES DO DASHBOARD (PERSISTÊNCIA) ---
 
-function popularCamposGestao() {
+async function popularCamposGestao() {
     if (!dadosEstabelecimento) return;
+
+    // Preencher campos do estabelecimento
     document.getElementById('edit-nome-fantasia').value = dadosEstabelecimento.nome_fantasia || "";
     document.getElementById('edit-razao-social').value = dadosEstabelecimento.razao_social || "";
     document.getElementById('edit-cnpj').value = dadosEstabelecimento.cnpj || "";
@@ -231,10 +230,23 @@ function popularCamposGestao() {
     document.getElementById('edit-hora-abertura').value = dadosEstabelecimento.hora_abertura || "08:00";
     document.getElementById('edit-hora-fechamento').value = dadosEstabelecimento.hora_fechamento || "18:00";
     document.getElementById('edit-intervalo-slot').value = dadosEstabelecimento.intervalo_slot || 30;
+
+    // Buscar e preencher dados do dono na tabela perfis
+    const { data: perfil } = await supabaseClient
+        .from('perfis')
+        .select('*')
+        .eq('id', dadosEstabelecimento.dono_id)
+        .single();
+
+    if (perfil) {
+        document.getElementById('perf-nome-completo').value = perfil.nome_completo || "";
+        document.getElementById('perf-cpf').value = perfil.cpf || "";
+        document.getElementById('perf-email-contato').value = perfil.email_contato || "";
+    }
 }
 
 async function atualizarDadosGerais() {
-    const novosDados = {
+    const novosDadosEstab = {
         nome_fantasia: document.getElementById('edit-nome-fantasia').value,
         razao_social: document.getElementById('edit-razao-social').value,
         cnpj: document.getElementById('edit-cnpj').value,
@@ -245,16 +257,30 @@ async function atualizarDadosGerais() {
         intervalo_slot: parseInt(document.getElementById('edit-intervalo-slot').value)
     };
 
-    const { error } = await supabaseClient
+    const novosDadosPerfil = {
+        nome_completo: document.getElementById('perf-nome-completo').value,
+        cpf: document.getElementById('perf-cpf').value,
+        email_contato: document.getElementById('perf-email-contato').value
+    };
+
+    // Update Estabelecimento
+    const { error: errorEstab } = await supabaseClient
         .from('estabelecimentos')
-        .update(novosDados)
+        .update(novosDadosEstab)
         .eq('id', dadosEstabelecimento.id);
 
-    if (error) alert("Erro: " + error.message);
-    else {
-        alert("Configurações salvas!");
-        dadosEstabelecimento = { ...dadosEstabelecimento, ...novosDados };
-        document.getElementById('salon-name').innerText = novosDados.nome_fantasia;
+    // Update Perfil
+    const { error: errorPerfil } = await supabaseClient
+        .from('perfis')
+        .update(novosDadosPerfil)
+        .eq('id', dadosEstabelecimento.dono_id);
+
+    if (errorEstab || errorPerfil) {
+        alert("Erro ao salvar dados: " + (errorEstab?.message || errorPerfil?.message));
+    } else {
+        alert("Configurações salvas com sucesso!");
+        dadosEstabelecimento = { ...dadosEstabelecimento, ...novosDadosEstab };
+        document.getElementById('salon-name').innerText = novosDadosEstab.nome_fantasia;
     }
 }
 

@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - atualizado agenda dono
+// 1. Configuração (Sempre no topo) - atualizado agenda dono - 2
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -20,7 +20,6 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
         while (horaAtual < fechamento) {
             const tempoSlot = new Date(`${dataISO}T${horaAtual.substring(0, 5)}:00`).getTime();
 
-            // Busca se existe agendamento neste slot exato
             const agendamentoNoSlot = agendados.find(a => {
                 const inicio = new Date(a.data_hora_inicio).getTime();
                 return tempoSlot === inicio;
@@ -187,12 +186,18 @@ async function switchTabLite(viewId, element) {
             const nomeExibido = estaOcupado ? slot.dados.cliente_nome : "DISPONÍVEL";
             const servicoExibido = estaOcupado ? (slot.dados.servicos?.nome || 'Serviço') : "Toque para agendar";
             const profExibido = estaOcupado ? ` | Prof: ${slot.dados.profissionais?.nome || '---'}` : "";
-            
             const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
-            const acaoClique = !estaOcupado ? `onclick="abrirModalAgendamento('${slot.data}', '${slot.hora}')"` : "";
+            
+            // --- AJUSTE NO CLIQUE DA AGENDA ---
+            let acaoClique = "";
+            if (!estaOcupado) {
+                acaoClique = `onclick="abrirModalAgendamento('${slot.data}', '${slot.hora}')"`;
+            } else if (exibirPrivado) {
+                acaoClique = `onclick="cancelarAgendamento('${slot.dados.id}')"`;
+            }
 
             htmlAgenda += `
-                <div class="agenda-item" ${acaoClique} style="border-left: 4px solid ${corStatus}; cursor: ${estaOcupado ? 'default' : 'pointer'}">
+                <div class="agenda-item" ${acaoClique} style="border-left: 4px solid ${corStatus}; cursor: pointer;">
                     <div class="agenda-time">${slot.hora}</div>
                     <div class="agenda-details">
                         <h4 style="color: ${estaOcupado ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
@@ -226,6 +231,22 @@ async function switchTabLite(viewId, element) {
     else {
         title.innerText = viewId.toUpperCase();
         body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
+    }
+}
+
+// --- FUNÇÃO PARA CANCELAR AGENDAMENTO (DONO) ---
+async function cancelarAgendamento(agendamentoId) {
+    const confirmar = confirm("Deseja realmente CANCELAR este agendamento? Isso removerá os dados financeiros vinculados.");
+    if (confirmar) {
+        await supabaseClient.from('movimentacoes_financeiras').delete().eq('agendamento_id', agendamentoId);
+        const { error } = await supabaseClient.from('agendamentos').delete().eq('id', agendamentoId);
+        if (error) {
+            alert("Erro ao cancelar: " + error.message);
+        } else {
+            alert("Agendamento cancelado com sucesso!");
+            const tabAtiva = document.querySelector('.tab.active');
+            switchTabLite('agenda', tabAtiva);
+        }
     }
 }
 
@@ -300,28 +321,6 @@ async function confirmarAgendamento() {
         data_hora_inicio: dataObjeto.toISOString(),
         status: 'confirmado'
     };
-
-    // --- FUNÇÃO PARA CANCELAR AGENDAMENTO (DONO) ---
-async function cancelarAgendamento(agendamentoId) {
-    const confirmar = confirm("Deseja realmente CANCELAR este agendamento? Isso removerá os dados financeiros vinculados.");
-    
-    if (confirmar) {
-        // 1. Deleta a movimentação financeira vinculada
-        await supabaseClient.from('movimentacoes_financeiras').delete().eq('agendamento_id', agendamentoId);
-        
-        // 2. Deleta o agendamento
-        const { error } = await supabaseClient.from('agendamentos').delete().eq('id', agendamentoId);
-
-        if (error) {
-            alert("Erro ao cancelar: " + error.message);
-        } else {
-            alert("Agendamento cancelado com sucesso!");
-            // A atualização da tela ocorrerá via Realtime ou via chamada manual abaixo:
-            const tabAtiva = document.querySelector('.tab.active');
-            switchTabLite('agenda', tabAtiva);
-        }
-    }
-}
 
     const { data: novoAgendamento, error: errorAg } = await supabaseClient
         .from('agendamentos')
@@ -462,11 +461,9 @@ const PERFIS = {
     dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
 };
 
-    // --- ESCUTA DE MUDANÇAS EM TEMPO REAL ---
 const monitorarAgenda = supabaseClient
     .channel('agenda-realtime')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => {
-        // Se a aba de agenda estiver ativa, recarrega o conteúdo dela
         const tabAtiva = document.querySelector('.tab.active');
         if (tabAtiva && tabAtiva.innerText.includes('AGENDA')) {
             switchTabLite('agenda', tabAtiva);

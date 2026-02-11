@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes e edição de cadastros
+//atualizado para calculo de comissoes e edição de cadastros - 2
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);

@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes e edição de cadastros - 6
+//atualizado para calculo de comissoes e edição de cadastros - 6 (Versão Final)
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -39,6 +39,7 @@ async function carregarDadosIniciais(donoId) {
         if (displayNome) displayNome.innerText = "SEM ESTABELECIMENTO";
     }
 }
+
 async function atualizarDashboard(salaoId) {
     try {
         const agora = new Date();
@@ -65,13 +66,13 @@ async function atualizarDashboard(salaoId) {
             .select('id, data_hora_inicio, cliente_nome, cliente_whatsapp, servico_id, profissional_id') 
             .eq('estabelecimento_id', salaoId);
 
-        // 4. BUSCA PROFISSIONAIS (Atualizado para incluir WhatsApp)
+        // 4. BUSCA PROFISSIONAIS
         const { data: profs } = await supabaseClient
             .from('profissionais')
             .select('id, nome, tipo_remuneracao, valor_comissao_porcentagem, whatsapp')
             .eq('estabelecimento_id', salaoId);
 
-        // 5. BUSCA NOMES DOS SERVIÇOS (Atualizado para permitir edição completa)
+        // 5. BUSCA NOMES DOS SERVIÇOS
         const { data: servicos } = await supabaseClient
             .from('servicos')
             .select('id, nome, preco, duracao_minutos, descricao')
@@ -150,7 +151,6 @@ async function atualizarDashboard(salaoId) {
                 totalComissoesGeral += comissaoDevida;
                 ranking[p.nome] = faturamentoBrutoProf;
 
-                // Adicionado evento de clique para abrir edição
                 listaComissoesHTML += `
                     <div onclick='abrirEdicaoProf(${JSON.stringify(p)})' style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #333; cursor:pointer;">
                         <div style="display:flex; flex-direction:column;">
@@ -180,7 +180,7 @@ async function atualizarDashboard(salaoId) {
             document.getElementById('lista-comissoes').innerHTML = listaComissoesHTML || '<span style="color:#666; padding:10px; display:block;">Sem movimentações</span>';
         }
 
-        // --- GESTÃO DE SERVIÇOS (NOVA IMPLEMENTAÇÃO) ---
+        // --- GESTÃO DE SERVIÇOS ---
         let listaServicosHTML = '';
         if (servicos && servicos.length > 0) {
             servicos.forEach(s => {
@@ -294,7 +294,6 @@ async function configurarNavegacao(slug) {
     const btnLogout = document.getElementById('btn-logout');
 
     if (linkAgenda) {
-        // Redireciona de volta para a agenda com o tipo de usuário 'dono'
         linkAgenda.href = `agenda.html?s=${slug}&u=dono`;
     }
 
@@ -305,23 +304,6 @@ async function configurarNavegacao(slug) {
             if (error) alert("Erro ao sair: " + error.message);
             else window.location.href = 'acesso.html';
         };
-    }
-}
-
-// Atualize sua função carregarDadosIniciais para chamar a configuração de navegação:
-async function carregarDadosIniciais(donoId) {
-    const { data: saloes } = await supabaseClient
-        .from('estabelecimentos')
-        .select('id, slug')
-        .eq('dono_id', donoId)
-        .limit(1);
-
-    if (saloes && saloes.length > 0) {
-        salaoIdAtual = saloes[0].id;
-        configurarNavegacao(saloes[0].slug); // Configura os links com o slug real
-        atualizarDashboard(salaoIdAtual);
-    } else {
-        // ... lógica de erro existente
     }
 }
 

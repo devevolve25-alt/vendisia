@@ -1,4 +1,4 @@
-//atualizado para exibição no dashboard - 3 (Simplificado)
+//atualizado para exibição no dashboard - 4 (Sem Filtros de Data)
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -34,12 +34,6 @@ async function atualizarDashboard(salaoId) {
     try {
         const agora = new Date();
         const hojeISO = agora.toLocaleDateString('sv-SE'); 
-        
-        const ano = agora.getFullYear();
-        const mes = agora.getMonth();
-        
-        const inicioMes = new Date(ano, mes, 1).toISOString().split('T')[0];
-        const inicioProxMes = new Date(ano, mes + 1, 1).toISOString().split('T')[0];
 
         // 1. DADOS DO ESTABELECIMENTO
         const { data: estab } = await supabaseClient.from('estabelecimentos').select('nome_fantasia, ia_saudacao').eq('id', salaoId).single();
@@ -51,21 +45,17 @@ async function atualizarDashboard(salaoId) {
             if (inputIA) inputIA.value = estab.ia_saudacao || "";
         }
 
-        // 2. BUSCA FINANCEIRA (Focada em registros brutos do mês)
+        // 2. BUSCA FINANCEIRA (Busca bruta apenas pelo ID do salão)
         const { data: movs } = await supabaseClient
             .from('movimentacoes_financeiras')
             .select('valor, data_movimentacao, profissional_id')
-            .eq('estabelecimento_id', salaoId)
-            .gte('data_movimentacao', inicioMes)
-            .lt('data_movimentacao', inicioProxMes);
+            .eq('estabelecimento_id', salaoId);
 
-        // 3. BUSCA AGENDAMENTOS (Focada em registros brutos do mês)
+        // 3. BUSCA AGENDAMENTOS (Busca bruta apenas pelo ID do salão)
         const { data: agsMes } = await supabaseClient
             .from('agendamentos')
             .select('id, data_hora_inicio') 
-            .eq('estabelecimento_id', salaoId)
-            .gte('data_hora_inicio', inicioMes)
-            .lt('data_hora_inicio', inicioProxMes);
+            .eq('estabelecimento_id', salaoId);
 
         // 4. BUSCA PROFISSIONAIS
         const { data: profs } = await supabaseClient
@@ -73,34 +63,34 @@ async function atualizarDashboard(salaoId) {
             .select('id, nome, tipo_remuneracao, valor_comissao_porcentagem')
             .eq('estabelecimento_id', salaoId);
 
-        // --- CÁLCULOS FINANCEIROS (SIMPLIFICADOS) ---
+        // --- CÁLCULOS FINANCEIROS ---
         const fatHoje = movs?.filter(m => 
             m.data_movimentacao && m.data_movimentacao.toString().includes(hojeISO)
         ).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
-        const fatMes = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
+        const fatTotal = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
         // --- ATUALIZAÇÃO DOS CARDS DE FATURAMENTO ---
         if (document.getElementById('fat-hoje')) {
             document.getElementById('fat-hoje').innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         }
         if (document.getElementById('fat-mes')) {
-            document.getElementById('fat-mes').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('fat-mes').innerText = `R$ ${fatTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         }
         if (document.getElementById('fat-semana')) {
-            document.getElementById('fat-semana').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('fat-semana').innerText = `R$ ${fatTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         }
 
-        // --- ATUALIZAÇÃO DOS CARDS DE AGENDAMENTOS (SIMPLIFICADOS) ---
+        // --- ATUALIZAÇÃO DOS CARDS DE AGENDAMENTOS ---
         const totalHoje = agsMes?.filter(a => 
             a.data_hora_inicio && a.data_hora_inicio.toString().includes(hojeISO)
         ).length || 0;
 
-        const totalMes = agsMes?.length || 0;
+        const totalGeral = agsMes?.length || 0;
 
         if (document.getElementById('ag-hoje')) document.getElementById('ag-hoje').innerText = totalHoje;
-        if (document.getElementById('ag-mes')) document.getElementById('ag-mes').innerText = totalMes;
-        if (document.getElementById('ag-semana')) document.getElementById('ag-semana').innerText = totalMes; 
+        if (document.getElementById('ag-mes')) document.getElementById('ag-mes').innerText = totalGeral;
+        if (document.getElementById('ag-semana')) document.getElementById('ag-semana').innerText = totalGeral; 
 
         // --- PERFORMANCE EQUIPE ---
         let totalComissoesGeral = 0;

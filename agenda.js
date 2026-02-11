@@ -4,6 +4,7 @@ const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let dadosEstabelecimento = null;
+let slotSelecionado = null; // Guardará {data, hora} para o agendamento
 
 function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
     const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;
@@ -178,8 +179,11 @@ async function switchTabLite(viewId, element) {
             const servicoExibido = estaOcupado ? (exibirPrivado ? (slot.dados.servicos?.nome || 'Serviço') : "Horário reservado") : "Toque para agendar";
             const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
 
+            // Habilita o clique somente em slots DISPONÍVEIS
+            const acaoClique = !estaOcupado ? `onclick="abrirModalAgendamento('${slot.data}', '${slot.hora}')"` : "";
+
             htmlAgenda += `
-                <div class="agenda-item" style="border-left: 4px solid ${corStatus}; opacity: ${estaOcupado && !exibirPrivado ? '0.6' : '1'}">
+                <div class="agenda-item" ${acaoClique} style="border-left: 4px solid ${corStatus}; opacity: ${estaOcupado && !exibirPrivado ? '0.6' : '1'}; cursor: ${estaOcupado ? 'default' : 'pointer'}">
                     <div class="agenda-time">${slot.hora}</div>
                     <div class="agenda-details">
                         <h4 style="color: ${estaOcupado ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
@@ -216,12 +220,66 @@ async function switchTabLite(viewId, element) {
     }
 }
 
+// --- FUNÇÕES DE AGENDAMENTO VIA CLIQUE ---
+
+async function abrirModalAgendamento(data, hora) {
+    slotSelecionado = { data, hora };
+    document.getElementById('modal-agendamento').style.display = 'flex';
+    document.getElementById('info-slot').innerText = `Agendando para: ${new Date(data + 'T12:00:00').toLocaleDateString('pt-BR')} às ${hora}`;
+
+    // Carregar Serviços
+    const { data: servicos } = await supabaseClient.from('servicos').select('id, nome').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
+    const sSelect = document.getElementById('agend-servico');
+    sSelect.innerHTML = '<option value="">Selecione o Serviço...</option>';
+    servicos?.forEach(s => sSelect.innerHTML += `<option value="${s.id}">${s.nome}</option>`);
+
+    // Carregar Profissionais
+    const { data: profs } = await supabaseClient.from('profissionais').select('id, nome').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
+    const pSelect = document.getElementById('agend-profissional');
+    pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';
+    profs?.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+}
+
+function fecharModal() {
+    document.getElementById('modal-agendamento').style.display = 'none';
+    document.getElementById('agend-nome').value = "";
+    document.getElementById('agend-whatsapp').value = "";
+}
+
+async function confirmarAgendamento() {
+    const nome = document.getElementById('agend-nome').value;
+    const whatsapp = document.getElementById('agend-whatsapp').value;
+    const servicoId = document.getElementById('agend-servico').value;
+    const profId = document.getElementById('agend-profissional').value;
+
+    if (!nome || !whatsapp || !servicoId || !profId) {
+        return alert("Por favor, preencha todos os campos.");
+    }
+
+    const { error } = await supabaseClient.from('agendamentos').insert([{
+        estabelecimento_id: dadosEstabelecimento.id,
+        profissional_id: profId,
+        servico_id: servicoId,
+        cliente_nome: nome,
+        cliente_whatsapp: whatsapp,
+        data_hora_inicio: `${slotSelecionado.data}T${slotSelecionado.hora}:00`,
+        status: 'confirmado'
+    }]);
+
+    if (error) {
+        alert("Erro ao agendar: " + error.message);
+    } else {
+        alert("Agendamento realizado com sucesso!");
+        fecharModal();
+        switchTabLite('agenda', document.querySelector('.tab.active')); 
+    }
+}
+
 // --- FUNÇÕES DO DASHBOARD (PERSISTÊNCIA) ---
 
 async function popularCamposGestao() {
     if (!dadosEstabelecimento) return;
 
-    // Preencher campos do estabelecimento
     document.getElementById('edit-nome-fantasia').value = dadosEstabelecimento.nome_fantasia || "";
     document.getElementById('edit-razao-social').value = dadosEstabelecimento.razao_social || "";
     document.getElementById('edit-cnpj').value = dadosEstabelecimento.cnpj || "";
@@ -231,13 +289,7 @@ async function popularCamposGestao() {
     document.getElementById('edit-hora-fechamento').value = dadosEstabelecimento.hora_fechamento || "18:00";
     document.getElementById('edit-intervalo-slot').value = dadosEstabelecimento.intervalo_slot || 30;
 
-    // Buscar e preencher dados do dono na tabela perfis
-    const { data: perfil } = await supabaseClient
-        .from('perfis')
-        .select('*')
-        .eq('id', dadosEstabelecimento.dono_id)
-        .single();
-
+    const { data: perfil } = await supabaseClient.from('perfis').select('*').eq('id', dadosEstabelecimento.dono_id).single();
     if (perfil) {
         document.getElementById('perf-nome-completo').value = perfil.nome_completo || "";
         document.getElementById('perf-cpf').value = perfil.cpf || "";
@@ -263,20 +315,11 @@ async function atualizarDadosGerais() {
         email_contato: document.getElementById('perf-email-contato').value
     };
 
-    // Update Estabelecimento
-    const { error: errorEstab } = await supabaseClient
-        .from('estabelecimentos')
-        .update(novosDadosEstab)
-        .eq('id', dadosEstabelecimento.id);
-
-    // Update Perfil
-    const { error: errorPerfil } = await supabaseClient
-        .from('perfis')
-        .update(novosDadosPerfil)
-        .eq('id', dadosEstabelecimento.dono_id);
+    const { error: errorEstab } = await supabaseClient.from('estabelecimentos').update(novosDadosEstab).eq('id', dadosEstabelecimento.id);
+    const { error: errorPerfil } = await supabaseClient.from('perfis').update(novosDadosPerfil).eq('id', dadosEstabelecimento.dono_id);
 
     if (errorEstab || errorPerfil) {
-        alert("Erro ao salvar dados: " + (errorEstab?.message || errorPerfil?.message));
+        alert("Erro ao salvar dados.");
     } else {
         alert("Configurações salvas com sucesso!");
         dadosEstabelecimento = { ...dadosEstabelecimento, ...novosDadosEstab };

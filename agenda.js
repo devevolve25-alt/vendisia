@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - atualizado agenda dono - 4
+// 1. Configuração (Sempre no topo) - comissoes - 1
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -439,7 +439,7 @@ async function cadastrarProfissional() {
     const especialidade = document.getElementById('new-prof-especialidade').value;
     const whatsapp = document.getElementById('new-prof-whatsapp').value;
     
-    // NOVAS LINHAS: Capturando os dados de remuneração do HTML
+    // CAPTURANDO OS DADOS DE REMUNERAÇÃO DO HTML (PARA CÁLCULO DE COMISSÕES)
     const tipoRemun = document.getElementById('new-prof-tipo-remuneracao').value;
     const valorComissao = document.getElementById('new-prof-comissao').value;
 
@@ -450,7 +450,6 @@ async function cadastrarProfissional() {
         nome: nome,
         especialidade: especialidade,
         whatsapp: whatsapp,
-        // INSERINDO NO BANCO:
         tipo_remuneracao: tipoRemun,
         valor_comissao_porcentagem: parseFloat(valorComissao) || 0
     }]);
@@ -459,7 +458,7 @@ async function cadastrarProfissional() {
         alert("Erro: " + error.message);
     } else {
         alert("Profissional adicionado!");
-        // Limpando todos os campos após o sucesso
+        // LIMPANDO OS CAMPOS APÓS O SUCESSO
         document.getElementById('new-prof-nome').value = "";
         document.getElementById('new-prof-especialidade').value = "";
         document.getElementById('new-prof-whatsapp').value = "";
@@ -482,7 +481,6 @@ const monitorarAgenda = supabaseClient
         }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes_financeiras' }, () => {
-        // Isso garante que se houver um delete financeiro, o sistema reaja
         const tabAtiva = document.querySelector('.tab.active');
         if (tabAtiva && tabAtiva.innerText.includes('AGENDA')) {
             switchTabLite('agenda', tabAtiva);

@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes - 2 (Versão Corrigida)
+//atualizado para calculo de comissoes e edição de cadastros
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -57,16 +57,16 @@ async function atualizarDashboard(salaoId) {
             .select('id, data_hora_inicio, cliente_nome, cliente_whatsapp, servico_id, profissional_id') 
             .eq('estabelecimento_id', salaoId);
 
-        // 4. BUSCA PROFISSIONAIS
+        // 4. BUSCA PROFISSIONAIS (Atualizado para incluir WhatsApp)
         const { data: profs } = await supabaseClient
             .from('profissionais')
-            .select('id, nome, tipo_remuneracao, valor_comissao_porcentagem')
+            .select('id, nome, tipo_remuneracao, valor_comissao_porcentagem, whatsapp')
             .eq('estabelecimento_id', salaoId);
 
-        // 5. BUSCA NOMES DOS SERVIÇOS
+        // 5. BUSCA NOMES DOS SERVIÇOS (Atualizado para permitir edição completa)
         const { data: servicos } = await supabaseClient
             .from('servicos')
-            .select('id, nome')
+            .select('id, nome, preco, duracao_minutos, descricao')
             .eq('estabelecimento_id', salaoId);
 
         // --- CÁLCULOS FINANCEIROS ---
@@ -115,7 +115,7 @@ async function atualizarDashboard(salaoId) {
 
         const containerClientes = document.getElementById('lista-clientes-detalhe');
         if (containerClientes) {
-            containerClientes.innerHTML = listaClientesHTML || '<div style="padding:10px; color:#888;">Nenhum cliente agendado.</div>';
+            containerClientes.innerHTML = listaClientesHTML || '<div style="padding:10px; text-align: center; color: #888;">Nenhum cliente agendado.</div>';
         }
 
         // --- PERFORMANCE EQUIPE E CÁLCULO DE COMISSÕES ---
@@ -125,7 +125,7 @@ async function atualizarDashboard(salaoId) {
 
         if (profs && profs.length > 0) {
             profs.forEach(p => {
-                const faturamentoBrutoProf = movs?.filter(m => m.profissional_id === p.id)
+                const faturamentoBrutoProf = movs?.filter(m => String(m.profissional_id) === String(p.id))
                     .reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
                 let comissaoDevida = 0;
@@ -135,18 +135,19 @@ async function atualizarDashboard(salaoId) {
                 if (tipo === 'comissao' || tipo === 'percentual' || tipo === 'comissão') {
                     comissaoDevida = faturamentoBrutoProf * (valorRegra / 100);
                 } else {
-                    const qtdAgendamentos = agsMes?.filter(a => a.profissional_id === p.id).length || 0;
+                    const qtdAgendamentos = agsMes?.filter(a => String(a.profissional_id) === String(p.id)).length || 0;
                     comissaoDevida = qtdAgendamentos * valorRegra;
                 }
 
                 totalComissoesGeral += comissaoDevida;
                 ranking[p.nome] = faturamentoBrutoProf;
 
+                // Adicionado evento de clique para abrir edição
                 listaComissoesHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #333;">
+                    <div onclick='abrirEdicaoProf(${JSON.stringify(p)})' style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #333; cursor:pointer;">
                         <div style="display:flex; flex-direction:column;">
-                            <span style="font-weight:bold; color:#fff;">${p.nome}</span>
-                            <small style="color:#888;">Faturamento: R$ ${faturamentoBrutoProf.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</small>
+                            <span style="font-weight:bold; color:#fff;">${p.nome} ✏️</span>
+                            <small style="color:#888;">Bruto: R$ ${faturamentoBrutoProf.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</small>
                         </div>
                         <div style="text-align:right;">
                             <span style="display:block; color:#2ecc71; font-weight:bold;">R$ ${comissaoDevida.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
@@ -171,9 +172,85 @@ async function atualizarDashboard(salaoId) {
             document.getElementById('lista-comissoes').innerHTML = listaComissoesHTML || '<span style="color:#666; padding:10px; display:block;">Sem movimentações</span>';
         }
 
+        // --- GESTÃO DE SERVIÇOS (NOVA IMPLEMENTAÇÃO) ---
+        let listaServicosHTML = '';
+        if (servicos && servicos.length > 0) {
+            servicos.forEach(s => {
+                listaServicosHTML += `
+                    <div onclick='abrirEdicaoServ(${JSON.stringify(s)})' style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #333; cursor:pointer;">
+                        <div style="text-align: left;">
+                            <strong style="color:#2ecc71; display:block;">${s.nome} ✏️</strong>
+                            <small style="color:#888; display:block;">${s.duracao_minutos || 0} min | ${s.descricao || 'Sem descrição'}</small>
+                        </div>
+                        <div style="font-weight:bold; color:white;">R$ ${Number(s.preco).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    </div>`;
+            });
+        }
+        const containerServicos = document.getElementById('lista-servicos-gestao');
+        if (containerServicos) {
+            containerServicos.innerHTML = listaServicosHTML || '<div style="padding:10px; color:#888;">Nenhum serviço cadastrado.</div>';
+        }
+
     } catch (err) {
         console.error("Erro Geral Dashboard:", err);
     }
+}
+
+// --- FUNÇÕES DE EDIÇÃO (MODAIS) ---
+function abrirEdicaoProf(p) {
+    document.getElementById('edit-prof-id').value = p.id;
+    document.getElementById('edit-prof-nome').value = p.nome;
+    document.getElementById('edit-prof-whatsapp').value = p.whatsapp || "";
+    document.getElementById('edit-prof-tipo').value = p.tipo_remuneracao || "comissao";
+    document.getElementById('edit-prof-valor').value = p.valor_comissao_porcentagem || 0;
+    document.getElementById('modal-edit-prof').style.display = 'flex';
+}
+
+async function salvarEdicaoProf() {
+    const id = document.getElementById('edit-prof-id').value;
+    const dados = {
+        nome: document.getElementById('edit-prof-nome').value,
+        whatsapp: document.getElementById('edit-prof-whatsapp').value,
+        tipo_remuneracao: document.getElementById('edit-prof-tipo').value,
+        valor_comissao_porcentagem: parseFloat(document.getElementById('edit-prof-valor').value)
+    };
+    const { error } = await supabaseClient.from('profissionais').update(dados).eq('id', id);
+    if (error) alert("Erro ao atualizar profissional: " + error.message);
+    else {
+        alert("Profissional atualizado com sucesso!");
+        fecharModalEdit('prof');
+        atualizarDashboard(salaoIdAtual);
+    }
+}
+
+function abrirEdicaoServ(s) {
+    document.getElementById('edit-serv-id').value = s.id;
+    document.getElementById('edit-serv-nome').value = s.nome;
+    document.getElementById('edit-serv-preco').value = s.preco;
+    document.getElementById('edit-serv-duracao').value = s.duracao_minutos || 30;
+    document.getElementById('edit-serv-descricao').value = s.descricao || "";
+    document.getElementById('modal-edit-serv').style.display = 'flex';
+}
+
+async function salvarEdicaoServ() {
+    const id = document.getElementById('edit-serv-id').value;
+    const dados = {
+        nome: document.getElementById('edit-serv-nome').value,
+        preco: parseFloat(document.getElementById('edit-serv-preco').value),
+        duracao_minutos: parseInt(document.getElementById('edit-serv-duracao').value),
+        descricao: document.getElementById('edit-serv-descricao').value
+    };
+    const { error } = await supabaseClient.from('servicos').update(dados).eq('id', id);
+    if (error) alert("Erro ao atualizar serviço: " + error.message);
+    else {
+        alert("Serviço atualizado com sucesso!");
+        fecharModalEdit('serv');
+        atualizarDashboard(salaoIdAtual);
+    }
+}
+
+function fecharModalEdit(tipo) {
+    document.getElementById(`modal-edit-${tipo}`).style.display = 'none';
 }
 
 const btnSalvarIA = document.getElementById('btn-salvar-ia');
@@ -193,6 +270,12 @@ const monitorarMudancas = supabaseClient
         if (salaoIdAtual) atualizarDashboard(salaoIdAtual);
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes_financeiras' }, () => {
+        if (salaoIdAtual) atualizarDashboard(salaoIdAtual);
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'profissionais' }, () => {
+        if (salaoIdAtual) atualizarDashboard(salaoIdAtual);
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, () => {
         if (salaoIdAtual) atualizarDashboard(salaoIdAtual);
     })
     .subscribe();

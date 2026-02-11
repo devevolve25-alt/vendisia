@@ -293,8 +293,6 @@ async function confirmarAgendamento() {
     }
 }
 
-    console.log("Enviando dados para o Supabase:", dadosParaInserir); // Para conferência no F12
-
     const { error } = await supabaseClient
         .from('agendamentos')
         .insert([dadosParaInserir]);

@@ -48,12 +48,31 @@ async function atualizarDashboard(salaoId) {
             .eq('estabelecimento_id', salaoId)
             .gte('data_movimentacao', inicioMes);
 
-        // 3. BUSCA AGENDAMENTOS (Correção na query para ler dados existentes)
-        const { data: ags } = await supabaseClient
+        // 3. BUSCA AGENDAMENTOS (Usando comparadores nativos do Supabase)
+        const { data: ags, error: errAg } = await supabaseClient
             .from('agendamentos')
             .select('id, data_hora_inicio, status') 
             .eq('estabelecimento_id', salaoId)
-            .gte('data_hora_inicio', inicioMes); // Comparação simplificada para evitar erro de máscara
+            .gte('data_hora_inicio', `${hojeISO}T00:00:00.000Z`)
+            .lte('data_hora_inicio', `${hojeISO}T23:59:59.999Z`);
+
+        if (errAg) console.error("Erro na busca:", errAg);
+
+        // --- CÁLCULOS DE AGENDAMENTOS ---
+        // Como o banco já filtrou por hoje, o ags.length é o total do dia
+        const totalHoje = ags?.length || 0;
+        
+        document.getElementById('ag-ia-hoje').innerText = "0"; 
+        document.getElementById('ag-man-hoje').innerText = totalHoje;
+        
+        // Para o Mês, faremos uma busca rápida separada apenas se o total do dia funcionar
+        const { count: totalMes } = await supabaseClient
+            .from('agendamentos')
+            .select('*', { count: 'exact', head: true })
+            .eq('estabelecimento_id', salaoId)
+            .gte('data_hora_inicio', inicioMes);
+
+        document.getElementById('ag-ia-mes').innerText = totalMes || 0;
 
         // 4. BUSCA PROFISSIONAIS (Para nomes e regras de comissão)
         const { data: profs } = await supabaseClient

@@ -4,7 +4,7 @@ const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let dadosEstabelecimento = null;
-let slotSelecionado = null; // Guardará {data, hora} para o agendamento
+let slotSelecionado = null; 
 
 function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
     const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;
@@ -21,7 +21,7 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
             const dataHoraSlotObjeto = new Date(dataHoraSlotString);
 
             // Lógica de Bloqueio Inteligente:
-            // Verifica se o horário deste slot está entre o início e o fim de algum agendamento
+            // Ocupa o slot se ele estiver entre o início e o fim (início + duração) de um agendamento
             const agendamentoEncontrado = agendados.find(a => {
                 const inicio = new Date(a.data_hora_inicio);
                 const duracao = a.servicos?.duracao_minutos || 30;
@@ -263,42 +263,23 @@ async function confirmarAgendamento() {
         return alert("Por favor, preencha todos os campos.");
     }
 
-    // Geração da data correta
     const dataFormatada = `${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`;
 
     const payload = {
         estabelecimento_id: dadosEstabelecimento.id,
         profissional_id: profId,
-        servico_id: servicoId, // Verifique se no Supabase não é "id_servico"
+        servico_id: servicoId, 
         cliente_nome: nome,
         cliente_whatsapp: whatsapp,
         data_hora_inicio: dataFormatada,
         status: 'confirmado'
     };
 
-    // ESTE LOG É O MAIS IMPORTANTE:
-    console.log("DADOS ENVIADOS:", payload);
-
     const { error } = await supabaseClient
         .from('agendamentos')
         .insert([payload]);
 
     if (error) {
-        console.error("ERRO SUPABASE:", error);
-        alert("Erro ao agendar: " + error.message);
-    } else {
-        alert("Agendamento realizado com sucesso!");
-        fecharModal();
-        switchTabLite('agenda', document.querySelector('.tab.active')); 
-    }
-}
-
-    const { error } = await supabaseClient
-        .from('agendamentos')
-        .insert([dadosParaInserir]);
-
-    if (error) {
-        console.error("Erro detalhado:", error);
         alert("Erro ao agendar: " + error.message);
     } else {
         alert("Agendamento realizado com sucesso!");

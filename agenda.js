@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) -agenda atualizada
+// 1. Configuração (Sempre no topo) - agenda atualizada
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -6,33 +6,27 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let dadosEstabelecimento = null;
 let slotSelecionado = null; 
 
-// SUBSTITUA APENAS ESTA FUNÇÃO NO SEU ARQUIVO
 function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
     const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;
     const gradeDisponivel = [];
 
     for (let i = 0; i < diasParaGerar; i++) {
         const dataReferencia = new Date();
-dataReferencia.setHours(0, 0, 0, 0); // ZERA HORAS, MINUTOS E SEGUNDOS
-dataReferencia.setDate(dataReferencia.getDate() + i);
-        const dataISO = dataReferencia.toLocaleDateString('sv-SE'); // Formato YYYY-MM-DD local
+        dataReferencia.setHours(0, 0, 0, 0); 
+        dataReferencia.setDate(dataReferencia.getDate() + i);
+        const dataISO = dataReferencia.toLocaleDateString('sv-SE'); 
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
-            // Converte o slot da grade para milissegundos absolutos
             const tempoSlot = new Date(`${dataISO}T${horaAtual.substring(0, 5)}:00`).getTime();
 
-            // Verifica ocupação comparando apenas números (Milissegundos)
             const estaOcupado = agendados.some(a => {
                 const inicio = new Date(a.data_hora_inicio).getTime();
                 const duracao = a.servicos?.duracao_minutos || 30;
                 const fim = inicio + (duracao * 60000);
-                
-                // Comparação matemática pura: imune a fusos horários
                 return tempoSlot >= inicio && tempoSlot < fim;
             });
 
-            // Só incluímos na grade se o tempo do slot não estiver ocupado
             if (!estaOcupado) {
                 gradeDisponivel.push({
                     data: dataISO,
@@ -169,13 +163,12 @@ async function switchTabLite(viewId, element) {
         dataFim.setDate(new Date().getDate() + diasRange);
         const dataFimISO = dataFim.toISOString().split('T')[0];
 
-        // Localize este trecho no switchTabLite e substitua:
-const { data: agendamentos } = await supabaseClient.from('agendamentos')
-    .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(nome), servicos(nome, duracao_minutos)')
-    .eq('estabelecimento_id', dadosEstabelecimento.id)
-    .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
-    .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
-    .order('data_hora_inicio');       
+        const { data: agendamentos } = await supabaseClient.from('agendamentos')
+            .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(nome), servicos(nome, duracao_minutos)')
+            .eq('estabelecimento_id', dadosEstabelecimento.id)
+            .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
+            .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
+            .order('data_hora_inicio');       
         
         const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, dadosEstabelecimento.intervalo_slot, agendamentos || []);
         
@@ -247,42 +240,40 @@ async function abrirModalAgendamento(data, hora) {
     sSelect.innerHTML = '<option value="">Selecione o Serviço...</option>';
     servicos?.forEach(s => sSelect.innerHTML += `<option value="${s.id}">${s.nome}</option>`);
     
-    // O SELECT DE PROFISSIONAIS FICA VAZIO AQUI, AGUARDANDO A ESCOLHA DO SERVIÇO
     document.getElementById('agend-profissional').innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
+
+    // Correção: Vínculo serviço-profissional dentro do fluxo do modal
+    sSelect.onchange = async function() {
+        const servicoSelecionadoNome = this.options[this.selectedIndex].text;
+        const pSelect = document.getElementById('agend-profissional');
+        
+        if (!this.value) {
+            pSelect.innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
+            return;
+        }
+
+        pSelect.innerHTML = '<option value="">Buscando profissionais...</option>';
+
+        const { data: profs } = await supabaseClient
+            .from('profissionais')
+            .select('id, nome, especialidade')
+            .eq('estabelecimento_id', dadosEstabelecimento.id);
+
+        const filtrados = profs.filter(p => {
+            const esp = p.especialidade?.toLowerCase() || "";
+            const serv = servicoSelecionadoNome.toLowerCase();
+            return serv.includes(esp) || esp.includes(serv);
+        });
+
+        pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';
+        
+        if (filtrados.length === 0) {
+            profs?.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+        } else {
+            filtrados.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+        }
+    };
 }
-
-// <<< INSERIR O NOVO TRECHO AQUI, LOGO ABAIXO DA CHAVE DE FECHAMENTO >>>
-
-document.getElementById('agend-servico').addEventListener('change', async function() {
-    const servicoSelecionadoNome = this.options[this.selectedIndex].text;
-    const pSelect = document.getElementById('agend-profissional');
-    
-    if (!this.value) {
-        pSelect.innerHTML = '<option value="">Selecione primeiro o serviço...</option>';
-        return;
-    }
-
-    pSelect.innerHTML = '<option value="">Buscando profissionais...</option>';
-
-    const { data: profs } = await supabaseClient
-        .from('profissionais')
-        .select('id, nome, especialidade')
-        .eq('estabelecimento_id', dadosEstabelecimento.id);
-
-    const filtrados = profs.filter(p => {
-        const esp = p.especialidade?.toLowerCase() || "";
-        const serv = servicoSelecionadoNome.toLowerCase();
-        return serv.includes(esp) || esp.includes(serv);
-    });
-
-    pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';
-    
-    if (filtrados.length === 0) {
-        profs.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
-    } else {
-        filtrados.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
-    }
-});
 
 function fecharModal() {
     document.getElementById('modal-agendamento').style.display = 'none';
@@ -300,7 +291,6 @@ async function confirmarAgendamento() {
         return alert("Por favor, preencha todos os campos.");
     }
 
-    // Criamos um objeto Date real com base na seleção para garantir o fuso local correto
     const dataObjeto = new Date(`${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`);
 
     const payload = {
@@ -309,7 +299,7 @@ async function confirmarAgendamento() {
         servico_id: servicoId,
         cliente_nome: nome,
         cliente_whatsapp: whatsapp,
-        data_hora_inicio: dataObjeto.toISOString(), // Envia formato UTC padronizado (final Z)
+        data_hora_inicio: dataObjeto.toISOString(),
         status: 'confirmado'
     };
 
@@ -320,8 +310,6 @@ async function confirmarAgendamento() {
     } else {
         alert("Agendamento realizado com sucesso!");
         fecharModal();
-        
-        // Delay para garantir que o banco indexou o registro antes da atualização da grade
         setTimeout(() => {
             const tabAtiva = document.querySelector('.tab.active');
             switchTabLite('agenda', tabAtiva);

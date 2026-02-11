@@ -1,4 +1,4 @@
-//atualizado para exibição no dashboard - 4 (Sem Filtros de Data e Sem Select)
+//atualizado para exibição no dashboard - 4 (Sem Filtros de Data, Sem Select e com Lista de Clientes)
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -53,10 +53,10 @@ async function atualizarDashboard(salaoId) {
             .select('valor, data_movimentacao, profissional_id')
             .eq('estabelecimento_id', salaoId);
 
-        // 3. BUSCA AGENDAMENTOS (Busca bruta apenas pelo ID do salão)
+        // 3. BUSCA AGENDAMENTOS (Incluindo dados do cliente e profissional_id)
         const { data: agsMes } = await supabaseClient
             .from('agendamentos')
-            .select('id, data_hora_inicio') 
+            .select('id, data_hora_inicio, cliente_nome, cliente_whatsapp, servico_id, profissional_id') 
             .eq('estabelecimento_id', salaoId);
 
         // 4. BUSCA PROFISSIONAIS
@@ -93,6 +93,34 @@ async function atualizarDashboard(salaoId) {
         if (document.getElementById('ag-hoje')) document.getElementById('ag-hoje').innerText = totalHoje;
         if (document.getElementById('ag-mes')) document.getElementById('ag-mes').innerText = totalGeral;
         if (document.getElementById('ag-semana')) document.getElementById('ag-semana').innerText = totalGeral; 
+
+        // --- DETALHAMENTO DE CLIENTES ---
+        let listaClientesHTML = '';
+        const agendamentosOrdenados = agsMes?.sort((a, b) => new Date(a.data_hora_inicio) - new Date(b.data_hora_inicio)) || [];
+
+        agendamentosOrdenados.forEach(a => {
+            const dataFmt = a.data_hora_inicio ? new Date(a.data_hora_inicio).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--/--';
+            const whatsLink = `https://wa.me/${a.cliente_whatsapp?.replace(/\D/g, '')}`;
+            
+            // Busca o nome do profissional na lista 'profs' carregada no Bloco 4
+            const profEncontrado = profs?.find(p => p.id === a.profissional_id);
+            const nomeProf = profEncontrado ? profEncontrado.nome : `ID: ${a.profissional_id}`;
+
+            listaClientesHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; font-size: 0.85rem;">
+                    <div>
+                        <strong style="display:block; color:#2ecc71;">${a.cliente_nome || 'Cliente s/ nome'}</strong>
+                        <span style="color:#ddd; display:block;">Profissional: ${nomeProf}</span>
+                        <span style="color:#888;">${a.servico_id} | ${dataFmt}</span>
+                    </div>
+                    <a href="${whatsLink}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:0.75rem;">WhatsApp</a>
+                </div>`;
+        });
+
+        const containerClientes = document.getElementById('lista-clientes-detalhe');
+        if (containerClientes) {
+            containerClientes.innerHTML = listaClientesHTML || '<div style="padding:10px; color:#888;">Nenhum cliente agendado.</div>';
+        }
 
         // --- PERFORMANCE EQUIPE ---
         let totalComissoesGeral = 0;
@@ -136,10 +164,7 @@ if (btnSalvarIA) {
     });
 }
 
-// Inicia o processo
-
 // --- IMPLEMENTAÇÃO TEMPO REAL ---
-// Escuta alterações nas tabelas e atualiza o dashboard automaticamente
 const monitorarMudancas = supabaseClient
     .channel('custom-all-channel')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => {

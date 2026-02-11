@@ -8,7 +8,10 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="dashboard.css">
     <style>
-        body { background-color: #121212 !important; color: white !important; font-family: sans-serif; }
+        /* RESET E COMPORTAMENTO RESPONSIVO */
+        * { box-sizing: border-box; } /* Impede que padding estoure a largura */
+        
+        body { background-color: #121212 !important; color: white !important; font-family: sans-serif; margin: 0; }
         .loader-overlay { display: none; } 
         .pai-card { border: 1px solid #333; margin: 10px; padding: 15px; border-radius: 10px; background: #1e1e1e; }
         .filhos-grid { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -17,32 +20,22 @@
         .valor-central { font-size: 1.2rem; font-weight: bold; color: #2ecc71; }
         
         .btn-filtro {
-            background: #1e1e1e;
-            color: #888;
-            border: 1px solid #333;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: 0.3s;
-            white-space: nowrap;
+            background: #1e1e1e; color: #888; border: 1px solid #333;
+            padding: 8px 16px; border-radius: 20px; font-size: 0.8rem;
+            cursor: pointer; transition: 0.3s; white-space: nowrap;
         }
-        .btn-filtro.active {
-            background: #2ecc71;
-            color: #121212;
-            font-weight: bold;
-        }
+        .btn-filtro.active { background: #2ecc71; color: #121212; font-weight: bold; }
 
-        /* --- ESTILOS DOS MODAIS --- */
+        /* --- ESTILOS DOS MODAIS (CORRIGIDO PARA MOBILE) --- */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85);
-            z-index: 1000;
+            z-index: 1001; /* Acima da navegação */
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px; /* Margem de segurança para o card não colar na borda do celular */
         }
         .modal-card {
             background: #1e1e1e;
@@ -51,16 +44,19 @@
             border-radius: 12px;
             width: 100%;
             max-width: 400px;
+            max-height: 90vh; /* Não ultrapassa a altura da tela */
+            overflow-y: auto; /* Permite rolar se o conteúdo for grande ou o teclado abrir */
+            position: relative;
         }
         .modal-card h3 { margin-top: 0; color: #2ecc71; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
         .modal-card label { display: block; font-size: 0.75rem; color: #888; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; }
         .modal-card input, .modal-card select, .modal-card textarea {
-            width: 100%; box-sizing: border-box; background: #121212; border: 1px solid #444; color: white;
-            padding: 10px; border-radius: 6px; font-family: inherit;
+            width: 100%; background: #121212; border: 1px solid #444; color: white;
+            padding: 12px; border-radius: 6px; font-family: inherit; font-size: 1rem;
         }
-        .modal-btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-cancel { flex: 1; background: transparent; border: 1px solid #444; color: #888; padding: 10px; border-radius: 6px; cursor: pointer; }
-        .btn-save { flex: 2; background: #2ecc71; border: none; color: #000; font-weight: bold; padding: 10px; border-radius: 6px; cursor: pointer; }
+        .modal-btn-group { display: flex; gap: 10px; margin-top: 25px; padding-bottom: 5px; }
+        .btn-cancel { flex: 1; background: transparent; border: 1px solid #444; color: #888; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-save { flex: 2; background: #2ecc71; border: none; color: #000; font-weight: bold; padding: 12px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -219,19 +215,17 @@
     </div>
 
     <nav style="position: fixed; bottom: 0; width: 100%; background: #181818; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #333; z-index: 999;">
-    <a href="#" id="link-voltar-agenda" style="color: #2ecc71; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="calendar"></i> AGENDA
-    </a>
-    
-    <a href="#" id="btn-logout" style="color: #888; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="log-out"></i> SAIR
-    </a>
-</nav>
+        <a href="#" id="link-voltar-agenda" style="color: #2ecc71; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="calendar"></i> AGENDA
+        </a>
+        <a href="#" id="btn-logout" style="color: #888; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="log-out"></i> SAIR
+        </a>
+    </nav>
 
     <script src="dashboard.js"></script>
     <script>
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }
-        // Funções rápidas para interface
         function fecharModalEdit(tipo) { document.getElementById(`modal-edit-${tipo}`).style.display = 'none'; }
     </script>
 </body>

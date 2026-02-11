@@ -65,6 +65,12 @@ async function atualizarDashboard(salaoId) {
             .select('id, nome, tipo_remuneracao, valor_comissao_porcentagem')
             .eq('estabelecimento_id', salaoId);
 
+        // 5. BUSCA NOMES DOS SERVIÇOS
+        const { data: servicos } = await supabaseClient
+            .from('servicos')
+            .select('id, nome')
+            .eq('estabelecimento_id', salaoId);
+
         // --- CÁLCULOS FINANCEIROS ---
         const fatHoje = movs?.filter(m => 
             m.data_movimentacao && m.data_movimentacao.toString().includes(hojeISO)
@@ -101,6 +107,25 @@ async function atualizarDashboard(salaoId) {
         agendamentosOrdenados.forEach(a => {
             const dataFmt = a.data_hora_inicio ? new Date(a.data_hora_inicio).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--/--';
             const whatsLink = `https://wa.me/${a.cliente_whatsapp?.replace(/\D/g, '')}`;
+            
+            // Busca o nome do profissional
+            const profEncontrado = profs?.find(p => p.id === a.profissional_id);
+            const nomeProf = profEncontrado ? profEncontrado.nome : `Prof. ID: ${a.profissional_id}`;
+
+            // Busca o nome do serviço (NOVIDADE AQUI)
+            const servEncontrado = servicos?.find(s => s.id === a.servico_id);
+            const nomeServico = servEncontrado ? servEncontrado.nome : `Serviço ID: ${a.servico_id}`;
+
+            listaClientesHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; font-size: 0.85rem;">
+                    <div>
+                        <strong style="display:block; color:#2ecc71;">${a.cliente_nome || 'Cliente s/ nome'}</strong>
+                        <span style="color:#ddd; display:block;">Profissional: ${nomeProf}</span>
+                        <span style="color:#888;">${nomeServico} | ${dataFmt}</span>
+                    </div>
+                    <a href="${whatsLink}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:0.75rem;">WhatsApp</a>
+                </div>`;
+        });
             
             // Busca o nome do profissional na lista 'profs' carregada no Bloco 4
             const profEncontrado = profs?.find(p => p.id === a.profissional_id);

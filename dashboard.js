@@ -1,3 +1,4 @@
+//ATUALIZADO
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -47,12 +48,12 @@ async function atualizarDashboard(salaoId) {
             .eq('estabelecimento_id', salaoId)
             .gte('data_movimentacao', inicioMes);
 
-        // 3. BUSCA AGENDAMENTOS (Contagem IA vs Manual)
+        // 3. BUSCA AGENDAMENTOS (Correção na query para ler dados existentes)
         const { data: ags } = await supabaseClient
             .from('agendamentos')
-            .select('id, data_hora_inicio, status') // Se tiver coluna 'origem', adicione-a aqui
+            .select('id, data_hora_inicio, status') 
             .eq('estabelecimento_id', salaoId)
-            .gte('data_hora_inicio', inicioMes + 'T00:00:00');
+            .gte('data_hora_inicio', inicioMes); // Comparação simplificada para evitar erro de máscara
 
         // 4. BUSCA PROFISSIONAIS (Para nomes e regras de comissão)
         const { data: profs } = await supabaseClient
@@ -64,14 +65,16 @@ async function atualizarDashboard(salaoId) {
         const fatHoje = movs?.filter(m => m.data_movimentacao.startsWith(hojeISO)).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
         const fatMes = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
 
-        // Atualiza cards de faturamento (usando os seletores de ordem do seu HTML)
         const faturamentoCards = document.querySelectorAll('.pai-card:nth-child(1) .valor-central');
         if(faturamentoCards[0]) faturamentoCards[0].innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         if(faturamentoCards[2]) faturamentoCards[2].innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
-        // --- CÁLCULOS DE AGENDAMENTOS ---
-        const agsHoje = ags?.filter(a => a.data_hora_inicio.startsWith(hojeISO)) || [];
-        document.getElementById('ag-ia-hoje').innerText = agsHoje.length; // Aqui você filtraria por origem se existir
+        // --- CÁLCULOS DE AGENDAMENTOS (Correção na filtragem de exibição) ---
+        const agsHoje = ags?.filter(a => a.data_hora_inicio && a.data_hora_inicio.includes(hojeISO)) || [];
+        
+        // Atualiza IA e Manual (Considerando total em manual por falta de coluna 'origem')
+        document.getElementById('ag-ia-hoje').innerText = "0"; 
+        document.getElementById('ag-man-hoje').innerText = agsHoje.length;
         document.getElementById('ag-ia-mes').innerText = ags?.length || 0;
 
         // --- PERFORMANCE DE EQUIPE E COMISSÕES ---
@@ -87,7 +90,7 @@ async function atualizarDashboard(salaoId) {
             if (p.tipo_remuneracao === 'comissao') {
                 comissaoProf = faturamentoProf * (Number(p.valor_comissao_porcentagem) / 100);
             } else {
-                comissaoProf = Number(p.valor_comissao_porcentagem); // Valor fixo
+                comissaoProf = Number(p.valor_comissao_porcentagem);
             }
 
             totalComissoesGeral += comissaoProf;

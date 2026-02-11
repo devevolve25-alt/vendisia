@@ -1,9 +1,10 @@
-//atualizado para exibição no dashboard - 4 (Sem Filtros de Data)
+//atualizado para exibição no dashboard - 4 (Sem Filtros de Data e Sem Select)
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const selectSalao = document.getElementById('select-salao');
+// Variável global para armazenar o ID do salão atual
+let salaoIdAtual = null;
 
 async function checkUser() {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -11,23 +12,24 @@ async function checkUser() {
         window.location.href = 'acesso.html';
         return;
     }
-    await carregarSaloes(session.user.id);
+    await carregarDadosIniciais(session.user.id);
 }
 
-async function carregarSaloes(donoId) {
+async function carregarDadosIniciais(donoId) {
     const { data: saloes } = await supabaseClient
         .from('estabelecimentos')
-        .select('id, nome_fantasia')
-        .eq('dono_id', donoId);
+        .select('id')
+        .eq('dono_id', donoId)
+        .limit(1);
 
     if (saloes && saloes.length > 0) {
-        selectSalao.innerHTML = saloes.map(s => `<option value="${s.id}">${s.nome_fantasia}</option>`).join('');
-        atualizarDashboard(saloes[0].id);
+        salaoIdAtual = saloes[0].id;
+        atualizarDashboard(salaoIdAtual);
+    } else {
+        console.error("Nenhum estabelecimento encontrado para este usuário.");
+        const displayNome = document.getElementById('salon-name-display');
+        if (displayNome) displayNome.innerText = "SEM ESTABELECIMENTO";
     }
-}
-
-if (selectSalao) {
-    selectSalao.addEventListener('change', (e) => atualizarDashboard(e.target.value));
 }
 
 async function atualizarDashboard(salaoId) {
@@ -126,12 +128,13 @@ async function atualizarDashboard(salaoId) {
 const btnSalvarIA = document.getElementById('btn-salvar-ia');
 if (btnSalvarIA) {
     btnSalvarIA.addEventListener('click', async () => {
-        const salaoId = selectSalao.value;
+        if (!salaoIdAtual) return;
         const novaSaudacao = document.getElementById('ia-saudacao-input').value;
-        const { error } = await supabaseClient.from('estabelecimentos').update({ ia_saudacao: novaSaudacao }).eq('id', salaoId);
+        const { error } = await supabaseClient.from('estabelecimentos').update({ ia_saudacao: novaSaudacao }).eq('id', salaoIdAtual);
         if (error) alert("Erro: " + error.message);
         else alert("Saudação atualizada!");
     });
 }
 
+// Inicia o processo
 checkUser();

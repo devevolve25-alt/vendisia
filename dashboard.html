@@ -218,11 +218,15 @@
         </div>
     </div>
 
-    <nav style="position: fixed; bottom: 0; width: 100%; background: #181818; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #333;">
-        <a href="#" style="color: #2ecc71; text-decoration: none; font-size: 0.8rem;">Início</a>
-        <a href="#" style="color: #888; text-decoration: none; font-size: 0.8rem;">Serviços</a>
-        <a href="#" id="btn-logout" style="color: #888; text-decoration: none; font-size: 0.8rem;">Sair</a>
-    </nav>
+    <nav style="position: fixed; bottom: 0; width: 100%; background: #181818; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #333; z-index: 999;">
+    <a href="#" id="link-voltar-agenda" style="color: #2ecc71; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="calendar"></i> AGENDA
+    </a>
+    
+    <a href="#" id="btn-logout" style="color: #888; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="log-out"></i> SAIR
+    </a>
+</nav>
 
     <script src="dashboard.js"></script>
     <script>

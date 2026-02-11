@@ -280,4 +280,41 @@ const monitorarMudancas = supabaseClient
     })
     .subscribe();
 
+// --- LÓGICA DE NAVEGAÇÃO E LOGOUT ---
+async function configurarNavegacao(slug) {
+    const linkAgenda = document.getElementById('link-voltar-agenda');
+    const btnLogout = document.getElementById('btn-logout');
+
+    if (linkAgenda) {
+        // Redireciona de volta para a agenda com o tipo de usuário 'dono'
+        linkAgenda.href = `index.html?s=${slug}&u=dono`;
+    }
+
+    if (btnLogout) {
+        btnLogout.onclick = async (e) => {
+            e.preventDefault();
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) alert("Erro ao sair: " + error.message);
+            else window.location.href = 'acesso.html';
+        };
+    }
+}
+
+// Atualize sua função carregarDadosIniciais para chamar a configuração de navegação:
+async function carregarDadosIniciais(donoId) {
+    const { data: saloes } = await supabaseClient
+        .from('estabelecimentos')
+        .select('id, slug')
+        .eq('dono_id', donoId)
+        .limit(1);
+
+    if (saloes && saloes.length > 0) {
+        salaoIdAtual = saloes[0].id;
+        configurarNavegacao(saloes[0].slug); // Configura os links com o slug real
+        atualizarDashboard(salaoIdAtual);
+    } else {
+        // ... lógica de erro existente
+    }
+}
+
 checkUser();

@@ -263,16 +263,35 @@ async function confirmarAgendamento() {
         return alert("Por favor, preencha todos os campos.");
     }
 
-    // Criamos o objeto de dados garantindo os nomes EXATOS das colunas do seu banco
-    const dadosParaInserir = {
+    // Geração da data correta
+    const dataFormatada = `${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`;
+
+    const payload = {
         estabelecimento_id: dadosEstabelecimento.id,
         profissional_id: profId,
-        servico_id: servicoId, // Aqui estava o erro (id_servico)
+        servico_id: servicoId, // Verifique se no Supabase não é "id_servico"
         cliente_nome: nome,
         cliente_whatsapp: whatsapp,
-        data_hora_inicio: `${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`,
+        data_hora_inicio: dataFormatada,
         status: 'confirmado'
     };
+
+    // ESTE LOG É O MAIS IMPORTANTE:
+    console.log("DADOS ENVIADOS:", payload);
+
+    const { error } = await supabaseClient
+        .from('agendamentos')
+        .insert([payload]);
+
+    if (error) {
+        console.error("ERRO SUPABASE:", error);
+        alert("Erro ao agendar: " + error.message);
+    } else {
+        alert("Agendamento realizado com sucesso!");
+        fecharModal();
+        switchTabLite('agenda', document.querySelector('.tab.active')); 
+    }
+}
 
     console.log("Enviando dados para o Supabase:", dadosParaInserir); // Para conferência no F12
 

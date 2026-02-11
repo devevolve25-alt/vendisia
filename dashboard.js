@@ -1,4 +1,4 @@
-//atualizado para exibição de agendamentos - 3
+//atualizado para exibição de agendamentos - 4
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -26,45 +26,46 @@ async function carregarSaloes(donoId) {
     }
 }
 
-selectSalao.addEventListener('change', (e) => atualizarDashboard(e.target.value));
+if (selectSalao) {
+    selectSalao.addEventListener('change', (e) => atualizarDashboard(e.target.value));
+}
 
 async function atualizarDashboard(salaoId) {
     try {
         const agora = new Date();
-        const hojeISO = agora.toLocaleDateString('sv-SE'); // "2026-02-11"
+        const hojeISO = agora.toLocaleDateString('sv-SE'); 
         
-        // Configuração dinâmica de datas para evitar erro de "dia 31"
         const ano = agora.getFullYear();
-        const mes = agora.getMonth(); // 0 = Janeiro, 1 = Fevereiro...
+        const mes = agora.getMonth();
         
-        const inicioMes = new Date(ano, mes, 1).toISOString().split('T')[0]; // Primeiro dia do mês atual
-        const inicioProxMes = new Date(ano, mes + 1, 1).toISOString().split('T')[0]; // Primeiro dia do PRÓXIMO mês
+        const inicioMes = new Date(ano, mes, 1).toISOString().split('T')[0];
+        const inicioProxMes = new Date(ano, mes + 1, 1).toISOString().split('T')[0];
 
         // 1. DADOS DO ESTABELECIMENTO
         const { data: estab } = await supabaseClient.from('estabelecimentos').select('nome_fantasia, ia_saudacao').eq('id', salaoId).single();
         if (estab) {
-            document.querySelector('header h1').innerText = estab.nome_fantasia;
-            document.getElementById('ia-saudacao-input').value = estab.ia_saudacao || "";
+            const displayNome = document.getElementById('salon-name-display');
+            if (displayNome) displayNome.innerText = estab.nome_fantasia;
+            
+            const inputIA = document.getElementById('ia-saudacao-input');
+            if (inputIA) inputIA.value = estab.ia_saudacao || "";
         }
 
-        // 2. BUSCA FINANCEIRA (Usando "Menor que o início do próximo mês" para evitar erro de data)
-        const { data: movs, error: errMov } = await supabaseClient
+        // 2. BUSCA FINANCEIRA
+        const { data: movs } = await supabaseClient
             .from('movimentacoes_financeiras')
             .select('valor, data_movimentacao, profissional_id')
             .eq('estabelecimento_id', salaoId)
             .gte('data_movimentacao', inicioMes)
-            .lt('data_movimentacao', inicioProxMes); // lt = Less Than (Menor que)
+            .lt('data_movimentacao', inicioProxMes);
 
-        // 3. BUSCA AGENDAMENTOS
-        const { data: agsMes, error: errAg } = await supabaseClient
+        // 3. BUSCA AGENDAMENTOS (Unificada)
+        const { data: agsMes } = await supabaseClient
             .from('agendamentos')
-            .select('id, data_hora_inicio, status') 
+            .select('id, data_hora_inicio') 
             .eq('estabelecimento_id', salaoId)
             .gte('data_hora_inicio', inicioMes)
             .lt('data_hora_inicio', inicioProxMes);
-
-        if (errMov) console.error("Erro Movimentações:", errMov);
-        if (errAg) console.error("Erro Agendamentos:", errAg);
 
         // 4. BUSCA PROFISSIONAIS
         const { data: profs } = await supabaseClient
@@ -72,19 +73,23 @@ async function atualizarDashboard(salaoId) {
             .select('id, nome, tipo_remuneracao, valor_comissao_porcentagem')
             .eq('estabelecimento_id', salaoId);
 
-        // --- CÁLCULOS ---
+        // --- ATUALIZAÇÃO DOS CARDS DE FATURAMENTO ---
         const fatHoje = movs?.filter(m => m.data_movimentacao.includes(hojeISO)).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
         const fatMes = movs?.reduce((acc, c) => acc + Number(c.valor), 0) || 0;
-        const agsHoje = agsMes?.filter(a => a.data_hora_inicio && a.data_hora_inicio.includes(hojeISO)) || [];
 
-        // --- ATUALIZAÇÃO DA INTERFACE ---
-        const faturamentoCards = document.querySelectorAll('.pai-card:nth-child(1) .valor-central');
-        if(faturamentoCards[0]) faturamentoCards[0].innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        if(faturamentoCards[2]) faturamentoCards[2].innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        // Verificando se os IDs existem antes de escrever
+        if (document.getElementById('fat-hoje')) document.getElementById('fat-hoje').innerText = `R$ ${fatHoje.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        if (document.getElementById('fat-mes')) document.getElementById('fat-mes').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        // O card de semana pode ser preenchido com o do mês ou lógica específica depois
+        if (document.getElementById('fat-semana')) document.getElementById('fat-semana').innerText = `R$ ${fatMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
-        document.getElementById('ag-ia-hoje').innerText = "0"; 
-        document.getElementById('ag-man-hoje').innerText = agsHoje.length;
-        document.getElementById('ag-ia-mes').innerText = agsMes?.length || 0;
+        // --- ATUALIZAÇÃO DOS CARDS DE AGENDAMENTOS ---
+        const totalHoje = agsMes?.filter(a => a.data_hora_inicio && a.data_hora_inicio.includes(hojeISO)).length || 0;
+        const totalMes = agsMes?.length || 0;
+
+        if (document.getElementById('ag-hoje')) document.getElementById('ag-hoje').innerText = totalHoje;
+        if (document.getElementById('ag-mes')) document.getElementById('ag-mes').innerText = totalMes;
+        if (document.getElementById('ag-semana')) document.getElementById('ag-semana').innerText = totalMes; 
 
         // --- PERFORMANCE EQUIPE ---
         let totalComissoesGeral = 0;
@@ -93,7 +98,7 @@ async function atualizarDashboard(salaoId) {
 
         profs?.forEach(p => {
             const faturamentoProf = movs?.filter(m => m.profissional_id === p.id).reduce((acc, c) => acc + Number(c.valor), 0) || 0;
-            let comissaoProf = (p.tipo_remuneracao === 'comissao' || p.tipo_remuneracao === 'Percentual') 
+            let comissaoProf = (p.tipo_remuneracao === 'comissao' || p.tipo_remuneracao === 'Percentual' || p.tipo_remuneracao === 'comissão') 
                 ? (faturamentoProf * (Number(p.valor_comissao_porcentagem) / 100)) 
                 : Number(p.valor_comissao_porcentagem);
 
@@ -102,20 +107,30 @@ async function atualizarDashboard(salaoId) {
             listaComissoesHTML += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #333;"><span>${p.nome}</span><strong>R$ ${comissaoProf.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</strong></div>`;
         });
 
-        document.getElementById('top-barbeiro').innerText = Object.keys(ranking).length > 0 ? Object.keys(ranking).reduce((a, b) => ranking[a] > ranking[b] ? a : b) : "---";
-        document.getElementById('total-comissao').innerText = `R$ ${totalComissoesGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        document.getElementById('lista-comissoes').innerHTML = listaComissoesHTML || '<span>Sem dados</span>';
+        if (document.getElementById('top-barbeiro')) {
+            document.getElementById('top-barbeiro').innerText = Object.keys(ranking).length > 0 ? Object.keys(ranking).reduce((a, b) => ranking[a] > ranking[b] ? a : b) : "---";
+        }
+        if (document.getElementById('total-comissao')) {
+            document.getElementById('total-comissao').innerText = `R$ ${totalComissoesGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+        if (document.getElementById('lista-comissoes')) {
+            document.getElementById('lista-comissoes').innerHTML = listaComissoesHTML || '<span>Sem dados</span>';
+        }
 
     } catch (err) {
         console.error("Erro Geral Dashboard:", err);
     }
 }
 
-document.getElementById('btn-salvar-ia').addEventListener('click', async () => {
-    const salaoId = selectSalao.value;
-    const { error } = await supabaseClient.from('estabelecimentos').update({ ia_saudacao: document.getElementById('ia-saudacao-input').value }).eq('id', salaoId);
-    if (error) alert("Erro: " + error.message);
-    else alert("Saudação atualizada!");
-});
+const btnSalvarIA = document.getElementById('btn-salvar-ia');
+if (btnSalvarIA) {
+    btnSalvarIA.addEventListener('click', async () => {
+        const salaoId = selectSalao.value;
+        const novaSaudacao = document.getElementById('ia-saudacao-input').value;
+        const { error } = await supabaseClient.from('estabelecimentos').update({ ia_saudacao: novaSaudacao }).eq('id', salaoId);
+        if (error) alert("Erro: " + error.message);
+        else alert("Saudação atualizada!");
+    });
+}
 
 checkUser();

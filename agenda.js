@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - atualizacao para exibição na agenda -1
+// 1. Configuração (Sempre no topo)
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -20,7 +20,7 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
         while (horaAtual < fechamento) {
             const tempoSlot = new Date(`${dataISO}T${horaAtual.substring(0, 5)}:00`).getTime();
 
-            // Encontra se existe um agendamento para este momento exato
+            // Busca se existe agendamento neste slot exato
             const agendamentoNoSlot = agendados.find(a => {
                 const inicio = new Date(a.data_hora_inicio).getTime();
                 return tempoSlot === inicio;
@@ -29,7 +29,7 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
             gradeTotal.push({
                 data: dataISO,
                 hora: horaAtual,
-                dados: agendamentoNoSlot || null // Agora passamos os dados do agendamento para o slot
+                dados: agendamentoNoSlot || null
             });
 
             let [h, m] = horaAtual.split(':').map(Number);
@@ -39,15 +39,6 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
         }
     }
     return gradeTotal;
-}
-
-            let [h, m] = horaAtual.split(':').map(Number);
-            m += intervalo;
-            if (m >= 60) { h++; m -= 60; }
-            horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-        
-    }
-    return gradeDisponivel;
 }
 
 function generateContent() {
@@ -191,10 +182,8 @@ async function switchTabLite(viewId, element) {
             const exibirPrivado = (userType === 'dono' || userType === 'funcionario');
             const estaOcupado = slot.dados !== null;
 
-            // LÓGICA DE VISIBILIDADE: Se for cliente e estiver ocupado, o slot não aparece
             if (!exibirPrivado && estaOcupado) return;
 
-            // Definição de Textos
             const nomeExibido = estaOcupado ? slot.dados.cliente_nome : "DISPONÍVEL";
             const servicoExibido = estaOcupado ? (slot.dados.servicos?.nome || 'Serviço') : "Toque para agendar";
             const profExibido = estaOcupado ? ` | Prof: ${slot.dados.profissionais?.nome || '---'}` : "";
@@ -239,8 +228,6 @@ async function switchTabLite(viewId, element) {
         body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
     }
 }
-
-// --- FUNÇÕES DE AGENDAMENTO VIA CLIQUE ---
 
 async function abrirModalAgendamento(data, hora) {
     slotSelecionado = { data, hora };
@@ -314,7 +301,6 @@ async function confirmarAgendamento() {
         status: 'confirmado'
     };
 
-    // 1. Salva o Agendamento e obtém o ID gerado (usando .select().single())
     const { data: novoAgendamento, error: errorAg } = await supabaseClient
         .from('agendamentos')
         .insert([payload])
@@ -325,14 +311,12 @@ async function confirmarAgendamento() {
         return alert("Erro ao agendar: " + errorAg.message);
     }
 
-    // 2. Busca o preço do serviço para o financeiro
     const { data: servicoInfo } = await supabaseClient
         .from('servicos')
         .select('preco, nome')
         .eq('id', servicoId)
         .single();
 
-    // 3. Registra a movimentação financeira
     if (novoAgendamento && servicoInfo) {
         await supabaseClient.from('movimentacoes_financeiras').insert([{
             estabelecimento_id: dadosEstabelecimento.id,
@@ -352,8 +336,6 @@ async function confirmarAgendamento() {
         switchTabLite('agenda', tabAtiva);
     }, 600);
 }
-
-// --- FUNÇÕES DO DASHBOARD (PERSISTÊNCIA) ---
 
 async function popularCamposGestao() {
     if (!dadosEstabelecimento) return;

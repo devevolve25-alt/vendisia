@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes e edição de cadastros - 4
+//atualizado para calculo de comissoes e edição de cadastros - 5
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -295,7 +295,7 @@ async function configurarNavegacao(slug) {
 
     if (linkAgenda) {
         // Redireciona de volta para a agenda com o tipo de usuário 'dono'
-        linkAgenda.href = `index.html?s=${slug}&u=dono`;
+        linkAgenda.href = `agenda.html?s=${slug}&u=dono`;
     }
 
     if (btnLogout) {

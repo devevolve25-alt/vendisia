@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) -agenda
+// 1. Configuração (Sempre no topo) -agenda atualizada
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -18,21 +18,20 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
-            // Criamos a data do slot forçando o fuso horário local para bater com o banco
-            const dataHoraSlotObjeto = new Date(`${dataISO}T${horaAtual}:00`);
-            const tempoSlot = dataHoraSlotObjeto.getTime();
+            // Converte o slot da grade para milissegundos absolutos
+            const tempoSlot = new Date(`${dataISO}T${horaAtual}:00`).getTime();
 
-            // Verifica se este horário específico está "coberto" por algum agendamento
+            // Verifica ocupação comparando apenas números (Milissegundos)
             const estaOcupado = agendados.some(a => {
                 const inicio = new Date(a.data_hora_inicio).getTime();
                 const duracao = a.servicos?.duracao_minutos || 30;
                 const fim = inicio + (duracao * 60000);
                 
-                // O slot some se o tempo dele estiver entre o início (inclusive) e o fim (exclusive)
+                // Comparação matemática pura: imune a fusos horários
                 return tempoSlot >= inicio && tempoSlot < fim;
             });
 
-            // Se NÃO estiver ocupado, adicionamos à grade que será exibida
+            // Só incluímos na grade se o tempo do slot não estiver ocupado
             if (!estaOcupado) {
                 gradeDisponivel.push({
                     data: dataISO,
@@ -269,7 +268,8 @@ async function confirmarAgendamento() {
         return alert("Por favor, preencha todos os campos.");
     }
 
-    const dataLimpa = `${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`;
+    // Criamos um objeto Date real com base na seleção para garantir o fuso local correto
+    const dataObjeto = new Date(`${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`);
 
     const payload = {
         estabelecimento_id: dadosEstabelecimento.id,
@@ -277,7 +277,7 @@ async function confirmarAgendamento() {
         servico_id: servicoId,
         cliente_nome: nome,
         cliente_whatsapp: whatsapp,
-        data_hora_inicio: dataLimpa,
+        data_hora_inicio: dataObjeto.toISOString(), // Envia formato UTC padronizado (final Z)
         status: 'confirmado'
     };
 
@@ -289,11 +289,11 @@ async function confirmarAgendamento() {
         alert("Agendamento realizado com sucesso!");
         fecharModal();
         
-        // Pequeno delay de 500ms para o Supabase processar a indexação antes da nova busca
+        // Delay para garantir que o banco indexou o registro antes da atualização da grade
         setTimeout(() => {
             const tabAtiva = document.querySelector('.tab.active');
             switchTabLite('agenda', tabAtiva);
-        }, 500);
+        }, 600);
     }
 }
 

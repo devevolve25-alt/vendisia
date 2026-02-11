@@ -438,20 +438,32 @@ async function cadastrarProfissional() {
     const nome = document.getElementById('new-prof-nome').value;
     const especialidade = document.getElementById('new-prof-especialidade').value;
     const whatsapp = document.getElementById('new-prof-whatsapp').value;
+    
+    // NOVAS LINHAS: Capturando os dados de remuneração do HTML
+    const tipoRemun = document.getElementById('new-prof-tipo-remuneracao').value;
+    const valorComissao = document.getElementById('new-prof-comissao').value;
 
     if (!nome) return alert("Nome é obrigatório.");
 
     const { error } = await supabaseClient.from('profissionais').insert([{
         estabelecimento_id: dadosEstabelecimento.id,
-        nome, especialidade, whatsapp
+        nome: nome,
+        especialidade: especialidade,
+        whatsapp: whatsapp,
+        // INSERINDO NO BANCO:
+        tipo_remuneracao: tipoRemun,
+        valor_comissao_porcentagem: parseFloat(valorComissao) || 0
     }]);
 
-    if (error) alert("Erro: " + error.message);
-    else {
+    if (error) {
+        alert("Erro: " + error.message);
+    } else {
         alert("Profissional adicionado!");
+        // Limpando todos os campos após o sucesso
         document.getElementById('new-prof-nome').value = "";
         document.getElementById('new-prof-especialidade').value = "";
         document.getElementById('new-prof-whatsapp').value = "";
+        document.getElementById('new-prof-comissao').value = "";
     }
 }
 

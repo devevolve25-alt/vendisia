@@ -20,7 +20,7 @@ dataReferencia.setDate(dataReferencia.getDate() + i);
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
             // Converte o slot da grade para milissegundos absolutos
-            const tempoSlot = new Date(`${dataISO}T${horaAtual}:00`).getTime();
+            const tempoSlot = new Date(`${dataISO}T${horaAtual.substring(0, 5)}:00`).getTime();
 
             // Verifica ocupação comparando apenas números (Milissegundos)
             const estaOcupado = agendados.some(a => {

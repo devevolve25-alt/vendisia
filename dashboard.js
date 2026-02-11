@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes e edição de cadastros - 2
+//atualizado para calculo de comissoes e edição de cadastros - 3
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -15,14 +15,23 @@ async function checkUser() {
 }
 
 async function carregarDadosIniciais(donoId) {
+    // Agora buscamos também o 'slug'
     const { data: saloes } = await supabaseClient
         .from('estabelecimentos')
-        .select('id')
+        .select('id, slug') 
         .eq('dono_id', donoId)
         .limit(1);
 
     if (saloes && saloes.length > 0) {
         salaoIdAtual = saloes[0].id;
+        const slug = saloes[0].slug;
+
+        // Configura o link de volta para a agenda do dono
+        const linkAgenda = document.getElementById('link-voltar-agenda');
+        if (linkAgenda) {
+            linkAgenda.href = `index.html?s=${slug}&u=dono`;
+        }
+
         atualizarDashboard(salaoIdAtual);
     } else {
         console.error("Nenhum estabelecimento encontrado.");
@@ -30,7 +39,6 @@ async function carregarDadosIniciais(donoId) {
         if (displayNome) displayNome.innerText = "SEM ESTABELECIMENTO";
     }
 }
-
 async function atualizarDashboard(salaoId) {
     try {
         const agora = new Date();

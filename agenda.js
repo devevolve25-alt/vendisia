@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - comissoes - 1
+// 1. Configuração (Sempre no topo) - mercuria ativa - 1
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -40,15 +40,48 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
     return gradeTotal;
 }
 
-function generateContent() {
-    const input = document.getElementById('cmd-input').value;
+async function generateContent() {
+    const inputElement = document.getElementById('cmd-input');
     const chat = document.getElementById('chat-criar');
+    const input = inputElement.value.trim();
+    
     if(!input) return;
-    const div = document.createElement('div'); 
-    div.className = 'msg-user'; 
-    div.innerText = input;
-    chat.appendChild(div);
-    document.getElementById('cmd-input').value = "";
+
+    // Adiciona mensagem do usuário
+    const divUser = document.createElement('div'); 
+    divUser.className = 'msg-user'; 
+    divUser.innerText = input;
+    chat.appendChild(divUser);
+    
+    inputElement.value = "";
+    chat.scrollTop = chat.scrollHeight;
+
+    // Adiciona balão de "carregando" para a IA
+    const divBot = document.createElement('div');
+    divBot.className = 'msg-bot';
+    divBot.innerText = "...";
+    chat.appendChild(divBot);
+
+    try {
+        const response = await fetch('https://powerfulkiwi-n8n.cloudfy.live/webhook/3dd98c18-d95d-43b5-bafa-fcde2a305983', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mensagem: input,
+                salao_id: dadosEstabelecimento?.id,
+                origem: "web_agenda"
+            })
+        });
+
+        const data = await response.json();
+        // Exibe a resposta do n8n (ajuste 'data.output' se o retorno for em outro campo)
+        divBot.innerText = data.output || data.resposta || data.text || "Comando processado.";
+
+    } catch (error) {
+        console.error("Erro MercurIA:", error);
+        divBot.innerText = "Desculpe, tive um problema de conexão.";
+    }
+
     chat.scrollTop = chat.scrollHeight;
 }
 

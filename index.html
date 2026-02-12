@@ -1,205 +1,74 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VENDISIA | Vendas e Agendamentos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #000000;
-            --creative-color: #d4af37;
-            --gold-glow: rgba(212, 175, 55, 0.2);
-        }
+<section class="test-chat-section" style="padding: 40px 20px; max-width: 800px; margin: 0 auto;">
+    <h2 style="text-align: center; font-family: 'Bebas Neue', sans-serif; color: #2ecc71; font-size: 2.5rem; letter-spacing: 2px;">TESTE A MERCURIA AGORA</h2>
+    <p style="text-align: center; color: #888; margin-bottom: 30px;">Experimente a inteligência que vai gerir seu negócio.</p>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background-color: var(--bg-color);
-            color: #ffffff;
-            font-family: 'Montserrat', sans-serif;
-            line-height: 1.6;
-        }
-
-        /* HERO SECTION */
-        .hero {
-            height: 60vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            background: radial-gradient(circle at center, #111 0%, #000 70%);
-        }
-
-        h1 {
-            font-family: 'Bebas Neue';
-            font-size: clamp(3rem, 10vw, 6rem);
-            color: var(--creative-color);
-            letter-spacing: 5px;
-            text-shadow: 0 0 20px var(--gold-glow);
-            margin-bottom: 10px;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            opacity: 0.8;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* PLANOS SECTION */
-        .planos-container {
-            display: flex;
-            justify-content: center;
-            align-items: stretch;
-            gap: 30px;
-            flex-wrap: wrap;
-            padding: 50px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .plano-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 15px;
-            padding: 40px 30px;
-            width: 320px;
-            text-align: center;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .plano-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--creative-color);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        /* DESTAQUE PARA O PLANO B */
-        .plano-card.destaque {
-            border: 1px solid var(--creative-color);
-            box-shadow: 0 0 30px var(--gold-glow);
-            transform: scale(1.05);
-            background: rgba(212, 175, 55, 0.05);
-        }
-
-        .plano-card h2 {
-            font-family: 'Bebas Neue';
-            font-size: 2.5rem;
-            color: var(--creative-color);
-            margin-bottom: 15px;
-        }
-
-        .preco {
-            font-family: 'Bebas Neue';
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-        }
-
-        .preco span {
-            font-size: 1rem;
-            opacity: 0.6;
-        }
-
-        .plano-card ul {
-            list-style: none;
-            margin-bottom: 30px;
-            text-align: left;
-            flex-grow: 1;
-        }
-
-        .plano-card ul li {
-            font-size: 0.9rem;
-            margin-bottom: 12px;
-            opacity: 0.8;
-            display: flex;
-            align-items: center;
-        }
-
-        .plano-card ul li::before {
-            content: "✓";
-            color: var(--creative-color);
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .btn-plano {
-            display: block;
-            padding: 15px;
-            background: transparent;
-            color: var(--creative-color);
-            border: 1px solid var(--creative-color);
-            text-decoration: none;
-            font-family: 'Bebas Neue';
-            font-size: 1.4rem;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-plano:hover {
-            background: var(--creative-color);
-            color: #000;
-        }
-
-        .destaque .btn-plano {
-            background: var(--creative-color);
-            color: #000;
-        }
-
-        @media (max-width: 768px) {
-            .plano-card.destaque { transform: scale(1); }
-            .planos-container { gap: 20px; }
-        }
-    </style>
-</head>
-<body>
-
-    <section class="hero">
-        <h1>VENDISIA</h1>
-        <p>VENDAS E AGENDAMENTOS INTELIGENTES</p>
-    </section>
-
-    <section class="planos-container">
-        <div class="plano-card">
-            <h2>PLANO A</h2>
-            <div class="preco">R$ 49<span>/mês</span></div>
-            <ul>
-                <li>Agenda Inteligente MercurIA</li>
-                <li>1 Profissional</li>
-                <li>Link de Agendamento</li>
-                <li>Gestão de Serviços</li>
-            </ul>
-            <a href="acesso.html?plano=A" class="btn-plano">ASSINAR AGORA</a>
+    <div class="chat-column" style="background: #1e1e1e; border: 1px solid #333; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; height: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <div class="chat-header" style="background: #2ecc71; color: #000; padding: 15px; font-weight: bold; text-align: center; font-family: 'Montserrat', sans-serif;">
+            MERCURIA | AMBIENTE DE TESTE
+        </div>
+        
+        <div class="chat-messages" id="chat-teste" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #121212;">
+            <div class="msg-bot" style="background: #2a2a2a; color: #fff; padding: 10px 15px; border-radius: 10px 10px 10px 0; align-self: flex-start; max-width: 80%; font-size: 0.9rem; border: 1px solid #333;">
+                Olá! Eu sou a MercurIA. Este é um ambiente de demonstração. Como posso te ajudar?
+            </div>
         </div>
 
-        <div class="plano-card destaque">
-            <h2>PLANO B</h2>
-            <div class="preco">R$ 89<span>/mês</span></div>
-            <ul>
-                <li>Tudo do Plano A</li>
-                <li>Até 5 Profissionais</li>
-                <li>Dashboard Financeiro</li>
-                <li>Relatórios de Comissões</li>
-            </ul>
-            <a href="acesso.html?plano=B" class="btn-plano">ASSINAR AGORA</a>
+        <div class="input-area" style="padding: 15px; background: #1e1e1e; display: flex; gap: 10px; border-top: 1px solid #333;">
+            <textarea id="cmd-input-teste" placeholder="Diga algo como 'Quais são os serviços?'" style="flex: 1; background: #000; color: #fff; border: 1px solid #444; border-radius: 8px; padding: 10px; resize: none; font-family: inherit; height: 45px;"></textarea>
+            <button onclick="falarComIA_Teste()" style="background: #2ecc71; color: #000; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: 'Bebas Neue'; font-size: 1rem;">ENVIAR</button>
         </div>
+    </div>
+</section>
 
-        <div class="plano-card">
-            <h2>PLANO C</h2>
-            <div class="preco">R$ 149<span>/mês</span></div>
-            <ul>
-                <li>Profissionais Ilimitados</li>
-                <li>Múltiplas Unidades</li>
-                <li>Suporte Prioritário 24h</li>
-                <li>IA Treinada para Vendas</li>
-            </ul>
-            <a href="acesso.html?plano=C" class="btn-plano">ASSINAR AGORA</a>
-        </div>
-    </section>
+<script>
+async function falarComIA_Teste() {
+    const input = document.getElementById('cmd-input-teste');
+    const chat = document.getElementById('chat-teste');
+    const msg = input.value.trim();
 
-</body>
-</html>
+    if(!msg) return;
+
+    // Mensagem do Usuário
+    const divUser = document.createElement('div');
+    divUser.style = "background: #2ecc71; color: #000; padding: 10px 15px; border-radius: 10px 10px 0 10px; align-self: flex-end; max-width: 80%; font-weight: 500; font-size: 0.9rem;";
+    divUser.innerText = msg;
+    chat.appendChild(divUser);
+    
+    input.value = "";
+    chat.scrollTop = chat.scrollHeight;
+
+    // Balão de resposta da MercurIA
+    const divBot = document.createElement('div');
+    divBot.style = "background: #2a2a2a; color: #fff; padding: 10px 15px; border-radius: 10px 10px 10px 0; align-self: flex-start; max-width: 80%; font-size: 0.9rem; border: 1px solid #333;";
+    divBot.innerText = "...";
+    chat.appendChild(divBot);
+
+    try {
+        const response = await fetch('https://powerfulkiwi-n8n.cloudfy.live/webhook/3dd98c18-d95d-43b5-bafa-fcde2a305983', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mensagem: msg,
+                salao_id: "TESTE_LANDING_PAGE", // Enviando um ID fixo para identificar que vem da Index
+                origem: "landing_page"
+            })
+        });
+
+        const data = await response.json();
+        divBot.innerText = data.output || data.resposta || data.text || "Estou pronta para gerenciar sua agenda!";
+
+    } catch (error) {
+        divBot.innerText = "Ops! No momento estou em manutenção. Tente novamente em instantes.";
+    }
+
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// Permitir enviar com Enter
+document.getElementById('cmd-input-teste')?.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        falarComIA_Teste();
+    }
+});
+</script>

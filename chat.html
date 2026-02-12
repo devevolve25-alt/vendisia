@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MercurIA | Atendimento</title>
+    <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+
+    <div id="chat-window">
+        </div>
+
+    <div id="plans-container">
+        <div id="plans-carousel">
+            <div class="plan-card">
+                <h3>CONECTA FÁCIL</h3>
+                <p class="plan-price">R$ 00,00</p>
+                <ul class="plan-features">
+                    <li>✔️ 1 profissional</li>
+                    <li>✔️ IA limitada</li>
+                    <li>✔️ Cumprimenta o cliente</li>
+                    <li>✔️ Solicita nome e telefone</li>
+                    <li>✔️ Explica o site</li>
+                    <li>✔️ Oferece promoção</li>
+                    <li>✔️ Encerra o chat</li>
+                </ul>
+                <button class="cta-button-card" onclick="activateTrial('conecta-facil')">INICIAR TRIAL GRÁTIS</button>
+            </div>
+
+            <div class="plan-card highlight-pro">
+                <h3>AGENDA PRO</h3>
+                <p class="plan-price">R$ 00,00</p>
+                <ul class="plan-features">
+                    <li>✔️ Até 5 profissionais</li>
+                    <li>✔️ Saudação personalizada</li>
+                    <li>✔️ Direciona agendamento</li>
+                    <li>✔️ Responde perguntas</li>
+                    <li>✔️ Marketing do salão</li>
+                </ul>
+                <button class="cta-button-card" onclick="activateTrial('agenda-pro')">INICIAR TRIAL GRÁTIS</button>
+            </div>
+
+            <div class="plan-card">
+                <h3>GESTÃO TOTAL</h3>
+                <p class="plan-price">R$ 00,00</p>
+                <ul class="plan-features">
+                    <li>✔️ IA Profissional de Vendas</li>
+                    <li>✔️ Dashboard financeiro</li>
+                    <li>✔️ Cálculo de comissões</li>
+                    <li>✔️ Performance de equipe</li>
+                    <li>✔️ Lista de clientes</li>
+                </ul>
+                <button class="cta-button-card" onclick="activateTrial('gestao-total')">INICIAR TRIAL GRÁTIS</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Digite sua mensagem...">
+        <button class="send-btn" onclick="sendMessage()">ENVIAR</button>
+    </div>
+
+    <script src="chat.js"></script>
+</body>
+</html>

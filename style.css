@@ -1,0 +1,215 @@
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.6;
+            color: #E0E0E0;
+            margin: 0;
+            padding: 0;
+            background-color: #0A0A0A;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1, h2, h3 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+        h1 {
+            font-size: 3.2em;
+            margin-top: 40px;
+            line-height: 1.2;
+        }
+        h2 {
+            font-size: 2.2em;
+            margin-top: 50px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 15px;
+        }
+        h3 {
+            font-size: 1.6em;
+            margin-top: 35px;
+            color: #00BFFF;
+            text-shadow: none;
+        }
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #C0C0C0;
+        }
+        .highlight {
+            color: #FFD700;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+        }
+        .section-box {
+            background-color: rgba(10, 10, 10, 0.7);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 30px;
+            margin: 40px 0;
+            transition: all 0.3s ease;
+        }
+        .section-box:hover {
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+            border-color: rgba(255, 215, 0, 0.7);
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        ul li {
+            background-color: rgba(0, 191, 255, 0.1);
+            color: #E0E0E0;
+            margin-bottom: 10px;
+            padding: 12px 20px;
+            border-left: 4px solid #00BFFF;
+            border-radius: 6px;
+            font-size: 1.05em;
+            display: flex;
+            align-items: flex-start; /* Melhor para textos longos em mobile */
+        }
+        ul li::before {
+            content: '✔️';
+            color: #32CD32;
+            margin-right: 10px;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+        .cta-button {
+            display: block;
+            width: fit-content;
+            margin: 50px auto;
+            padding: 18px 35px;
+            background-color: #32CD32;
+            color: #0A0A0A;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.4em;
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.6);
+        }
+        .cta-button:hover {
+            background-color: #228B22;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(50, 205, 50, 0.9);
+            transform: translateY(-3px);
+        }
+        .section-intro {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+            color: #B0B0B0;
+        }
+        .testimonial {
+            background-color: rgba(255, 215, 0, 0.05);
+            border-left: 5px solid #FFD700;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 8px;
+            font-style: italic;
+            color: #E0E0E0;
+        }
+        .testimonial p {
+            margin-bottom: 5px;
+            color: #E0E0E0;
+        }
+        .testimonial strong {
+            color: #FFD700;
+            font-weight: 600;
+        }
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px 0;
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* --- ADIÇÃO DE RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2em;
+                margin-top: 25px;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            h3 {
+                font-size: 1.4em;
+            }
+            .section-box {
+                padding: 20px;
+                margin: 25px 0;
+            }
+            .cta-button {
+                font-size: 1.1em;
+                padding: 15px 25px;
+                width: 90%; /* Botão ocupa quase toda a largura em telas pequenas */
+                box-sizing: border-box;
+            }
+            .container {
+                padding: 15px;
+            }
+            ul li {
+                font-size: 0.95em;
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            p {
+                font-size: 1em;
+            }
+        }
+        
+        /* Container do Carrossel que a IA vai ativar */
+#plans-carousel {
+    display: none; /* Começa escondido */
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 20px 10px;
+    scroll-behavior: smooth;
+}
+
+.plan-card {
+    min-width: 280px;
+    background: #121212;
+    border: 1px solid #FFD700;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.plan-card.highlight-pro {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    transform: scale(1.05);
+}
+
+.plan-price {
+    font-size: 2em;
+    color: #FFD700;
+    margin: 15px 0;
+}
+
+.plan-features {
+    text-align: left;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+}

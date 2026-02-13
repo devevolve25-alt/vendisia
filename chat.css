@@ -3,12 +3,13 @@
 /* Configurações da Página */
 body { 
     background-color: #0A0A0A; 
-    height: 100vh; 
+    height: 100dvh; /* Alterado para 100dvh para evitar cortes em navegadores mobile */
     display: flex; 
     flex-direction: column; 
     margin: 0;
     font-family: 'Montserrat', sans-serif;
     color: white;
+    overflow: hidden; /* Impede que o corpo role, mantendo o input fixo */
 }
 
 /* Área de Mensagens */
@@ -19,26 +20,29 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Container do Carrossel */
 #plans-container {
-    display: none; /* Ativado pelo chat.js */
+    display: none; 
     width: 100%;
-    margin: 20px 0;
+    margin: 10px 0;
+    flex-shrink: 0; /* Impede que o container seja "espremido" */
 }
 
 #plans-carousel {
     display: flex;
     overflow-x: auto;
     gap: 20px;
-    padding: 10px 20px;
+    padding: 10px 5px;
     scroll-behavior: smooth;
 }
 
-/* ESTILOS DOS CARDS (O trecho que você solicitou incluído abaixo) */
+/* ESTILOS DOS CARDS */
 .plan-card {
-    min-width: 280px;
+    min-width: 260px; /* Leve redução para melhor enquadramento mobile */
     background: #121212;
     border: 1px solid #FFD700;
     border-radius: 15px;
@@ -50,7 +54,7 @@ body {
 
 .plan-card.highlight-pro {
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-    transform: scale(1.05);
+    transform: scale(1.02); /* Escala reduzida para evitar cortes em telas estreitas */
     border-width: 2px;
 }
 
@@ -99,6 +103,7 @@ body {
     border-top: 1px solid #FFD700;
     display: flex;
     gap: 10px;
+    flex-shrink: 0; /* Garante que a barra nunca seja cortada pela altura da tela */
 }
 
 input {
@@ -123,13 +128,14 @@ input:focus { border-color: #FFD700; }
     color: #0A0A0A;
 }
 
-/* Estilo das bolhas de chat (para o chat.js usar) */
+/* Estilo das bolhas de chat */
 .user-msg {
     align-self: flex-end;
     background-color: rgba(0, 191, 255, 0.1);
     border: 1px solid #00BFFF;
     padding: 12px;
     border-radius: 10px;
+    max-width: 85%;
 }
 
 .mercuria-msg {
@@ -138,4 +144,5 @@ input:focus { border-color: #FFD700; }
     border: 1px solid #FFD700;
     padding: 12px;
     border-radius: 10px;
+    max-width: 85%;
 }

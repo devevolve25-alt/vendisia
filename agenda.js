@@ -74,7 +74,6 @@ async function generateContent() {
         });
 
         const data = await response.json();
-        // Exibe a resposta do n8n (ajuste 'data.output' se o retorno for em outro campo)
         divBot.innerText = data.output || data.resposta || data.text || "Comando processado.";
 
     } catch (error) {
@@ -192,8 +191,9 @@ async function switchTabLite(viewId, element) {
         dataFim.setDate(new Date().getDate() + diasRange);
         const dataFimISO = dataFim.toISOString().split('T')[0];
 
+        // --- ALTERAÇÃO: Busca agora inclui o relacionamento com a tabela clientes ---
         const { data: agendamentos } = await supabaseClient.from('agendamentos')
-            .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(nome), servicos(nome, duracao_minutos)')
+            .select('id, data_hora_inicio, servico_id, profissional_id, cliente_id, clientes(nome), profissionais(nome), servicos(nome, duracao_minutos)')
             .eq('estabelecimento_id', dadosEstabelecimento.id)
             .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
             .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
@@ -216,12 +216,12 @@ async function switchTabLite(viewId, element) {
 
             if (!exibirPrivado && estaOcupado) return;
 
-            const nomeExibido = estaOcupado ? slot.dados.cliente_nome : "DISPONÍVEL";
+            // --- ALTERAÇÃO: Nome agora vem do objeto relacionado 'clientes' ---
+            const nomeExibido = estaOcupado ? (slot.dados.clientes?.nome || "CLIENTE") : "DISPONÍVEL";
             const servicoExibido = estaOcupado ? (slot.dados.servicos?.nome || 'Serviço') : "Toque para agendar";
             const profExibido = estaOcupado ? ` | Prof: ${slot.dados.profissionais?.nome || '---'}` : "";
             const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
             
-            // --- AJUSTE NO CLIQUE DA AGENDA ---
             let acaoClique = "";
             if (!estaOcupado) {
                 acaoClique = `onclick="abrirModalAgendamento('${slot.data}', '${slot.hora}')"`;
@@ -267,7 +267,6 @@ async function switchTabLite(viewId, element) {
     }
 }
 
-// --- FUNÇÃO PARA CANCELAR AGENDAMENTO (DONO) ---
 async function cancelarAgendamento(agendamentoId) {
     const confirmar = confirm("Deseja realmente CANCELAR este agendamento? Isso removerá os dados financeiros vinculados.");
     if (confirmar) {
@@ -343,14 +342,29 @@ async function confirmarAgendamento() {
         return alert("Por favor, preencha todos os campos.");
     }
 
+    // --- ALTERAÇÃO: Criar ou Buscar o cliente antes de agendar ---
+    const { data: cliente, error: errorCli } = await supabaseClient
+        .from('clientes')
+        .upsert([
+            { 
+                estabelecimento_id: dadosEstabelecimento.id, 
+                nome: nome, 
+                whatsapp: whatsapp 
+            }
+        ], { onConflict: 'estabelecimento_id, whatsapp' })
+        .select('id')
+        .single();
+
+    if (errorCli) return alert("Erro ao processar cliente: " + errorCli.message);
+
     const dataObjeto = new Date(`${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`);
 
+    // --- ALTERAÇÃO: Payload agora usa cliente_id e não salva mais nome/whatsapp direto no agendamento ---
     const payload = {
         estabelecimento_id: dadosEstabelecimento.id,
         profissional_id: profId,
         servico_id: servicoId,
-        cliente_nome: nome,
-        cliente_whatsapp: whatsapp,
+        cliente_id: cliente.id,
         data_hora_inicio: dataObjeto.toISOString(),
         status: 'confirmado'
     };
@@ -472,7 +486,6 @@ async function cadastrarProfissional() {
     const especialidade = document.getElementById('new-prof-especialidade').value;
     const whatsapp = document.getElementById('new-prof-whatsapp').value;
     
-    // CAPTURANDO OS DADOS DE REMUNERAÇÃO DO HTML (PARA CÁLCULO DE COMISSÕES)
     const tipoRemun = document.getElementById('new-prof-tipo-remuneracao').value;
     const valorComissao = document.getElementById('new-prof-comissao').value;
 
@@ -491,7 +504,6 @@ async function cadastrarProfissional() {
         alert("Erro: " + error.message);
     } else {
         alert("Profissional adicionado!");
-        // LIMPANDO OS CAMPOS APÓS O SUCESSO
         document.getElementById('new-prof-nome').value = "";
         document.getElementById('new-prof-especialidade').value = "";
         document.getElementById('new-prof-whatsapp').value = "";

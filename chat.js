@@ -10,7 +10,7 @@ function addMessage(text, sender) {
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message', sender === 'user' ? 'user-msg' : 'mercuria-msg');
     
-    // Estilização rápida via JS ou use classes no seu style.css
+    // Estilização mantida conforme solicitado
     msgDiv.style.padding = "12px 18px";
     msgDiv.style.borderRadius = "10px";
     msgDiv.style.marginBottom = "10px";
@@ -27,14 +27,21 @@ function addMessage(text, sender) {
     }
 
     msgDiv.innerText = text;
-    chatWindow.appendChild(msgDiv);
+    
+    // ALTERAÇÃO PARA RESPONSIVIDADE: Insere a mensagem ANTES do container de planos
+    // Isso garante que os cards fiquem sempre abaixo da última fala da IA
+    chatWindow.insertBefore(msgDiv, plansContainer); 
+    
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 // Função para disparar a exibição do Carrossel
 function triggerPlans() {
     plansContainer.style.display = 'block';
-    plansContainer.scrollIntoView({ behavior: 'smooth' });
+    // ALTERAÇÃO PARA RESPONSIVIDADE: Scroll suave focado no fim do container
+    setTimeout(() => {
+        plansContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 100);
 }
 
 // Função Principal de Envio
@@ -54,7 +61,7 @@ async function sendMessage() {
             body: JSON.stringify({ 
                 message: text,
                 timestamp: new Date().toISOString(),
-                sessao_id: "demo_landing_page" // Útil para manter o contexto no n8n
+                sessao_id: "demo_landing_page" 
             })
         });
 
@@ -66,10 +73,12 @@ async function sendMessage() {
         // 4. Checar se a IA enviou o comando de ativação de planos
         if (botResponse.includes('[EXIBIR_PLANOS]')) {
             botResponse = botResponse.replace('[EXIBIR_PLANOS]', '');
+            // Adicionamos a mensagem primeiro, depois ativamos os planos
+            addMessage(botResponse, 'mercuria');
             triggerPlans();
+        } else {
+            addMessage(botResponse, 'mercuria');
         }
-
-        addMessage(botResponse, 'mercuria');
 
     } catch (error) {
         addMessage("Ops, tive um probleminha na conexão. Pode tentar de novo?", 'mercuria');
@@ -81,3 +90,8 @@ async function sendMessage() {
 userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
+
+// FUNÇÃO PARA REDIRECIONAMENTO TRIAL
+function activateTrial(planSlug) {
+    window.location.href = 'agenda.html';
+}

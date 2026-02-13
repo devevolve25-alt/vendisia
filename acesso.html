@@ -1,231 +1,233 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VENDISIA | Acesso ao Sistema</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --bg: #000; --gold: #d4af37; --card: #0c1320; }
-        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .acesso-box { background: var(--card); padding: 40px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.2); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-        h1 { font-family: 'Bebas Neue'; color: var(--gold); font-size: 2.5rem; margin-bottom: 10px; }
-        p { opacity: 0.7; font-size: 0.9rem; margin-bottom: 25px; min-height: 40px; }
-        
-        /* Containers de Estados */
-        #step-login, #step-cadastro, #step-loading { display: none; }
-        .active { display: block !important; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VENDISIA | Acesso ao Sistema</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --bg: #000; --gold: #d4af37; --card: #0c1320; }
+        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .acesso-box { background: var(--card); padding: 40px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.2); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        h1 { font-family: 'Bebas Neue'; color: var(--gold); font-size: 2.5rem; margin-bottom: 10px; }
+        p { opacity: 0.7; font-size: 0.9rem; margin-bottom: 25px; min-height: 40px; }
+        
+        /* Containers de Estados */
+        #step-login, #step-cadastro, #step-loading { display: none; }
+        .active { display: block !important; }
 
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--gold); }
-        
-        .btn-acao { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; font-family: 'Bebas Neue'; font-size: 1.2rem; cursor: pointer; border-radius: 5px; transition: 0.3s; }
-        .btn-acao:hover { opacity: 0.9; transform: scale(1.02); }
-        .slug-preview { font-size: 0.8rem; color: var(--gold); margin-top: -10px; margin-bottom: 15px; text-align: left; }
-    </style>
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--gold); }
+        
+        .btn-acao { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; font-family: 'Bebas Neue'; font-size: 1.2rem; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .btn-acao:hover { opacity: 0.9; transform: scale(1.02); }
+        .slug-preview { font-size: 0.8rem; color: var(--gold); margin-top: -10px; margin-bottom: 15px; text-align: left; }
+    </style>
 </head>
 <body>
 
-    <div class="acesso-box">
-        <h1>VENDISIA</h1>
+    <div class="acesso-box">
+        <h1>VENDISIA</h1>
 
-        <div id="step-loading" class="active">
-            <p>Verificando autenticação...</p>
-        </div>
+        <div id="step-loading" class="active">
+            <p>Verificando autenticação...</p>
+        </div>
 
-        <div id="step-login">
-            <p>Para continuar, acesse sua conta.</p>
-            <button class="btn-acao" onclick="loginGoogle()" style="margin-bottom: 15px;">ENTRAR COM GOOGLE</button>
-            
-            <div style="margin: 15px 0; opacity: 0.5; font-size: 0.8rem;">— OU VIA E-MAIL —</div>
-            
-            <input type="email" id="email-acesso" placeholder="Seu melhor e-mail">
-            <button class="btn-acao" onclick="loginEmail()" style="background: transparent; color: var(--gold); border: 1px solid var(--gold);">RECEBER LINK DE ACESSO</button>
-        </div>
+        <div id="step-login">
+            <p>Para continuar, acesse sua conta.</p>
+            <button class="btn-acao" onclick="loginGoogle()" style="margin-bottom: 15px;">ENTRAR COM GOOGLE</button>
+            
+            <div style="margin: 15px 0; opacity: 0.5; font-size: 0.8rem;">— OU VIA E-MAIL E SENHA —</div>
+            
+            <input type="email" id="email-acesso" placeholder="Seu melhor e-mail">
+            <input type="password" id="senha-acesso" placeholder="Sua senha">
 
-        <div id="step-cadastro">
-            <p>Defina o nome do seu negócio para gerar seu link exclusivo.</p>
-            <input type="text" id="nome-salao" placeholder="Nome do seu Salão/Barbearia" oninput="updateSlug()">
-            <div class="slug-preview">Link: .../agenda.html?s=<span id="slug-text">...</span></div>
-            <button class="btn-acao" onclick="finalizarCadastro()">CRIAR MEU SISTEMA</button>
-        </div>
-    </div>
+            <button class="btn-acao" onclick="authSenha('login')" style="margin-bottom: 10px;">ENTRAR</button>
+            <button class="btn-acao" onclick="authSenha('signup')" style="background: transparent; color: var(--gold); border: 1px solid var(--gold);">CADASTRAR NOVA CONTA</button>
+        </div>
 
-    <script>
-        const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-        
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        <div id="step-cadastro">
+            <p>Defina o nome do seu negócio para gerar seu link exclusivo.</p>
+            <input type="text" id="nome-salao" placeholder="Nome do seu Salão/Barbearia" oninput="updateSlug()">
+            <div class="slug-preview">Link: .../agenda.html?s=<span id="slug-text">...</span></div>
+            <button class="btn-acao" onclick="finalizarCadastro()">CRIAR MEU SISTEMA</button>
+        </div>
+    </div>
 
-        let userLogado = null;
-        
-        // --- LÓGICA DE CAPTURA E PERSISTÊNCIA DO PLANO ---
-        const urlParams = new URLSearchParams(window.location.search);
-        let planoEscolhido = urlParams.get('plano');
+    <script>
+        const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Se o plano veio na URL, salva no localStorage. Se não veio, tenta recuperar o salvo anteriormente.
-        if (planoEscolhido) {
-            localStorage.setItem('plano_mercuria', planoEscolhido);
-        } else {
-            planoEscolhido = localStorage.getItem('plano_mercuria') || 'conecta-facil'; 
-        }
+        let userLogado = null;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        let planoEscolhido = urlParams.get('plano');
 
-        function showStep(stepId) {
-            document.getElementById('step-loading').classList.remove('active');
-            document.getElementById('step-login').classList.remove('active');
-            document.getElementById('step-cadastro').classList.remove('active');
-            document.getElementById(stepId).classList.add('active');
-        }
+        if (planoEscolhido) {
+            localStorage.setItem('plano_mercuria', planoEscolhido);
+        } else {
+            planoEscolhido = localStorage.getItem('plano_mercuria') || 'conecta-facil'; 
+        }
 
-        async function init() {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                
-                if (session) {
-                    userLogado = session.user;
-                    verificarEstabelecimento();
-                } else {
-                    showStep('step-login');
-                }
+        function showStep(stepId) {
+            document.getElementById('step-loading').classList.remove('active');
+            document.getElementById('step-login').classList.remove('active');
+            document.getElementById('step-cadastro').classList.remove('active');
+            document.getElementById(stepId).classList.add('active');
+        }
 
-                supabaseClient.auth.onAuthStateChange((event, session) => {
-                    if (event === 'SIGNED_IN' && session) {
-                        userLogado = session.user;
-                        verificarEstabelecimento();
-                    }
-                });
+        async function init() {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                
+                if (session) {
+                    userLogado = session.user;
+                    verificarEstabelecimento();
+                } else {
+                    showStep('step-login');
+                }
 
-            } catch (err) {
-                console.error("Erro ao iniciar:", err);
-                showStep('step-login');
-            }
-        }
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_IN' && session) {
+                        userLogado = session.user;
+                        verificarEstabelecimento();
+                    }
+                });
 
-        async function loginGoogle() {
-            await supabaseClient.auth.signInWithOAuth({
-                provider: 'google',
-                options: { 
-                    // Mantém o parâmetro do plano no redirecionamento do Google
-                    redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
-                }
-            });
-        }
+            } catch (err) {
+                console.error("Erro ao iniciar:", err);
+                showStep('step-login');
+            }
+        }
 
-        async function loginEmail() {
-            const email = document.getElementById('email-acesso').value;
-            if (!email) return alert("Por favor, digite seu e-mail.");
+        async function loginGoogle() {
+            await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: { 
+                    redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
+                }
+            });
+        }
 
-            const redirecionamento = window.location.origin + window.location.pathname + "?plano=" + planoEscolhido;
+        async function authSenha(tipo) {
+            const email = document.getElementById('email-acesso').value;
+            const password = document.getElementById('senha-acesso').value;
 
-            const { error } = await supabaseClient.auth.signInWithOtp({
-                email: email,
-                options: {
-                    emailRedirectTo: redirecionamento
-                }
-            });
+            if (!email || !password) return alert("Preencha e-mail e senha.");
+            if (password.length < 6) return alert("A senha deve ter no mínimo 6 caracteres.");
 
-            if (error) {
-                alert("Erro ao enviar e-mail: " + error.message);
-            } else {
-                alert("Verifique sua caixa de entrada! Enviamos um link de acesso exclusivo para você.");
-            }
-        }
+            showStep('step-loading');
 
-        async function verificarEstabelecimento() {
-            try {
-                let { data: perfil } = await supabaseClient
-                    .from('perfis')
-                    .select('id')
-                    .eq('id', userLogado.id)
-                    .maybeSingle();
+            let resultado;
+            
+            if (tipo === 'signup') {
+                resultado = await supabaseClient.auth.signUp({ email, password });
+            } else {
+                resultado = await supabaseClient.auth.signInWithPassword({ email, password });
+            }
 
-                if (!perfil) {
-                    const { error: errorPerfil } = await supabaseClient
-                        .from('perfis')
-                        .insert([{ id: userLogado.id, email_contato: userLogado.email }]);
-                    
-                    if (errorPerfil) throw errorPerfil;
-                }
+            if (resultado.error) {
+                alert("Erro na autenticação: " + resultado.error.message);
+                showStep('step-login');
+            } else {
+                if (tipo === 'signup') alert("Conta criada com sucesso!");
+            }
+        }
 
-                const { data, error } = await supabaseClient
-                    .from('estabelecimentos')
-                    .select('slug, status_pagamento')
-                    .eq('dono_id', userLogado.id)
-                    .maybeSingle();
+        async function verificarEstabelecimento() {
+            try {
+                let { data: perfil } = await supabaseClient
+                    .from('perfis')
+                    .select('id')
+                    .eq('id', userLogado.id)
+                    .maybeSingle();
 
-                if (data) {
-                    // Se já existe, vai para a agenda. O plano já está no banco.
-                    window.location.href = `agenda.html?s=${data.slug}&u=dono`;
-                } else {
-                    showStep('step-cadastro');
-                }
-            } catch (err) {
-                console.error("Erro no fluxo de verificação:", err);
-                alert("Erro ao processar perfil de acesso.");
-            }
-        }
+                if (!perfil) {
+                    const { error: errorPerfil } = await supabaseClient
+                        .from('perfis')
+                        .insert([{ id: userLogado.id, email_contato: userLogado.email }]);
+                    
+                    if (errorPerfil) throw errorPerfil;
+                }
 
-        function updateSlug() {
-            const nome = document.getElementById('nome-salao').value;
-            const slug = nome.toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-z0-9]/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^-|-$/g, '');
-            document.getElementById('slug-text').innerText = slug;
-            return slug;
-        }
+                const { data, error } = await supabaseClient
+                    .from('estabelecimentos')
+                    .select('slug, status_pagamento')
+                    .eq('dono_id', userLogado.id)
+                    .maybeSingle();
 
-        async function finalizarCadastro() {
-            const inputNome = document.getElementById('nome-salao');
-            const spanSlug = document.getElementById('slug-text');
+                if (data) {
+                    window.location.href = `agenda.html?s=${data.slug}&u=dono`;
+                } else {
+                    showStep('step-cadastro');
+                }
+            } catch (err) {
+                console.error("Erro no fluxo de verificação:", err);
+                alert("Erro ao processar perfil de acesso.");
+            }
+        }
 
-            const nomeFantasia = inputNome ? inputNome.value : "";
-            let slug = spanSlug ? spanSlug.innerText : "";
-            
-            if (!slug || slug === "...") {
-                slug = updateSlug();
-            }
+        function updateSlug() {
+            const nome = document.getElementById('nome-salao').value;
+            const slug = nome.toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            document.getElementById('slug-text').innerText = slug;
+            return slug;
+        }
 
-            if (!nomeFantasia) {
-                alert('Por favor, digite o nome do salão.');
-                return;
-            }
+        async function finalizarCadastro() {
+            const inputNome = document.getElementById('nome-salao');
+            const spanSlug = document.getElementById('slug-text');
 
-            try {
-                if (!userLogado || !userLogado.id) {
-                    throw new Error("Usuário não identificado.");
-                }
+            const nomeFantasia = inputNome ? inputNome.value : "";
+            let slug = spanSlug ? spanSlug.innerText : "";
+            
+            if (!slug || slug === "...") {
+                slug = updateSlug();
+            }
 
-                // Inserção no banco usando o plano capturado
-                const { error } = await supabaseClient
-                    .from('estabelecimentos')
-                    .insert([{
-                        dono_id: userLogado.id,
-                        nome_fantasia: nomeFantasia,
-                        slug: slug,
-                        plano_ativo: planoEscolhido, // Aqui entra o slug do plano (conecta-facil, agenda-pro, etc)
-                        status_pagamento: 'trial'
-                    }]);
+            if (!nomeFantasia) {
+                alert('Por favor, digite o nome do salão.');
+                return;
+            }
 
-                if (error) throw error;
+            try {
+                if (!userLogado || !userLogado.id) {
+                    throw new Error("Usuário não identificado.");
+                }
 
-                // Limpa o plano do storage após o uso bem sucedido
-                localStorage.removeItem('plano_mercuria');
+                const { error } = await supabaseClient
+                    .from('estabelecimentos')
+                    .insert([{
+                        dono_id: userLogado.id,
+                        nome_fantasia: nomeFantasia,
+                        slug: slug,
+                        plano_ativo: planoEscolhido,
+                        status_pagamento: 'trial'
+                    }]);
 
-                alert('Sistema criado com sucesso! Você tem 7 dias de teste gratuito liberados.');
-                window.location.href = `agenda.html?s=${slug}&u=dono`;
+                if (error) throw error;
 
-            } catch (err) {
-                console.error("Erro:", err);
-                alert('Erro ao criar sistema: ' + err.message);
-            }
-        }
+                localStorage.removeItem('plano_mercuria');
 
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
-    
+                alert('Sistema criado com sucesso! Você tem 7 dias de teste gratuito liberados.');
+                window.location.href = `agenda.html?s=${slug}&u=dono`;
+
+            } catch (err) {
+                console.error("Erro:", err);
+                alert('Erro ao criar sistema: ' + err.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+    
 </body>
 </html>

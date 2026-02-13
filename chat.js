@@ -5,6 +5,33 @@ const chatWindow = document.getElementById('chat-window');
 const userInput = document.getElementById('user-input');
 const plansContainer = document.getElementById('plans-container');
 
+// Função para buscar preços reais do banco de dados
+async function carregarPrecosDosPlanos() {
+    try {
+        const { data: planos, error } = await supabaseClient
+            .from('planos')
+            .select('nome, valor'); // Certifique-se que a coluna se chama 'valor'
+
+        if (error) throw error;
+
+        planos.forEach(plano => {
+            // Normaliza o nome para encontrar o ID do elemento (Ex: 'CONECTA FÁCIL' -> 'price-conecta-facil')
+            const idElemento = `price-${plano.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+            const elementoPreco = document.getElementById(idElemento);
+            
+            if (elementoPreco) {
+                // Formata para moeda brasileira
+                elementoPreco.innerText = plano.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+        });
+    } catch (err) {
+        console.error("Erro ao carregar preços:", err);
+    }
+}
+
+// Chama a função ao carregar a página
+document.addEventListener('DOMContentLoaded', carregarPrecosDosPlanos);
+
 // Função para adicionar mensagens na tela
 function addMessage(text, sender) {
     const msgDiv = document.createElement('div');

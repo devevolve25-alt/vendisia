@@ -93,5 +93,6 @@ userInput.addEventListener('keypress', (e) => {
 
 // FUNÇÃO PARA REDIRECIONAMENTO TRIAL
 function activateTrial(planSlug) {
-    window.location.href = 'agenda.html';
+    // Redireciona para a página de acesso passando o slug do plano na URL
+    window.location.href = `acesso.html?plano=${planSlug}`;
 }

@@ -132,3 +132,20 @@ window.activateTrial = function(planSlug) {
     // 2. Redireciona passando o parâmetro para a página de acesso
     window.location.href = `acesso.html?plano=${planSlug}`;
 };
+
+async function carregarPrecos() {
+    const { data } = await supabaseClient.from('planos').select('nome, preco_mensal');
+    
+    data?.forEach(p => {
+        // Converte o nome do banco (ex: "AGENDA PRO") para o ID (price-agenda-pro)
+        const id = `price-${p.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
+        const elemento = document.getElementById(id);
+        
+        if (elemento) {
+            elemento.innerText = p.preco_mensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+    });
+}
+
+// Executa a função
+carregarPrecos();

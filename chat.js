@@ -1,4 +1,4 @@
-// 1. Configuração Supabase
+// 1. Configuração Supabase - corrigido scroll
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -10,9 +10,6 @@ const chatWindow = document.getElementById('chat-window');
 const userInput = document.getElementById('user-input');
 const plansContainer = document.getElementById('plans-container');
 
-/**
- * Busca 'preco_mensal' do Supabase e preenche os cards dinamicamente
- */
 async function carregarPrecos() {
     try {
         const { data: planos, error } = await supabaseClient
@@ -22,10 +19,8 @@ async function carregarPrecos() {
         if (error) throw error;
 
         planos.forEach(p => {
-            // Converte o nome do banco para o ID do HTML (Ex: "AGENDA PRO" -> "price-agenda-pro")
             const id = `price-${p.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
             const elemento = document.getElementById(id);
-            
             if (elemento) {
                 elemento.innerText = p.preco_mensal.toLocaleString('pt-BR', { 
                     style: 'currency', 
@@ -34,24 +29,24 @@ async function carregarPrecos() {
             }
         });
     } catch (err) {
-        console.error("Erro ao carregar preços do Supabase:", err);
+        console.error("Erro ao carregar preços:", err);
     }
 }
 
-// Executa o carregamento dos preços ao iniciar
 document.addEventListener('DOMContentLoaded', carregarPrecos);
 
-// --- LÓGICA DO CHAT ---
+// --- LÓGICA DO CHAT ATUALIZADA ---
 
 function addMessage(text, sender) {
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message', sender === 'user' ? 'user-msg' : 'mercuria-msg');
     
-    // Estilização das bolhas
+    // Estilização inline mantida conforme original
     msgDiv.style.padding = "12px 18px";
     msgDiv.style.borderRadius = "10px";
     msgDiv.style.marginBottom = "10px";
     msgDiv.style.maxWidth = "80%";
+    msgDiv.style.wordWrap = "break-word";
     
     if (sender === 'user') {
         msgDiv.style.alignSelf = "flex-end";
@@ -65,16 +60,22 @@ function addMessage(text, sender) {
 
     msgDiv.innerText = text;
     
-    // Insere a mensagem ANTES do container de planos para manter o carrossel no final
-    chatWindow.insertBefore(msgDiv, plansContainer); 
-    chatWindow.scrollTop = chatWindow.scrollHeight;
+    // ALTERAÇÃO: Agora anexamos ao final do chatWindow (sem insertBefore fixo)
+    chatWindow.appendChild(msgDiv); 
+    
+    // Garante que o scroll acompanhe a nova mensagem
+    chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
 }
 
 function triggerPlans() {
+    // MOVE o container de planos para o final do chat (após a última mensagem)
+    chatWindow.appendChild(plansContainer);
     plansContainer.style.display = 'block';
+    
+    // Pequeno delay para o navegador calcular o novo scrollHeight após o display:block
     setTimeout(() => {
-        plansContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, 100);
+        chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+    }, 150);
 }
 
 async function sendMessage() {
@@ -99,8 +100,10 @@ async function sendMessage() {
         let botResponse = data.output || data.text || "Estou processando sua solicitação...";
 
         if (botResponse.includes('[EXIBIR_PLANOS]')) {
-            botResponse = botResponse.replace('[EXIBIR_PLANOS]', '');
-            addMessage(botResponse, 'mercuria');
+            botResponse = botResponse.replace('[EXIBIR_PLANOS]', '').trim();
+            // Primeiro exibe o texto da IA
+            if (botResponse) addMessage(botResponse, 'mercuria');
+            // Depois aciona os planos no fluxo correto
             triggerPlans();
         } else {
             addMessage(botResponse, 'mercuria');
@@ -116,10 +119,9 @@ userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
 
-// --- REDIRECIONAMENTO E PERSISTÊNCIA ---
+// --- REDIRECIONAMENTO ---
 
 window.activateTrial = function(planSlug) {
-    // Salva no LocalStorage para backup e redireciona com parâmetro na URL
     localStorage.setItem('plano_selecionado', planSlug);
     window.location.href = `acesso.html?plano=${planSlug}`;
 };

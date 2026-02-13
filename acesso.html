@@ -35,14 +35,14 @@
         </div>
 
         <div id="step-login">
-    <p>Para continuar, acesse sua conta.</p>
-    <button class="btn-acao" onclick="loginGoogle()" style="margin-bottom: 15px;">ENTRAR COM GOOGLE</button>
-    
-    <div style="margin: 15px 0; opacity: 0.5; font-size: 0.8rem;">— OU VIA E-MAIL —</div>
-    
-    <input type="email" id="email-acesso" placeholder="Seu melhor e-mail">
-    <button class="btn-acao" onclick="loginEmail()" style="background: transparent; color: var(--gold); border: 1px solid var(--gold);">RECEBER LINK DE ACESSO</button>
-</div>
+            <p>Para continuar, acesse sua conta.</p>
+            <button class="btn-acao" onclick="loginGoogle()" style="margin-bottom: 15px;">ENTRAR COM GOOGLE</button>
+            
+            <div style="margin: 15px 0; opacity: 0.5; font-size: 0.8rem;">— OU VIA E-MAIL —</div>
+            
+            <input type="email" id="email-acesso" placeholder="Seu melhor e-mail">
+            <button class="btn-acao" onclick="loginEmail()" style="background: transparent; color: var(--gold); border: 1px solid var(--gold);">RECEBER LINK DE ACESSO</button>
+        </div>
 
         <div id="step-cadastro">
             <p>Defina o nome do seu negócio para gerar seu link exclusivo.</p>
@@ -56,12 +56,20 @@
         const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
         
-        // Renomeado para supabaseClient para evitar conflito com a biblioteca global
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let userLogado = null;
+        
+        // --- LÓGICA DE CAPTURA E PERSISTÊNCIA DO PLANO ---
         const urlParams = new URLSearchParams(window.location.search);
-        const planoEscolhido = urlParams.get('plano') || 'A';
+        let planoEscolhido = urlParams.get('plano');
+
+        // Se o plano veio na URL, salva no localStorage. Se não veio, tenta recuperar o salvo anteriormente.
+        if (planoEscolhido) {
+            localStorage.setItem('plano_mercuria', planoEscolhido);
+        } else {
+            planoEscolhido = localStorage.getItem('plano_mercuria') || 'conecta-facil'; 
+        }
 
         function showStep(stepId) {
             document.getElementById('step-loading').classList.remove('active');
@@ -72,7 +80,6 @@
 
         async function init() {
             try {
-                // Tenta pegar a sessão atual
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 
                 if (session) {
@@ -82,7 +89,6 @@
                     showStep('step-login');
                 }
 
-                // ESCUTADOR DE MUDANÇA (Caso o redirecionamento demore a processar)
                 supabaseClient.auth.onAuthStateChange((event, session) => {
                     if (event === 'SIGNED_IN' && session) {
                         userLogado = session.user;
@@ -100,35 +106,34 @@
             await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: { 
+                    // Mantém o parâmetro do plano no redirecionamento do Google
                     redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
                 }
             });
         }
 
         async function loginEmail() {
-    const email = document.getElementById('email-acesso').value;
-    if (!email) return alert("Por favor, digite seu e-mail.");
+            const email = document.getElementById('email-acesso').value;
+            if (!email) return alert("Por favor, digite seu e-mail.");
 
-    // O segredo está aqui: forçar o retorno para acesso.html com o parâmetro do plano
-    const redirecionamento = window.location.origin + "/acesso.html?plano=" + planoEscolhido;
+            const redirecionamento = window.location.origin + window.location.pathname + "?plano=" + planoEscolhido;
 
-    const { error } = await supabaseClient.auth.signInWithOtp({
-        email: email,
-        options: {
-            emailRedirectTo: redirecionamento
+            const { error } = await supabaseClient.auth.signInWithOtp({
+                email: email,
+                options: {
+                    emailRedirectTo: redirecionamento
+                }
+            });
+
+            if (error) {
+                alert("Erro ao enviar e-mail: " + error.message);
+            } else {
+                alert("Verifique sua caixa de entrada! Enviamos um link de acesso exclusivo para você.");
+            }
         }
-    });
-
-    if (error) {
-        alert("Erro ao enviar e-mail: " + error.message);
-    } else {
-        alert("Verifique sua caixa de entrada! Enviamos um link de acesso exclusivo para você.");
-    }
-}
 
         async function verificarEstabelecimento() {
             try {
-                // PASSO 4: Verifica/Cria o registro na tabela Perfis antes de qualquer coisa
                 let { data: perfil } = await supabaseClient
                     .from('perfis')
                     .select('id')
@@ -143,7 +148,6 @@
                     if (errorPerfil) throw errorPerfil;
                 }
 
-                // PASSO 5: Verifica se já existe estabelecimento vinculado ao Perfil
                 const { data, error } = await supabaseClient
                     .from('estabelecimentos')
                     .select('slug, status_pagamento')
@@ -151,6 +155,7 @@
                     .maybeSingle();
 
                 if (data) {
+                    // Se já existe, vai para a agenda. O plano já está no banco.
                     window.location.href = `agenda.html?s=${data.slug}&u=dono`;
                 } else {
                     showStep('step-cadastro');
@@ -174,49 +179,50 @@
         }
 
         async function finalizarCadastro() {
-    console.log("Iniciando Cadastro com Trial de 7 dias...");
+            const inputNome = document.getElementById('nome-salao');
+            const spanSlug = document.getElementById('slug-text');
 
-    const inputNome = document.getElementById('nome-salao');
-    const spanSlug = document.getElementById('slug-text');
+            const nomeFantasia = inputNome ? inputNome.value : "";
+            let slug = spanSlug ? spanSlug.innerText : "";
+            
+            if (!slug || slug === "...") {
+                slug = updateSlug();
+            }
 
-    const nomeFantasia = inputNome ? inputNome.value : "";
-    let slug = spanSlug ? spanSlug.innerText : "";
-    if (!slug || slug === "...") {
-        slug = updateSlug();
-    }
+            if (!nomeFantasia) {
+                alert('Por favor, digite o nome do salão.');
+                return;
+            }
 
-    if (!nomeFantasia) {
-        alert('Por favor, digite o nome do salão.');
-        return;
-    }
+            try {
+                if (!userLogado || !userLogado.id) {
+                    throw new Error("Usuário não identificado.");
+                }
 
-    try {
-        if (!userLogado || !userLogado.id) {
-            throw new Error("Usuário não identificado.");
+                // Inserção no banco usando o plano capturado
+                const { error } = await supabaseClient
+                    .from('estabelecimentos')
+                    .insert([{
+                        dono_id: userLogado.id,
+                        nome_fantasia: nomeFantasia,
+                        slug: slug,
+                        plano_ativo: planoEscolhido, // Aqui entra o slug do plano (conecta-facil, agenda-pro, etc)
+                        status_pagamento: 'trial'
+                    }]);
+
+                if (error) throw error;
+
+                // Limpa o plano do storage após o uso bem sucedido
+                localStorage.removeItem('plano_mercuria');
+
+                alert('Sistema criado com sucesso! Você tem 7 dias de teste gratuito liberados.');
+                window.location.href = `agenda.html?s=${slug}&u=dono`;
+
+            } catch (err) {
+                console.error("Erro:", err);
+                alert('Erro ao criar sistema: ' + err.message);
+            }
         }
-
-        // 1. Salva no Supabase com status 'trial'
-        const { error } = await supabaseClient
-            .from('estabelecimentos')
-            .insert([{
-                dono_id: userLogado.id,
-                nome_fantasia: nomeFantasia,
-                slug: slug,
-                plano_ativo: planoEscolhido || 'A',
-                status_pagamento: 'trial' // Mudamos de 'pendente' para 'trial'
-            }]);
-
-        if (error) throw error;
-
-        // 2. Redireciona direto para a agenda
-        alert('Sistema criado com sucesso! Você tem 7 dias de teste gratuito liberados.');
-        window.location.href = `agenda.html?s=${slug}&u=dono`;
-
-    } catch (err) {
-        console.error("Erro:", err);
-        alert('Erro ao criar sistema: ' + err.message);
-    }
-}
 
         document.addEventListener('DOMContentLoaded', init);
     </script>

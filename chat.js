@@ -96,3 +96,12 @@ function activateTrial(planSlug) {
     // Redireciona para a página de acesso passando o slug do plano na URL
     window.location.href = `acesso.html?plano=${planSlug}`;
 }
+
+// Garante que a função exista e seja acessível pelo clique do botão no HTML
+window.activateTrial = function(planSlug) {
+    // 1. (Opcional) Salva no navegador para garantir que o dado não se perca se a URL mudar
+    localStorage.setItem('plano_selecionado', planSlug);
+    
+    // 2. Redireciona passando o parâmetro para a página de acesso
+    window.location.href = `acesso.html?plano=${planSlug}`;
+};

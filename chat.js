@@ -1,6 +1,7 @@
+// 1. Configuração Supabase
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 2. Configuração n8n
 const N8N_WEBHOOK_URL = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt';
@@ -10,19 +11,18 @@ const userInput = document.getElementById('user-input');
 const plansContainer = document.getElementById('plans-container');
 
 /**
- * FUNÇÃO ÚNICA PARA CARREGAR PREÇOS
- * Busca 'preco_mensal' do Supabase e preenche os cards
+ * Busca 'preco_mensal' do Supabase e preenche os cards dinamicamente
  */
 async function carregarPrecos() {
     try {
         const { data: planos, error } = await supabaseClient
             .from('planos')
-            .select('nome, preco_mensal'); // Nome da coluna corrigido aqui
+            .select('nome, preco_mensal');
 
         if (error) throw error;
 
         planos.forEach(p => {
-            // Converte "AGENDA PRO" para "price-agenda-pro"
+            // Converte o nome do banco para o ID do HTML (Ex: "AGENDA PRO" -> "price-agenda-pro")
             const id = `price-${p.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
             const elemento = document.getElementById(id);
             
@@ -38,7 +38,7 @@ async function carregarPrecos() {
     }
 }
 
-// Executa ao carregar a página
+// Executa o carregamento dos preços ao iniciar
 document.addEventListener('DOMContentLoaded', carregarPrecos);
 
 // --- LÓGICA DO CHAT ---
@@ -47,6 +47,7 @@ function addMessage(text, sender) {
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message', sender === 'user' ? 'user-msg' : 'mercuria-msg');
     
+    // Estilização das bolhas
     msgDiv.style.padding = "12px 18px";
     msgDiv.style.borderRadius = "10px";
     msgDiv.style.marginBottom = "10px";
@@ -63,6 +64,8 @@ function addMessage(text, sender) {
     }
 
     msgDiv.innerText = text;
+    
+    // Insere a mensagem ANTES do container de planos para manter o carrossel no final
     chatWindow.insertBefore(msgDiv, plansContainer); 
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
@@ -113,9 +116,10 @@ userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
 
-// --- REDIRECIONAMENTO ---
+// --- REDIRECIONAMENTO E PERSISTÊNCIA ---
 
 window.activateTrial = function(planSlug) {
+    // Salva no LocalStorage para backup e redireciona com parâmetro na URL
     localStorage.setItem('plano_selecionado', planSlug);
     window.location.href = `acesso.html?plano=${planSlug}`;
 };

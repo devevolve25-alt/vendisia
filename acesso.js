@@ -46,9 +46,27 @@ function selecionarPlano(idPlano) {
 }
 async function init() {
     try {
+        // 1. Captura o plano da URL imediatamente ao carregar
+        const params = new URLSearchParams(window.location.search);
+        const planoNaUrl = params.get('plano');
+        const planosPermitidos = ['conecta-facil', 'agenda-pro', 'gestao-total'];
+
+        // Se o plano da URL for válido, atualiza a variável global
+        if (planosPermitidos.includes(planoNaUrl)) {
+            planoEscolhido = planoNaUrl;
+        }
+
         const { data: { session } } = await supabaseClient.auth.getSession();
+
         if (session) {
             userLogado = session.user;
+            
+            // BARREIRA: Mesmo logado, se não houver plano validado, trava no step-planos
+            if (!planosPermitidos.includes(planoEscolhido)) {
+                showStep('step-planos');
+                return;
+            }
+            
             verificarEstabelecimento();
         } else {
             showStep('step-login');
@@ -57,7 +75,13 @@ async function init() {
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 userLogado = session.user;
-                verificarEstabelecimento();
+
+                // BARREIRA NO EVENTO: Impede avanço automático após login Google se o plano sumir
+                if (!planosPermitidos.includes(planoEscolhido)) {
+                    showStep('step-planos');
+                } else {
+                    verificarEstabelecimento();
+                }
             }
         });
     } catch (err) {

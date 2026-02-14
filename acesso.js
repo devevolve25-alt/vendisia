@@ -15,7 +15,7 @@ function showStep(stepId) {
     document.getElementById(stepId).classList.add('active');
 }
 
-// --- NOVA FUNÇÃO: Selecionar plano na própria página e liberar trava ---
+// --- Selecionar plano na própria página e liberar trava ---
 function selecionarPlano(idPlano) {
     // 1. Lista de planos permitidos para validação
     const planosPermitidos = ['conecta-facil', 'agenda-pro', 'gestao-total'];

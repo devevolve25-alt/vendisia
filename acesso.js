@@ -6,7 +6,7 @@ let userLogado = null;
 const urlParams = new URLSearchParams(window.location.search);
 let planoEscolhido = urlParams.get('plano') || localStorage.getItem('plano_mercuria');
 
-// Função para gerenciar a visibilidade das telas
+// correção da barreira
 function showStep(stepId) {
     document.getElementById('step-loading').classList.remove('active');
     document.getElementById('step-login').classList.remove('active');

@@ -1,5 +1,78 @@
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 
+        .main-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 30px;
+        background: #000;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .brand-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .logo-img {
+        height: 40px;
+        width: auto;
+    }
+
+    .brand-text {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.6rem;
+        color: #fff;
+        letter-spacing: 1px;
+        white-space: nowrap;
+    }
+
+    .btn-acesso {
+        text-decoration: none;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.1rem;
+        color: #000;
+        background: #d4af37;
+        padding: 10px 25px;
+        border-radius: 5px;
+        transition: 0.3s;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    /* RESPONSIVIDADE MOBILE */
+    @media (max-width: 600px) {
+        .main-header {
+            flex-direction: column; /* Empilha os elementos */
+            gap: 15px;
+            padding: 20px 15px;
+            text-align: center;
+        }
+
+        .logo-img {
+            display: none; /* Esconde a logo no mobile */
+        }
+
+        .brand-container {
+            justify-content: center;
+        }
+
+        .brand-text {
+            font-size: 1.4rem;
+        }
+
+        .nav-container {
+            width: 100%;
+        }
+
+        .btn-acesso {
+            width: 80%; /* Botão largo no mobile para facilitar o toque */
+            padding: 12px 0;
+        }
+    }
+
         body {
             font-family: 'Montserrat', sans-serif;
             line-height: 1.6;

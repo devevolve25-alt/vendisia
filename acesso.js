@@ -55,47 +55,48 @@ async function init() {
 }
 
 async function loginGoogle() {
+    // BARREIRA: Impede a abertura da janela do Google sem plano definido - corrigido
     if (!planoEscolhido || planoEscolhido === 'conecta-facil') {
-        alert("Selecione um plano antes de continuar com o Google.");
+        alert("Por favor, selecione um plano antes de continuar com o Google.");
         showStep('step-planos');
-        return;
+        return; // O código para aqui.
     }
+
     await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido }
+        options: { 
+            redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
+        }
     });
 }
 
 async function authSenha(tipo) {
-    // SE FOR CADASTRO: Verifica se o usuário já escolheu um plano
-    if (tipo === 'signup') {
-        if (!planoEscolhido || planoEscolhido === 'conecta-facil') {
-            alert("Por favor, selecione um plano antes de criar sua conta.");
-            showStep('step-planos'); // Força a escolha do plano
-            return; // INTERROMPE A CRIAÇÃO DO USUÁRIO NO BD
-        }
+    // BARREIRA: Se for cadastro (signup) e não houver plano B ou C
+    if (tipo === 'signup' && (!planoEscolhido || planoEscolhido === 'conecta-facil')) {
+        alert("Ação necessária: Selecione um plano antes de criar sua conta.");
+        showStep('step-planos');
+        return; // O código para aqui. O usuário não é criado no Supabase.
     }
 
     const email = document.getElementById('email-acesso').value;
     const password = document.getElementById('senha-acesso').value;
 
     if (!email || !password) return alert("Preencha e-mail e senha.");
-    if (password.length < 6) return alert("A senha deve ter no mínimo 6 caracteres.");
-
+    
     showStep('step-loading');
+    
+    // Execução da autenticação (Só ocorre se passar pelo return acima)
+    const { data, error } = (tipo === 'signup') 
+        ? await supabaseClient.auth.signUp({ email, password }) 
+        : await supabaseClient.auth.signInWithPassword({ email, password });
 
-    let resultado;
-    if (tipo === 'signup') {
-        resultado = await supabaseClient.auth.signUp({ email, password });
-    } else {
-        resultado = await supabaseClient.auth.signInWithPassword({ email, password });
-    }
-
-    if (resultado.error) {
-        alert("Erro: " + resultado.error.message);
+    if (error) {
+        alert("Erro: " + error.message);
         showStep('step-login');
+    } else if (data.user) {
+        userLogado = data.user;
+        verificarEstabelecimento();
     }
-    // Se for sucesso, o onAuthStateChange cuidará do restante
 }
 
 async function verificarEstabelecimento() {

@@ -257,18 +257,18 @@ Aguardando comandos para gerar o código...
 
         const botDivLoading = document.createElement('div');
         botDivLoading.className = 'msg-bot';
-        botDivLoading.innerText = "[I.A.O.]: Processando e formatando texto puro... Veja no painel.";
+        botDivLoading.innerText = "[IAO]: Processando e formatando texto puro... Veja no painel.";
         chat.appendChild(botDivLoading);
 
         try {
-            const WEBHOOK_URL_I.A.O. = "https://powerfulkiwi-n8n.cloudfy.live/webhook/web_programing"; 
+            const WEBHOOK_URL_IAO. = "https://powerfulkiwi-n8n.cloudfy.live/webhook/web_programing"; 
 
-            const response = await fetch(WEBHOOK_URL_I.A.O., {
+            const response = await fetch(WEBHOOK_URL_IAO, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: input,
-                    entity: "I.A.O.",
+                    entity: "IAO.",
                     timestamp: new Date().toISOString()
                 })
             });
@@ -277,7 +277,7 @@ Aguardando comandos para gerar o código...
 
             const botDivSuccess = document.createElement('div');
             botDivSuccess.className = 'msg-bot';
-            botDivSuccess.innerText = "[I.A.O.]: Código/Texto gerado com sucesso.";
+            botDivSuccess.innerText = "[IAO]: Código/Texto gerado com sucesso.";
             chat.appendChild(botDivSuccess);
 
             // Inserimos como innerText para NÃO renderizar HTML e manter como .txt puro

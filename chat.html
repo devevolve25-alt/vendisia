@@ -8,7 +8,10 @@
 </head>
 <body>
 
-    <div id="chat-window">
+    <!-- NOVO: Container principal que gerenciará o layout completo -->
+    <div id="chat-wrapper">
+
+        <!-- O container de planos agora está fora da área de rolagem das mensagens -->
         <div id="plans-container" style="display: none;">
             <div id="plans-carousel">
                 <div class="plan-card">
@@ -31,7 +34,7 @@
                     <p class="plan-price" id="price-agenda-pro">...</p>
                     <ul class="plan-features">
                         <li>✔️ até 5 profissionais</li>
-                        <li>✔️ IA limitada</li> 
+                        <li>✔️ IA limitada</li>
                         <li>✔️ cumprimenta o cliente</li>
                         <li>✔️ solicita o nome e telefone</li>
                         <li>✔️ explica o site</li>
@@ -68,12 +71,19 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="input-area">
-        <input type="text" id="user-input" placeholder="Digite sua mensagem...">
-        <button class="send-btn" onclick="sendMessage()">ENVIAR</button>
-    </div>
+        <!-- NOVO: Este será o container para as mensagens, e onde a rolagem ocorrerá -->
+        <div id="chat-messages">
+            <!-- As mensagens do chat serão inseridas aqui pelo JavaScript -->
+        </div>
+
+        <!-- A área de input permanece fora da rolagem das mensagens, no final do wrapper -->
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Digite sua mensagem...">
+            <button class="send-btn" onclick="sendMessage()">ENVIAR</button>
+        </div>
+
+    </div> <!-- Fim de #chat-wrapper -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="chat.js"></script>

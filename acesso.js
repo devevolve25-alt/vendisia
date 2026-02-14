@@ -17,9 +17,19 @@ function showStep(stepId) {
 
 // --- NOVA FUNÇÃO: Selecionar plano na própria página e liberar trava ---
 function selecionarPlano(idPlano) {
+    // 1. Salva a escolha do plano
     planoEscolhido = idPlano;
     localStorage.setItem('plano_mercuria', idPlano);
-    showStep('step-cadastro'); // Avança para o cadastro do nome do negócio
+    
+    // 2. Verifica se o usuário já está autenticado
+    if (userLogado) {
+        // Se já estiver logado (ex: via Google ou sessão ativa), vai para o nome do salão
+        showStep('step-cadastro');
+    } else {
+        // Se NÃO estiver logado, obriga a passar pela criação de conta primeiro
+        alert("Plano selecionado! Agora crie sua conta para continuar.");
+        showStep('step-login');
+    }
 }
 
 async function init() {

@@ -53,20 +53,20 @@
             <button class="btn-acao" onclick="finalizarCadastro()">CRIAR MEU SISTEMA</button>
         </div>
 
-        <div id="step-planos">
-            <p style="color: var(--gold); font-weight: 600;">SISTEMA NÃO ENCONTRADO</p>
-            <p>Você ainda não possui um plano ativo. Escolha uma opção para configurar sua IA:</p>
-            <a href="chat.html?plano=agenda-pro" class="card-plano">
-                <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO B - AGENDA PRO</div>
-                <div style="font-size: 0.7rem; color: #ccc;">Gestão de horários + Inteligência Artificial</div>
-            </a>
-            <a href="chat.html?plano=gestao-full" class="card-plano">
-                <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO C - GESTÃO TOTAL</div>
-                <div style="font-size: 0.7rem; color: #ccc;">Ecossistema completo para grandes negócios</div>
-            </a>
-            <button onclick="window.location.href='index.html'" style="background:none; border:none; color:#666; cursor:pointer; margin-top:10px; font-size:0.8rem;">Voltar ao início</button>
-        </div>
+       <div id="step-planos">
+    <p style="color: var(--gold); font-weight: 600;">SISTEMA NÃO ENCONTRADO</p>
+    <p>Escolha um plano para configurar sua IA agora:</p>
+    
+    <div class="card-plano" onclick="selecionarPlano('agenda-pro')" style="cursor:pointer; border: 1px solid var(--gold); padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+        <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO B - AGENDA PRO</div>
+        <div style="font-size: 0.7rem;">Clique para selecionar este plano</div>
     </div>
+    
+    <div class="card-plano" onclick="selecionarPlano('gestao-full')" style="cursor:pointer; border: 1px solid var(--gold); padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+        <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO C - GESTÃO TOTAL</div>
+        <div style="font-size: 0.7rem;">Clique para selecionar este plano</div>
+    </div>
+</div>
 
     <script src="acesso.js"></script>
 </body>

@@ -1,14 +1,14 @@
-/* Estilos globais para o corpo da página */
+/* Estilos globais para o corpo da página */ iao
 body, html {
     margin: 0;
     padding: 0;
+    width: 100%; /* Adicionado para garantir que o body ocupe 100% da largura */
     height: 100%; /* Ocupa a altura total da viewport */
     font-family: Arial, sans-serif;
-    /* ALTERADO: Fundo escuro conforme o padrão do site */
-    background-color: #1a1a1a; /* Exemplo de um fundo escuro */
-    display: flex; /* Para o chat-wrapper ocupar toda a tela */
-    justify-content: center;
-    align-items: center;
+    background-color: #1a1a1a; /* Cor de fundo escuro conforme o padrão do site */
+    /* ALTERADO: Removidos display flex, justify-content e align-items do body.
+                 O #chat-wrapper agora ocupará 100% da largura e altura do body diretamente,
+                 não precisando ser centralizado. */
 }
 
 /* NOVO: Estilos para o container principal do chat */
@@ -17,9 +17,9 @@ body, html {
     flex-direction: column; /* Organiza os filhos em coluna: planos, mensagens, input */
     width: 100%; /* Ocupa toda a largura disponível */
     height: 100%; /* Ocupa toda a altura disponível */
-    /* REMOVIDO: max-width para ocupar a tela toda em desktop */
-    /* REMOVIDO: border e box-shadow para um visual mais integrado ao fundo escuro */
-    border-radius: 0; /* REMOVIDO: border-radius para ocupar a tela toda */
+    /* REMOVIDO: max-width que causava o centragem e limitava a largura no desktop */
+    /* REMOVIDO: border e box-shadow para um visual de tela cheia, integrado ao fundo escuro */
+    border-radius: 0; /* REMOVIDO: border-radius para ocupar a tela toda sem cantos arredondados */
     background-color: #2a2a2a; /* Fundo do chat um pouco mais claro que o body, para contraste */
     overflow: hidden; /* Garante que nenhum conteúdo transborde */
 }

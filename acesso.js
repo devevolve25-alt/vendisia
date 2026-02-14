@@ -2,11 +2,12 @@ const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Configuração Global de Segurança
+const LISTA_PLANOS = ['conecta-facil', 'agenda-pro', 'gestao-total'];
 let userLogado = null;
 const urlParams = new URLSearchParams(window.location.search);
 let planoEscolhido = urlParams.get('plano') || localStorage.getItem('plano_mercuria');
 
-// correção da barreira
 function showStep(stepId) {
     document.getElementById('step-loading').classList.remove('active');
     document.getElementById('step-login').classList.remove('active');
@@ -15,44 +16,35 @@ function showStep(stepId) {
     document.getElementById(stepId).classList.add('active');
 }
 
-// --- Selecionar plano na própria página e liberar trava ---
+// --- Seleção de Plano ---
 function selecionarPlano(idPlano) {
-    // 1. Lista de planos permitidos para validação
-    const planosPermitidos = ['conecta-facil', 'agenda-pro', 'gestao-total'];
-
-    if (!planosPermitidos.includes(idPlano)) {
+    if (!LISTA_PLANOS.includes(idPlano)) {
         alert("Plano inválido selecionado.");
         showStep('step-planos');
         return;
     }
 
-    // 2. Salva a escolha do plano localmente e na variável global
     planoEscolhido = idPlano;
     localStorage.setItem('plano_mercuria', idPlano);
 
-    // 3. Atualiza a URL sem recarregar a página (Garante que o plano "siga" o usuário)
+    // Atualiza URL para persistência
     const novaUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?plano=' + idPlano;
     window.history.pushState({ path: novaUrl }, '', novaUrl);
     
-    // 4. Direcionamento baseado na autenticação
     if (userLogado) {
-        // Se já logou (Google ou sessão), libera para criar o salão
         showStep('step-cadastro');
     } else {
-        // Se não logou, manda para o card de login/cadastro
-        alert("Plano selecionado com sucesso! Agora finalize seu cadastro.");
+        alert("Plano selecionado! Agora finalize sua conta.");
         showStep('step-login');
     }
 }
+
 async function init() {
     try {
-        // 1. Captura o plano da URL imediatamente ao carregar
         const params = new URLSearchParams(window.location.search);
         const planoNaUrl = params.get('plano');
-        const planosPermitidos = ['conecta-facil', 'agenda-pro', 'gestao-total'];
 
-        // Se o plano da URL for válido, atualiza a variável global
-        if (planosPermitidos.includes(planoNaUrl)) {
+        if (LISTA_PLANOS.includes(planoNaUrl)) {
             planoEscolhido = planoNaUrl;
         }
 
@@ -60,13 +52,11 @@ async function init() {
 
         if (session) {
             userLogado = session.user;
-            
-            // BARREIRA: Mesmo logado, se não houver plano validado, trava no step-planos
-            if (!planosPermitidos.includes(planoEscolhido)) {
+            // BARREIRA DE ENTRADA: Se logado sem plano, força escolha
+            if (!LISTA_PLANOS.includes(planoEscolhido)) {
                 showStep('step-planos');
                 return;
             }
-            
             verificarEstabelecimento();
         } else {
             showStep('step-login');
@@ -75,9 +65,7 @@ async function init() {
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 userLogado = session.user;
-
-                // BARREIRA NO EVENTO: Impede avanço automático após login Google se o plano sumir
-                if (!planosPermitidos.includes(planoEscolhido)) {
+                if (!LISTA_PLANOS.includes(planoEscolhido)) {
                     showStep('step-planos');
                 } else {
                     verificarEstabelecimento();
@@ -91,17 +79,12 @@ async function init() {
 }
 
 async function loginGoogle() {
-    // Lista de planos permitidos para validar a entrada
-    const planosPermitidos = ['conecta-facil', 'agenda-pro', 'gestao-total'];
-
-    // BARREIRA: Impede a abertura do Google se o plano não for um dos três oficiais
-    if (!planosPermitidos.includes(planoEscolhido)) {
+    if (!LISTA_PLANOS.includes(planoEscolhido)) {
         alert("Por favor, selecione um plano antes de continuar com o Google.");
         showStep('step-planos');
-        return; // ISOLAMENTO: O código do Supabase abaixo não é executado
+        return;
     }
 
-    // Execução do login só ocorre se houver um plano válido
     await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: { 
@@ -111,14 +94,11 @@ async function loginGoogle() {
 }
 
 async function authSenha(tipo) {
-    // Lista de planos válidos para conferência
-    const planosValidos = ['conecta-facil', 'agenda-pro', 'gestao-total'];
-
-    // BARREIRA: Se for cadastro (signup), impede o Supabase se não houver um plano válido
-    if (tipo === 'signup' && !planosValidos.includes(planoEscolhido)) {
+    // BARREIRA PARA CADASTRO (Entrar/Login é liberado pelo banco)
+    if (tipo === 'signup' && !LISTA_PLANOS.includes(planoEscolhido)) {
         alert("Ação necessária: Selecione um plano antes de criar sua conta.");
         showStep('step-planos');
-        return; // ISOLAMENTO: O código abaixo nunca será lido sem plano
+        return;
     }
 
     const email = document.getElementById('email-acesso').value;
@@ -128,7 +108,6 @@ async function authSenha(tipo) {
     
     showStep('step-loading');
     
-    // O Supabase só recebe os dados se a barreira acima for superada
     const { data, error } = (tipo === 'signup') 
         ? await supabaseClient.auth.signUp({ email, password }) 
         : await supabaseClient.auth.signInWithPassword({ email, password });
@@ -144,23 +123,32 @@ async function authSenha(tipo) {
 
 async function verificarEstabelecimento() {
     try {
-        // Garantir perfil
-        await supabaseClient.from('perfis').upsert([{ id: userLogado.id, email_contato: userLogado.email }], { onConflict: 'id' });
+        // BARREIRA DE SEGURANÇA: Impede qualquer gravação se o plano for inválido
+        if (!LISTA_PLANOS.includes(planoEscolhido)) {
+            showStep('step-planos');
+            return;
+        }
 
-        // Buscar estabelecimento
-        const { data } = await supabaseClient.from('estabelecimentos').select('slug').eq('dono_id', userLogado.id).maybeSingle();
+        // 1. Só registra perfil se houver plano validado
+        await supabaseClient.from('perfis').upsert([{ 
+            id: userLogado.id, 
+            email_contato: userLogado.email 
+        }], { onConflict: 'id' });
+
+        // 2. Verifica se já possui estabelecimento
+        const { data } = await supabaseClient.from('estabelecimentos')
+            .select('slug')
+            .eq('dono_id', userLogado.id)
+            .maybeSingle();
 
         if (data) {
             window.location.href = `agenda.html?s=${data.slug}&u=dono`;
         } else {
-            // Se não tem salão, verifica o plano antes de mostrar cadastro
-            if (!planoEscolhido || planoEscolhido === 'conecta-facil') {
-                showStep('step-planos'); // BARREIRA ATIVADA
-            } else {
-                showStep('step-cadastro'); // LIBERADO
-            }
+            // Se não tem salão, libera o formulário de cadastro
+            showStep('step-cadastro');
         }
     } catch (err) {
+        console.error("Erro na verificação:", err);
         showStep('step-login');
     }
 }
@@ -173,8 +161,9 @@ function updateSlug() {
 }
 
 async function finalizarCadastro() {
-    // REVALIDAÇÃO DA BARREIRA NO CLIQUE
-    if (!planoEscolhido || planoEscolhido === 'conecta-facil') {
+    // REVALIDAÇÃO FINAL
+    if (!LISTA_PLANOS.includes(planoEscolhido)) {
+        alert("Selecione um plano válido.");
         showStep('step-planos');
         return;
     }

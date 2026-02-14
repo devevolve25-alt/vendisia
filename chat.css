@@ -4,31 +4,31 @@ body, html {
     padding: 0;
     height: 100%; /* Ocupa a altura total da viewport */
     font-family: Arial, sans-serif;
-    background-color: #f4f7f6; /* Cor de fundo leve */
-    display: flex; /* Para centralizar o chat-wrapper */
+    /* ALTERADO: Fundo escuro conforme o padrão do site */
+    background-color: #1a1a1a; /* Exemplo de um fundo escuro */
+    display: flex; /* Para o chat-wrapper ocupar toda a tela */
     justify-content: center;
-    align-items: center; /* Centraliza verticalmente o chat-wrapper */
+    align-items: center;
 }
 
 /* NOVO: Estilos para o container principal do chat */
 #chat-wrapper {
     display: flex;
     flex-direction: column; /* Organiza os filhos em coluna: planos, mensagens, input */
-    width: 100%;
-    max-width: 700px; /* Largura máxima para o chat */
-    height: 90vh; /* Ocupa 90% da altura da viewport */
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    background-color: #fff;
+    width: 100%; /* Ocupa toda a largura disponível */
+    height: 100%; /* Ocupa toda a altura disponível */
+    /* REMOVIDO: max-width para ocupar a tela toda em desktop */
+    /* REMOVIDO: border e box-shadow para um visual mais integrado ao fundo escuro */
+    border-radius: 0; /* REMOVIDO: border-radius para ocupar a tela toda */
+    background-color: #2a2a2a; /* Fundo do chat um pouco mais claro que o body, para contraste */
     overflow: hidden; /* Garante que nenhum conteúdo transborde */
 }
 
 /* Estilos para o container de planos (agora fixo no topo do chat-wrapper) */
 #plans-container {
     padding: 15px;
-    border-bottom: 1px solid #eee; /* Separador visual */
-    background-color: #f9f9f9;
+    border-bottom: 1px solid #444; /* Separador visual em tema escuro */
+    background-color: #3a3a3a; /* Fundo dos planos em tema escuro */
     flex-shrink: 0; /* Impede que este container encolha */
 }
 
@@ -43,23 +43,24 @@ body, html {
 .plan-card {
     flex-shrink: 0; /* Impede que os cards encolham e mantém a largura fixa */
     width: 280px; /* Largura fixa para cada card */
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
+    background-color: #4a4a4a; /* Fundo do card em tema escuro */
+    border: 1px solid #666; /* Borda do card em tema escuro */
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra ajustada para fundo escuro */
     text-align: center;
+    color: #f0f0f0; /* Cor do texto padrão do card */
 }
 
 .plan-card h3 {
-    color: #333;
+    color: #ffffff; /* Títulos mais claros */
     margin-top: 0;
 }
 
 .plan-price {
     font-size: 1.5em;
     font-weight: bold;
-    color: #007bff;
+    color: #4CAF50; /* Cor de preço ajustada para o tema escuro (verde) */
     margin: 10px 0;
 }
 
@@ -72,8 +73,8 @@ body, html {
 
 .plan-features li {
     padding: 5px 0;
-    border-bottom: 1px dotted #eee;
-    color: #555;
+    border-bottom: 1px dotted #555; /* Borda pontilhada mais clara */
+    color: #cccccc; /* Cor do texto das features */
 }
 
 .plan-features li:last-child {
@@ -97,7 +98,7 @@ body, html {
 
 .highlight-pro {
     border-color: #FFD700; /* Borda dourada para destacar */
-    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3); /* Sombra dourada */
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); /* Sombra dourada mais pronunciada */
 }
 
 /* NOVO: Estilos para o container das mensagens (este será o scrollable) */
@@ -109,24 +110,25 @@ body, html {
     flex-direction: column; /* Mensagens uma abaixo da outra */
 }
 
-/* Estilos para as mensagens (removidos os estilos inline do JS) */
+/* Estilos para as mensagens */
 .message {
     padding: 12px 18px;
     border-radius: 10px;
     margin-bottom: 10px;
     max-width: 80%;
     word-wrap: break-word;
+    color: #e0e0e0; /* Cor do texto das mensagens para fundo escuro */
 }
 
 .user-msg {
     align-self: flex-end; /* Alinha mensagens do usuário à direita */
-    background-color: #00BFFF22;
+    background-color: #00BFFF44; /* Fundo da mensagem do usuário com mais opacidade */
     border: 1px solid #00BFFF;
 }
 
 .mercuria-msg {
     align-self: flex-start; /* Alinha mensagens da MercurIA à esquerda */
-    background-color: #FFD70011;
+    background-color: #FFD70022; /* Fundo da mensagem da MercurIA com mais opacidade */
     border: 1px solid #FFD700;
 }
 
@@ -134,18 +136,24 @@ body, html {
 .input-area {
     display: flex;
     padding: 15px;
-    border-top: 1px solid #eee; /* Separador visual */
-    background-color: #f9f9f9;
+    border-top: 1px solid #444; /* Separador visual em tema escuro */
+    background-color: #3a3a3a; /* Fundo da área de input em tema escuro */
     flex-shrink: 0; /* Impede que este container encolha */
 }
 
 .input-area input {
     flex-grow: 1; /* Faz com que o input ocupe o espaço restante */
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid #666; /* Borda do input em tema escuro */
     border-radius: 5px;
     margin-right: 10px;
     font-size: 1em;
+    background-color: #555; /* Fundo do input em tema escuro */
+    color: #eee; /* Cor do texto do input */
+}
+
+.input-area input::placeholder {
+    color: #bbb; /* Cor do placeholder */
 }
 
 .input-area .send-btn {
@@ -161,4 +169,34 @@ body, html {
 
 .input-area .send-btn:hover {
     background-color: #218838;
+}
+
+/* Responsividade para telas menores (mobile) */
+@media (max-width: 768px) {
+    #chat-wrapper {
+        width: 100vw; /* Ocupa a largura total da viewport em mobile */
+        height: 100vh; /* Ocupa a altura total da viewport em mobile */
+    }
+
+    #plans-container {
+        padding: 10px;
+    }
+
+    #plans-carousel {
+        gap: 10px;
+        padding-bottom: 5px; /* Ajuste para rolagem horizontal em mobile */
+    }
+
+    .plan-card {
+        width: 250px; /* Largura um pouco menor para cards em mobile */
+        padding: 15px;
+    }
+
+    .message {
+        max-width: 90%; /* Mensagens podem ocupar mais espaço em mobile */
+    }
+
+    .input-area {
+        padding: 10px;
+    }
 }

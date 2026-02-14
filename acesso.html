@@ -13,16 +13,18 @@
         h1 { font-family: 'Bebas Neue'; color: var(--gold); font-size: 2.5rem; margin-bottom: 10px; }
         p { opacity: 0.7; font-size: 0.9rem; margin-bottom: 25px; min-height: 40px; }
         
-        /* Containers de Estados */
-        #step-login, #step-cadastro, #step-loading { display: none; }
+        #step-login, #step-cadastro, #step-loading, #step-planos { display: none; }
         .active { display: block !important; }
 
         input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; box-sizing: border-box; outline: none; }
         input:focus { border-color: var(--gold); }
         
-        .btn-acao { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; font-family: 'Bebas Neue'; font-size: 1.2rem; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .btn-acao { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; font-family: 'Bebas Neue'; font-size: 1.2rem; cursor: pointer; border-radius: 5px; transition: 0.3s; text-decoration: none; display: block; box-sizing: border-box; }
         .btn-acao:hover { opacity: 0.9; transform: scale(1.02); }
         .slug-preview { font-size: 0.8rem; color: var(--gold); margin-top: -10px; margin-bottom: 15px; text-align: left; }
+
+        .card-plano { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: left; transition: 0.3s; cursor: pointer; text-decoration: none; display: block; }
+        .card-plano:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
     </style>
 </head>
 <body>
@@ -37,12 +39,9 @@
         <div id="step-login">
             <p>Para continuar, acesse sua conta ou crie uma nova.</p>
             <button class="btn-acao" onclick="loginGoogle()" style="margin-bottom: 15px;">ENTRAR COM GOOGLE</button>
-            
             <div style="margin: 15px 0; opacity: 0.5; font-size: 0.8rem;">— OU VIA E-MAIL E SENHA —</div>
-            
             <input type="email" id="email-acesso" placeholder="Seu melhor e-mail">
             <input type="password" id="senha-acesso" placeholder="Crie ou insira sua senha">
-
             <button class="btn-acao" onclick="authSenha('login')" style="margin-bottom: 10px;">ENTRAR</button>
             <button class="btn-acao" onclick="authSenha('signup')" style="background: transparent; color: var(--gold); border: 1px solid var(--gold);">CADASTRAR NOVA CONTA</button>
         </div>
@@ -53,181 +52,22 @@
             <div class="slug-preview">Link: .../agenda.html?s=<span id="slug-text">...</span></div>
             <button class="btn-acao" onclick="finalizarCadastro()">CRIAR MEU SISTEMA</button>
         </div>
+
+        <div id="step-planos">
+            <p style="color: var(--gold); font-weight: 600;">SISTEMA NÃO ENCONTRADO</p>
+            <p>Você ainda não possui um plano ativo. Escolha uma opção para configurar sua IA:</p>
+            <a href="chat.html?plano=agenda-pro" class="card-plano">
+                <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO B - AGENDA PRO</div>
+                <div style="font-size: 0.7rem; color: #ccc;">Gestão de horários + Inteligência Artificial</div>
+            </a>
+            <a href="chat.html?plano=gestao-full" class="card-plano">
+                <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO C - GESTÃO TOTAL</div>
+                <div style="font-size: 0.7rem; color: #ccc;">Ecossistema completo para grandes negócios</div>
+            </a>
+            <button onclick="window.location.href='index.html'" style="background:none; border:none; color:#666; cursor:pointer; margin-top:10px; font-size:0.8rem;">Voltar ao início</button>
+        </div>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
-        
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        let userLogado = null;
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        let planoEscolhido = urlParams.get('plano');
-
-        if (planoEscolhido) {
-            localStorage.setItem('plano_mercuria', planoEscolhido);
-        } else {
-            planoEscolhido = localStorage.getItem('plano_mercuria') || 'conecta-facil'; 
-        }
-
-        function showStep(stepId) {
-            document.getElementById('step-loading').classList.remove('active');
-            document.getElementById('step-login').classList.remove('active');
-            document.getElementById('step-cadastro').classList.remove('active');
-            document.getElementById(stepId).classList.add('active');
-        }
-
-        async function init() {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                
-                if (session) {
-                    userLogado = session.user;
-                    verificarEstabelecimento();
-                } else {
-                    showStep('step-login');
-                }
-
-                supabaseClient.auth.onAuthStateChange((event, session) => {
-                    if (event === 'SIGNED_IN' && session) {
-                        userLogado = session.user;
-                        verificarEstabelecimento();
-                    }
-                });
-
-            } catch (err) {
-                console.error("Erro ao iniciar:", err);
-                showStep('step-login');
-            }
-        }
-
-        async function loginGoogle() {
-            await supabaseClient.auth.signInWithOAuth({
-                provider: 'google',
-                options: { 
-                    redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
-                }
-            });
-        }
-
-        async function authSenha(tipo) {
-            const email = document.getElementById('email-acesso').value;
-            const password = document.getElementById('senha-acesso').value;
-
-            if (!email || !password) return alert("Preencha e-mail e senha.");
-            if (password.length < 6) return alert("A senha deve ter no mínimo 6 caracteres.");
-
-            showStep('step-loading');
-
-            let resultado;
-            
-            if (tipo === 'signup') {
-                resultado = await supabaseClient.auth.signUp({ email, password });
-            } else {
-                resultado = await supabaseClient.auth.signInWithPassword({ email, password });
-            }
-
-            if (resultado.error) {
-                alert("Erro na autenticação: " + resultado.error.message);
-                showStep('step-login');
-            } else {
-                if (tipo === 'signup') alert("Conta criada com sucesso!");
-            }
-        }
-
-        async function verificarEstabelecimento() {
-            try {
-                let { data: perfil } = await supabaseClient
-                    .from('perfis')
-                    .select('id')
-                    .eq('id', userLogado.id)
-                    .maybeSingle();
-
-                if (!perfil) {
-                    const { error: errorPerfil } = await supabaseClient
-                        .from('perfis')
-                        .insert([{ id: userLogado.id, email_contato: userLogado.email }]);
-                    
-                    if (errorPerfil) throw errorPerfil;
-                }
-
-                const { data, error } = await supabaseClient
-                    .from('estabelecimentos')
-                    .select('slug, status_pagamento')
-                    .eq('dono_id', userLogado.id)
-                    .maybeSingle();
-
-                if (data) {
-                    window.location.href = `agenda.html?s=${data.slug}&u=dono`;
-                } else {
-                    showStep('step-cadastro');
-                }
-            } catch (err) {
-                console.error("Erro no fluxo de verificação:", err);
-                alert("Erro ao processar perfil de acesso.");
-            }
-        }
-
-        function updateSlug() {
-            const nome = document.getElementById('nome-salao').value;
-            const slug = nome.toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-z0-9]/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^-|-$/g, '');
-            document.getElementById('slug-text').innerText = slug;
-            return slug;
-        }
-
-        async function finalizarCadastro() {
-            const inputNome = document.getElementById('nome-salao');
-            const spanSlug = document.getElementById('slug-text');
-
-            const nomeFantasia = inputNome ? inputNome.value : "";
-            let slug = spanSlug ? spanSlug.innerText : "";
-            
-            if (!slug || slug === "...") {
-                slug = updateSlug();
-            }
-
-            if (!nomeFantasia) {
-                alert('Por favor, digite o nome do salão.');
-                return;
-            }
-
-            try {
-                if (!userLogado || !userLogado.id) {
-                    throw new Error("Usuário não identificado.");
-                }
-
-                const { error } = await supabaseClient
-                    .from('estabelecimentos')
-                    .insert([{
-                        dono_id: userLogado.id,
-                        nome_fantasia: nomeFantasia,
-                        slug: slug,
-                        plano_ativo: planoEscolhido,
-                        status_pagamento: 'trial'
-                    }]);
-
-                if (error) throw error;
-
-                localStorage.removeItem('plano_mercuria');
-
-                alert('Sistema criado com sucesso! Você tem 7 dias de teste gratuito liberados.');
-                window.location.href = `agenda.html?s=${slug}&u=dono`;
-
-            } catch (err) {
-                console.error("Erro:", err);
-                alert('Erro ao criar sistema: ' + err.message);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
-    
+    <script src="acesso.js"></script>
 </body>
 </html>

@@ -391,3 +391,14 @@ async function cadastrarProfissional() {
 
 // Inicialização segura
 window.addEventListener('DOMContentLoaded', init);
+
+async function logout() {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) {
+        alert("Erro ao sair: " + error.message);
+    } else {
+        // Limpa dados sensíveis do localStorage e redireciona para a home
+        localStorage.removeItem('plano_mercuria');
+        window.location.href = 'index.html';
+    }
+}

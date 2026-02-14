@@ -1,14 +1,7 @@
-// 1. Configuração (Sempre no topo)
+// 1. Configuração (Sempre no topo) - mercuria ativa - 1
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// --- CORREÇÃO: Mover a definição de PERFIS para o topo ---
-const PERFIS = {
-    cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
-    funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
-    dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
-};
 
 let dadosEstabelecimento = null;
 let slotSelecionado = null; 
@@ -50,11 +43,11 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
 async function generateContent() {
     const inputElement = document.getElementById('cmd-input');
     const chat = document.getElementById('chat-criar');
-    if(!inputElement || !chat) return;
-
     const input = inputElement.value.trim();
+    
     if(!input) return;
 
+    // Adiciona mensagem do usuário
     const divUser = document.createElement('div'); 
     divUser.className = 'msg-user'; 
     divUser.innerText = input;
@@ -63,6 +56,7 @@ async function generateContent() {
     inputElement.value = "";
     chat.scrollTop = chat.scrollHeight;
 
+    // Adiciona balão de "carregando" para a IA
     const divBot = document.createElement('div');
     divBot.className = 'msg-bot';
     divBot.innerText = "...";
@@ -80,6 +74,7 @@ async function generateContent() {
         });
 
         const data = await response.json();
+        // Exibe a resposta do n8n (ajuste 'data.output' se o retorno for em outro campo)
         divBot.innerText = data.output || data.resposta || data.text || "Comando processado.";
 
     } catch (error) {
@@ -93,49 +88,40 @@ async function generateContent() {
 async function init() {
     const params = new URLSearchParams(window.location.search);
     const slug = params.get('s');
-    
     if (!slug) {
-        const bodyView = document.getElementById('view-body');
-        if(bodyView) bodyView.innerHTML = "<p style='text-align:center'>Slug ausente (?s=slug)</p>";
+        document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Slug ausente (?s=slug)</p>";
         return;
     }
 
-    try {
-        const { data: estab, error } = await supabaseClient.from('estabelecimentos').select('*').eq('slug', slug).single();
-        
-        if (estab) {
-            const hoje = new Date();
-            const dataExpiracao = estab.trial_expires_at ? new Date(estab.trial_expires_at) : null;
+    const { data: estab, error } = await supabaseClient.from('estabelecimentos').select('*').eq('slug', slug).single();
+    
+    if (estab) {
+        const hoje = new Date();
+        const dataExpiracao = estab.trial_expires_at ? new Date(estab.trial_expires_at) : null;
 
-            // Proteção contra trial expirado
-            if (estab.status_pagamento !== 'pago' && dataExpiracao && hoje > dataExpiracao) {
-                document.body.innerHTML = `
-                    <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000; color:#fff; text-align:center; padding:20px; font-family:'Montserrat';">
-                        <h1 style="color:#d4af37; font-family:'Bebas Neue'; font-size: 3rem;">PERÍODO DE TESTE ENCERRADO</h1>
-                        <p style="opacity:0.8; margin-bottom: 25px;">Seus 7 dias gratuitos acabaram. Regularize sua assinatura.</p>
-                        <a href="https://vendisia.ia.br" style="padding:15px 30px; background:#d4af37; color:#000; text-decoration:none; font-family:'Bebas Neue'; font-size:1.2rem; border-radius:5px;">ASSINAR AGORA</a>
-                    </div>
-                `;
-                return;
-            }
-
-            dadosEstabelecimento = estab;
-            const salonNameEl = document.getElementById('salon-name');
-            if(salonNameEl) salonNameEl.innerText = estab.nome_fantasia;
-
-            const btnDashboard = document.getElementById('container-link-dashboard');
-            if (btnDashboard) {
-                btnDashboard.style.display = (estab.plano_ativo === 'C') ? 'block' : 'none';
-            }
-
-            vincularEventosGestao();
-            setupTabs(); 
-        } else {
-            const bodyView = document.getElementById('view-body');
-            if(bodyView) bodyView.innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
+        if (estab.status_pagamento !== 'pago' && dataExpiracao && hoje > dataExpiracao) {
+            document.body.innerHTML = `
+                <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000; color:#fff; text-align:center; padding:20px; font-family:'Montserrat';">
+                    <h1 style="color:#d4af37; font-family:'Bebas Neue'; font-size: 3rem;">PERÍODO DE TESTE ENCERRADO</h1>
+                    <p style="opacity:0.8; margin-bottom: 25px;">Seus 7 dias gratuitos acabaram. Para continuar usando a VENDISIA, regularize sua assinatura.</p>
+                    <a href="https://vendisia.ia.br" style="padding:15px 30px; background:#d4af37; color:#000; text-decoration:none; font-family:'Bebas Neue'; font-size:1.2rem; border-radius:5px;">ASSINAR AGORA</a>
+                </div>
+            `;
+            return;
         }
-    } catch (e) {
-        console.error("Erro no Init:", e);
+
+        dadosEstabelecimento = estab;
+        document.getElementById('salon-name').innerText = estab.nome_fantasia;
+
+        const btnDashboard = document.getElementById('container-link-dashboard');
+        if (btnDashboard) {
+            btnDashboard.style.display = (estab.plano_ativo === 'C') ? 'block' : 'none';
+        }
+
+        vincularEventosGestao();
+        setupTabs(); 
+    } else {
+        document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
     }
 }
 
@@ -154,12 +140,8 @@ function setupTabs() {
     const params = new URLSearchParams(window.location.search);
     const userType = params.get('u') || 'cliente'; 
     const tabsContainer = document.getElementById('dynamic-tabs');
-    
-    if(!tabsContainer) return;
-
-    const abasPermitidas = PERFIS[userType] || PERFIS['cliente'];
+    const abasPermitidas = PERFIS[userType];
     tabsContainer.innerHTML = '';
-    
     abasPermitidas.forEach((aba, index) => {
         const tabElement = document.createElement('div');
         tabElement.className = `tab ${index === 0 ? 'active' : ''}`;
@@ -167,22 +149,18 @@ function setupTabs() {
         tabElement.onclick = () => switchTabLite(aba.id, tabElement);
         tabsContainer.appendChild(tabElement);
     });
-
-    if(abasPermitidas.length > 0) {
-        switchTabLite(abasPermitidas[0].id, tabsContainer.firstChild);
-    }
+    if(abasPermitidas.length > 0) switchTabLite(abasPermitidas[0].id, tabsContainer.firstChild);
 }
 
 async function switchTabLite(viewId, element) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    if(element) element.classList.add('active');
+    element.classList.add('active');
     
     const title = document.getElementById('view-title');
     const body = document.getElementById('view-body');
     const abaGestao = document.getElementById('aba-gestao');
 
     if (abaGestao) abaGestao.style.display = 'none';
-    if (!body || !title) return;
 
     if (viewId === 'dashboard') {
         title.innerText = "CONFIGURAÇÕES DE GESTÃO";
@@ -215,7 +193,7 @@ async function switchTabLite(viewId, element) {
         const dataFimISO = dataFim.toISOString().split('T')[0];
 
         const { data: agendamentos } = await supabaseClient.from('agendamentos')
-            .select('id, data_hora_inicio, servico_id, profissional_id, cliente_id, clientes(nome), profissionais(nome), servicos(nome, duracao_minutos)')
+            .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(nome), servicos(nome, duracao_minutos)')
             .eq('estabelecimento_id', dadosEstabelecimento.id)
             .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
             .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
@@ -238,11 +216,12 @@ async function switchTabLite(viewId, element) {
 
             if (!exibirPrivado && estaOcupado) return;
 
-            const nomeExibido = estaOcupado ? (slot.dados.clientes?.nome || "CLIENTE") : "DISPONÍVEL";
+            const nomeExibido = estaOcupado ? slot.dados.cliente_nome : "DISPONÍVEL";
             const servicoExibido = estaOcupado ? (slot.dados.servicos?.nome || 'Serviço') : "Toque para agendar";
             const profExibido = estaOcupado ? ` | Prof: ${slot.dados.profissionais?.nome || '---'}` : "";
             const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
             
+            // --- AJUSTE NO CLIQUE DA AGENDA ---
             let acaoClique = "";
             if (!estaOcupado) {
                 acaoClique = `onclick="abrirModalAgendamento('${slot.data}', '${slot.hora}')"`;
@@ -282,17 +261,24 @@ async function switchTabLite(viewId, element) {
         });
         body.innerHTML = htmlServ + (listaServicos?.length ? '</div>' : '<p style="text-align:center; opacity:0.5">Nenhum serviço cadastrado.</p>');
     }
+    else {
+        title.innerText = viewId.toUpperCase();
+        body.innerHTML = `<p style="text-align: center; opacity: 0.5; margin-top: 50px;">Módulo em desenvolvimento...</p>`;
+    }
 }
 
+// --- FUNÇÃO PARA CANCELAR AGENDAMENTO (DONO) ---
 async function cancelarAgendamento(agendamentoId) {
-    const confirmar = confirm("Deseja realmente CANCELAR este agendamento?");
+    const confirmar = confirm("Deseja realmente CANCELAR este agendamento? Isso removerá os dados financeiros vinculados.");
     if (confirmar) {
         await supabaseClient.from('movimentacoes_financeiras').delete().eq('agendamento_id', agendamentoId);
         const { error } = await supabaseClient.from('agendamentos').delete().eq('id', agendamentoId);
-        if (error) alert("Erro: " + error.message);
-        else {
-            alert("Cancelado!");
-            switchTabLite('agenda', document.querySelector('.tab.active'));
+        if (error) {
+            alert("Erro ao cancelar: " + error.message);
+        } else {
+            alert("Agendamento cancelado com sucesso!");
+            const tabAtiva = document.querySelector('.tab.active');
+            switchTabLite('agenda', tabAtiva);
         }
     }
 }
@@ -304,26 +290,47 @@ async function abrirModalAgendamento(data, hora) {
 
     const { data: servicos } = await supabaseClient.from('servicos').select('id, nome').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
     const sSelect = document.getElementById('agend-servico');
-    if(sSelect) {
-        sSelect.innerHTML = '<option value="">Selecione o Serviço...</option>';
-        servicos?.forEach(s => sSelect.innerHTML += `<option value="${s.id}">${s.nome}</option>`);
+    sSelect.innerHTML = '<option value="">Selecione o Serviço...</option>';
+    servicos?.forEach(s => sSelect.innerHTML += `<option value="${s.id}">${s.nome}</option>`);
     
-        sSelect.onchange = async function() {
-            const servicoSelecionadoNome = this.options[this.selectedIndex].text;
-            const pSelect = document.getElementById('agend-profissional');
-            if(!pSelect) return;
+    document.getElementById('agend-profissional').innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
 
-            pSelect.innerHTML = '<option value="">Buscando...</option>';
-            const { data: profs } = await supabaseClient.from('profissionais').select('id, nome, especialidade').eq('estabelecimento_id', dadosEstabelecimento.id);
-            
-            pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';
+    sSelect.onchange = async function() {
+        const servicoSelecionadoNome = this.options[this.selectedIndex].text;
+        const pSelect = document.getElementById('agend-profissional');
+        
+        if (!this.value) {
+            pSelect.innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
+            return;
+        }
+
+        pSelect.innerHTML = '<option value="">Buscando profissionais...</option>';
+
+        const { data: profs } = await supabaseClient
+            .from('profissionais')
+            .select('id, nome, especialidade')
+            .eq('estabelecimento_id', dadosEstabelecimento.id);
+
+        const filtrados = profs.filter(p => {
+            const esp = p.especialidade?.toLowerCase() || "";
+            const serv = servicoSelecionadoNome.toLowerCase();
+            return serv.includes(esp) || esp.includes(serv);
+        });
+
+        pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';
+        
+        if (filtrados.length === 0) {
             profs?.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
-        };
-    }
+        } else {
+            filtrados.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+        }
+    };
 }
 
 function fecharModal() {
     document.getElementById('modal-agendamento').style.display = 'none';
+    document.getElementById('agend-nome').value = "";
+    document.getElementById('agend-whatsapp').value = "";
 }
 
 async function confirmarAgendamento() {
@@ -332,73 +339,186 @@ async function confirmarAgendamento() {
     const servicoId = document.getElementById('agend-servico').value;
     const profId = document.getElementById('agend-profissional').value;
 
-    if (!nome || !whatsapp || !servicoId || !profId) return alert("Preencha tudo.");
-
-    const { data: cliente, error: errorCli } = await supabaseClient
-        .from('clientes')
-        .upsert([{ estabelecimento_id: dadosEstabelecimento.id, nome, whatsapp }], { onConflict: 'estabelecimento_id, whatsapp' })
-        .select('id').single();
-
-    if (errorCli) return alert("Erro Cliente: " + errorCli.message);
+    if (!nome || !whatsapp || !servicoId || !profId) {
+        return alert("Por favor, preencha todos os campos.");
+    }
 
     const dataObjeto = new Date(`${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`);
 
-    const { data: novoAg, error: errorAg } = await supabaseClient
-        .from('agendamentos')
-        .insert([{
-            estabelecimento_id: dadosEstabelecimento.id,
-            profissional_id: profId,
-            servico_id: servicoId,
-            cliente_id: cliente.id,
-            data_hora_inicio: dataObjeto.toISOString(),
-            status: 'confirmado'
-        }]).select('id').single();
+    const payload = {
+        estabelecimento_id: dadosEstabelecimento.id,
+        profissional_id: profId,
+        servico_id: servicoId,
+        cliente_nome: nome,
+        cliente_whatsapp: whatsapp,
+        data_hora_inicio: dataObjeto.toISOString(),
+        status: 'confirmado'
+    };
 
-    if (errorAg) return alert("Erro: " + errorAg.message);
-    
-    alert("Sucesso!");
+    const { data: novoAgendamento, error: errorAg } = await supabaseClient
+        .from('agendamentos')
+        .insert([payload])
+        .select('id')
+        .single();
+
+    if (errorAg) {
+        return alert("Erro ao agendar: " + errorAg.message);
+    }
+
+    const { data: servicoInfo } = await supabaseClient
+        .from('servicos')
+        .select('preco, nome')
+        .eq('id', servicoId)
+        .single();
+
+    if (novoAgendamento && servicoInfo) {
+        await supabaseClient.from('movimentacoes_financeiras').insert([{
+            estabelecimento_id: dadosEstabelecimento.id,
+            agendamento_id: novoAgendamento.id,
+            profissional_id: profId,
+            tipo: 'receita',
+            valor: servicoInfo.preco,
+            descricao: `Agendamento: ${servicoInfo.nome} - Cliente: ${nome}`,
+            data_movimentacao: new Date().toISOString()
+        }]);
+    }
+
+    alert("Agendamento realizado com sucesso!");
     fecharModal();
-    switchTabLite('agenda', document.querySelector('.tab.active'));
+    setTimeout(() => {
+        const tabAtiva = document.querySelector('.tab.active');
+        switchTabLite('agenda', tabAtiva);
+    }, 600);
 }
 
 async function popularCamposGestao() {
     if (!dadosEstabelecimento) return;
+
     document.getElementById('edit-nome-fantasia').value = dadosEstabelecimento.nome_fantasia || "";
+    document.getElementById('edit-razao-social').value = dadosEstabelecimento.razao_social || "";
+    document.getElementById('edit-cnpj').value = dadosEstabelecimento.cnpj || "";
+    document.getElementById('edit-whatsapp').value = dadosEstabelecimento.whatsapp || "";
+    document.getElementById('edit-endereco-completo').value = dadosEstabelecimento.endereco_completo || "";
+    document.getElementById('edit-hora-abertura').value = dadosEstabelecimento.hora_abertura || "08:00";
+    document.getElementById('edit-hora-fechamento').value = dadosEstabelecimento.hora_fechamento || "18:00";
+    document.getElementById('edit-intervalo-slot').value = dadosEstabelecimento.intervalo_slot || 30;
+
     const { data: perfil } = await supabaseClient.from('perfis').select('*').eq('id', dadosEstabelecimento.dono_id).single();
     if (perfil) {
         document.getElementById('perf-nome-completo').value = perfil.nome_completo || "";
+        document.getElementById('perf-cpf').value = perfil.cpf || "";
+        document.getElementById('perf-email-contato').value = perfil.email_contato || "";
     }
 }
 
 async function atualizarDadosGerais() {
-    const novosDados = { nome_fantasia: document.getElementById('edit-nome-fantasia').value };
-    await supabaseClient.from('estabelecimentos').update(novosDados).eq('id', dadosEstabelecimento.id);
-    alert("Salvo!");
+    const novosDadosEstab = {
+        nome_fantasia: document.getElementById('edit-nome-fantasia').value,
+        razao_social: document.getElementById('edit-razao-social').value,
+        cnpj: document.getElementById('edit-cnpj').value,
+        whatsapp: document.getElementById('edit-whatsapp').value,
+        endereco_completo: document.getElementById('edit-endereco-completo').value,
+        hora_abertura: document.getElementById('edit-hora-abertura').value,
+        hora_fechamento: document.getElementById('edit-hora-fechamento').value,
+        intervalo_slot: parseInt(document.getElementById('edit-intervalo-slot').value)
+    };
+
+    const novosDadosPerfil = {
+        nome_completo: document.getElementById('perf-nome-completo').value,
+        cpf: document.getElementById('perf-cpf').value,
+        email_contato: document.getElementById('perf-email-contato').value
+    };
+
+    const { error: errorEstab } = await supabaseClient.from('estabelecimentos').update(novosDadosEstab).eq('id', dadosEstabelecimento.id);
+    const { error: errorPerfil } = await supabaseClient.from('perfis').update(novosDadosPerfil).eq('id', dadosEstabelecimento.dono_id);
+
+    if (errorEstab || errorPerfil) {
+        alert("Erro ao salvar dados.");
+    } else {
+        alert("Configurações salvas com sucesso!");
+        dadosEstabelecimento = { ...dadosEstabelecimento, ...novosDadosEstab };
+        document.getElementById('salon-name').innerText = novosDadosEstab.nome_fantasia;
+    }
 }
 
 async function cadastrarServico() {
     const nome = document.getElementById('new-servico-nome').value;
     const preco = parseFloat(document.getElementById('new-servico-preco').value);
-    await supabaseClient.from('servicos').insert([{ estabelecimento_id: dadosEstabelecimento.id, nome, preco }]);
-    alert("Serviço adicionado!");
+    const duracao = parseInt(document.getElementById('new-servico-duracao').value);
+    const descricao = document.getElementById('new-servico-desc').value;
+
+    if (!nome || !preco) return alert("Preencha Nome e Preço.");
+
+    const { error } = await supabaseClient.from('servicos').insert([{
+        estabelecimento_id: dadosEstabelecimento.id,
+        nome: nome,
+        preco: preco,
+        descricao: descricao,
+        duracao_minutos: duracao 
+    }]);
+
+    if (error) alert("Erro: " + error.message);
+    else {
+        alert("Serviço adicionado!");
+        document.getElementById('new-servico-nome').value = "";
+        document.getElementById('new-servico-preco').value = "";
+        document.getElementById('new-servico-duracao').value = "";
+        document.getElementById('new-servico-desc').value = "";
+    }
 }
 
 async function cadastrarProfissional() {
     const nome = document.getElementById('new-prof-nome').value;
-    await supabaseClient.from('profissionais').insert([{ estabelecimento_id: dadosEstabelecimento.id, nome }]);
-    alert("Profissional adicionado!");
-}
+    const especialidade = document.getElementById('new-prof-especialidade').value;
+    const whatsapp = document.getElementById('new-prof-whatsapp').value;
+    
+    // CAPTURANDO OS DADOS DE REMUNERAÇÃO DO HTML (PARA CÁLCULO DE COMISSÕES)
+    const tipoRemun = document.getElementById('new-prof-tipo-remuneracao').value;
+    const valorComissao = document.getElementById('new-prof-comissao').value;
 
-// Inicialização segura
-window.addEventListener('DOMContentLoaded', init);
+    if (!nome) return alert("Nome é obrigatório.");
 
-async function logout() {
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } = await supabaseClient.from('profissionais').insert([{
+        estabelecimento_id: dadosEstabelecimento.id,
+        nome: nome,
+        especialidade: especialidade,
+        whatsapp: whatsapp,
+        tipo_remuneracao: tipoRemun,
+        valor_comissao_porcentagem: parseFloat(valorComissao) || 0
+    }]);
+
     if (error) {
-        alert("Erro ao sair: " + error.message);
+        alert("Erro: " + error.message);
     } else {
-        // Limpa dados sensíveis do localStorage e redireciona para a home
-        localStorage.removeItem('plano_mercuria');
-        window.location.href = 'index.html';
+        alert("Profissional adicionado!");
+        // LIMPANDO OS CAMPOS APÓS O SUCESSO
+        document.getElementById('new-prof-nome').value = "";
+        document.getElementById('new-prof-especialidade').value = "";
+        document.getElementById('new-prof-whatsapp').value = "";
+        document.getElementById('new-prof-comissao').value = "";
     }
 }
+
+const PERFIS = {
+    cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
+    funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
+    dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
+};
+
+const monitorarAgenda = supabaseClient
+    .channel('agenda-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => {
+        const tabAtiva = document.querySelector('.tab.active');
+        if (tabAtiva && tabAtiva.innerText.includes('AGENDA')) {
+            switchTabLite('agenda', tabAtiva);
+        }
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes_financeiras' }, () => {
+        const tabAtiva = document.querySelector('.tab.active');
+        if (tabAtiva && tabAtiva.innerText.includes('AGENDA')) {
+            switchTabLite('agenda', tabAtiva);
+        }
+    })
+    .subscribe();
+
+window.onload = init;

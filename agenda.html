@@ -11,21 +11,23 @@
 </head>
 <body>
 
-    <header class="page-header">
-    <div class="brand-block">
-        <img src="" alt="Logo" class="brand-logo" id="salon-logo-display" style="max-height: 50px; width: auto;">
+    <header class="page-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #000; border-bottom: 1px solid rgba(255,255,255,0.1); position: relative;">
+    
+    <div class="brand-block" style="flex: 1; display: flex; justify-content: flex-start;">
+        <img src="" alt="Logo" class="brand-logo" id="salon-logo-display" style="max-height: 40px; width: auto; display: block;">
     </div>
     
-    <div class="brand-text-wrapper" style="display: flex; justify-content: center; align-items: center;">
-        <span class="brand-name" id="salon-name" style="font-family: 'Bebas Neue'; font-size: 2.2rem; color: var(--creative-color); letter-spacing: 2px;">
+    <div class="brand-text-wrapper" style="flex: 2; display: flex; justify-content: center; align-items: center; text-align: center;">
+        <span class="brand-name" id="salon-name" style="font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--creative-color); letter-spacing: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             CARREGANDO...
         </span>
-        <button onclick="logout()" style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 5px 15px; cursor: pointer; font-family: 'Montserrat'; font-size: 0.7rem; border-radius: 4px;">
-    SAIR
-    </button>
     </div>
 
-    <div style="display: flex; justify-content: flex-end;"></div>
+    <div style="flex: 1; display: flex; justify-content: flex-end;">
+        <button onclick="logout()" style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 6px 12px; cursor: pointer; font-family: 'Montserrat'; font-size: 0.65rem; border-radius: 4px; font-weight: 600; transition: 0.3s; white-space: nowrap;">
+            SAIR
+        </button>
+    </div>
         
 </header>
     <main class="studio-container">

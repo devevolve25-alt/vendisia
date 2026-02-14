@@ -132,7 +132,7 @@ async function init() {
 
         const btnDashboard = document.getElementById('container-link-dashboard');
         if (btnDashboard) {
-            btnDashboard.style.display = (estab.plano_ativo === 'C') ? 'block' : 'none';
+            btnDashboard.style.display = (estab.plano_ativo === 'gestao-total') ? 'block' : 'none';
         }
 
         vincularEventosGestao();

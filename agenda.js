@@ -1,10 +1,13 @@
-// 1. Configuração (Sempre no topo) - logout iao
+// 1. Configuração (Sempre no topo) - segurança iao
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let dadosEstabelecimento = null;
 let slotSelecionado = null; 
+
+// NOVO: Adicione uma variável global para o tipo de usuário VERIFICADO
+let verifiedUserType = 'cliente'; // Padrão seguro para 'cliente'
 
 async function logout() {
     try {
@@ -112,6 +115,10 @@ async function init() {
 
     const { data: estab, error } = await supabaseClient.from('estabelecimentos').select('*').eq('slug', slug).single();
     
+    // NOVO: Obter a sessão do usuário
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    let currentUser = session?.user || null;
+
     if (estab) {
         const hoje = new Date();
         const dataExpiracao = estab.trial_expires_at ? new Date(estab.trial_expires_at) : null;
@@ -130,13 +137,25 @@ async function init() {
         dadosEstabelecimento = estab;
         document.getElementById('salon-name').innerText = estab.nome_fantasia;
 
+        // NOVO: Determinar o tipo de usuário com base na autenticação e no dono_id
+        if (currentUser && currentUser.id === estab.dono_id) {
+            verifiedUserType = 'dono';
+        } 
+        // Você pode adicionar lógica aqui para 'funcionario' se tiver uma tabela de relacionamento
+        // Exemplo: else if (currentUser && await isFuncionario(currentUser.id, estab.id)) { verifiedUserType = 'funcionario'; }
+        else {
+            verifiedUserType = 'cliente';
+        }
+        
+        // NOVO: Atualizar a lógica de exibição do dashboard para usar o plano_ativo 'gestao-total'
         const btnDashboard = document.getElementById('container-link-dashboard');
         if (btnDashboard) {
-            btnDashboard.style.display = (estab.plano_ativo === 'gestao-total') ? 'block' : 'none';
+            // Exibir o botão do dashboard apenas se for dono E o plano for 'gestao-total'
+            btnDashboard.style.display = (verifiedUserType === 'dono' && estab.plano_ativo === 'gestao-total') ? 'block' : 'none';
         }
 
         vincularEventosGestao();
-        setupTabs(); 
+        setupTabs(verifiedUserType); // NOVO: Passar o userType verificado para setupTabs
     } else {
         document.getElementById('view-body').innerHTML = "<p style='text-align:center'>Salão não encontrado.</p>";
     }
@@ -153,9 +172,11 @@ function vincularEventosGestao() {
     if(btnAddProf) btnAddProf.onclick = cadastrarProfissional;
 }
 
-function setupTabs() {
-    const params = new URLSearchParams(window.location.search);
-    const userType = params.get('u') || 'cliente'; 
+// NOVO: setupTabs agora aceita o userType como argumento
+function setupTabs(userType) {
+    // const params = new URLSearchParams(window.location.search); // LINHA REMOVIDA
+    // const userType = params.get('u') || 'cliente'; // LINHA REMOVIDA - userType vem do argumento
+    
     const tabsContainer = document.getElementById('dynamic-tabs');
     const abasPermitidas = PERFIS[userType];
     tabsContainer.innerHTML = '';
@@ -163,13 +184,15 @@ function setupTabs() {
         const tabElement = document.createElement('div');
         tabElement.className = `tab ${index === 0 ? 'active' : ''}`;
         tabElement.innerText = aba.label;
-        tabElement.onclick = () => switchTabLite(aba.id, tabElement);
+        // NOVO: Passar o userType para switchTabLite para consistência
+        tabElement.onclick = () => switchTabLite(aba.id, tabElement, userType); 
         tabsContainer.appendChild(tabElement);
     });
-    if(abasPermitidas.length > 0) switchTabLite(abasPermitidas[0].id, tabsContainer.firstChild);
+    if(abasPermitidas.length > 0) switchTabLite(abasPermitidas[0].id, tabsContainer.firstChild, userType); // NOVO: Passar userType
 }
 
-async function switchTabLite(viewId, element) {
+// NOVO: switchTabLite agora aceita o userType como argumento
+async function switchTabLite(viewId, element, userType) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     element.classList.add('active');
     
@@ -177,15 +200,22 @@ async function switchTabLite(viewId, element) {
     const body = document.getElementById('view-body');
     const abaGestao = document.getElementById('aba-gestao');
 
-    if (abaGestao) abaGestao.style.display = 'none';
+    // NOVO: Ocultar abaGestao se o usuário NÃO for 'dono'
+    if (abaGestao) {
+        abaGestao.style.display = (userType === 'dono' && viewId === 'dashboard') ? 'block' : 'none';
+    }
 
     if (viewId === 'dashboard') {
+        // NOVO: Se o usuário tentar acessar 'dashboard' e não for 'dono', redirecionar ou mostrar erro
+        if (userType !== 'dono') {
+            title.innerText = "ACESSO NEGADO";
+            body.innerHTML = "<p style='text-align:center; opacity:0.5; color: #e74c3c;'>Você não tem permissão para acessar esta área.</p>";
+            return;
+        }
         title.innerText = "CONFIGURAÇÕES DE GESTÃO";
         body.innerHTML = ""; 
-        if (abaGestao) {
-            abaGestao.style.display = 'block';
-            popularCamposGestao();
-        }
+        // abaGestao.style.display já é controlado acima
+        popularCamposGestao();
         return; 
     }
 
@@ -195,15 +225,15 @@ async function switchTabLite(viewId, element) {
 
     let htmlFiltros = `
         <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
-            <button onclick="window.periodoAgenda='dia'; switchTabLite('agenda', document.querySelector('.tab.active'))" 
+            <button onclick="window.periodoAgenda='dia'; switchTabLite('agenda', document.querySelector('.tab.active'), '${userType}')" 
                 style="padding: 8px 15px; border-radius: 20px; border: 1px solid #2ecc71; background: ${window.periodoAgenda === 'dia' ? '#2ecc71' : 'transparent'}; color: white; cursor: pointer;">Dia</button>
-            <button onclick="window.periodoAgenda='semana'; switchTabLite('agenda', document.querySelector('.tab.active'))" 
+            <button onclick="window.periodoAgenda='semana'; switchTabLite('agenda', document.querySelector('.tab.active'), '${userType}')" 
                 style="padding: 8px 15px; border-radius: 20px; border: 1px solid #2ecc71; background: ${window.periodoAgenda === 'semana' ? '#2ecc71' : 'transparent'}; color: white; cursor: pointer;">Semana</button>
         </div>`;
 
     if (viewId === 'agenda') {
         title.innerText = "AGENDA";
-        const userType = new URLSearchParams(window.location.search).get('u') || 'cliente';
+        // const userType = new URLSearchParams(window.location.search).get('u') || 'cliente'; // LINHA REMOVIDA
         const diasRange = window.periodoAgenda === 'semana' ? 7 : 0;
         const dataFim = new Date();
         dataFim.setDate(new Date().getDate() + diasRange);
@@ -228,7 +258,7 @@ async function switchTabLite(viewId, element) {
                 ultimaData = slot.data;
             }
 
-            const exibirPrivado = (userType === 'dono' || userType === 'funcionario');
+            const exibirPrivado = (userType === 'dono' || userType === 'funcionario'); // Continua usando userType do argumento
             const estaOcupado = slot.dados !== null;
 
             if (!exibirPrivado && estaOcupado) return;
@@ -295,7 +325,8 @@ async function cancelarAgendamento(agendamentoId) {
         } else {
             alert("Agendamento cancelado com sucesso!");
             const tabAtiva = document.querySelector('.tab.active');
-            switchTabLite('agenda', tabAtiva);
+            // NOVO: Usar verifiedUserType ao chamar switchTabLite novamente
+            switchTabLite('agenda', tabAtiva, verifiedUserType); 
         }
     }
 }
@@ -404,12 +435,20 @@ async function confirmarAgendamento() {
     fecharModal();
     setTimeout(() => {
         const tabAtiva = document.querySelector('.tab.active');
-        switchTabLite('agenda', tabAtiva);
+        // NOVO: Usar verifiedUserType ao chamar switchTabLite novamente
+        switchTabLite('agenda', tabAtiva, verifiedUserType);
     }, 600);
 }
 
 async function popularCamposGestao() {
     if (!dadosEstabelecimento) return;
+
+    // NOVO: Proteção adicional: Somente popular se o usuário for um 'dono'
+    if (verifiedUserType !== 'dono') {
+        console.warn("Tentativa de popular campos de gestão por usuário não-dono.");
+        document.getElementById('aba-gestao').innerHTML = "<p style='text-align:center; opacity:0.5; color: #e74c3c;'>Acesso não autorizado aos dados de gestão.</p>";
+        return;
+    }
 
     document.getElementById('edit-nome-fantasia').value = dadosEstabelecimento.nome_fantasia || "";
     document.getElementById('edit-razao-social').value = dadosEstabelecimento.razao_social || "";
@@ -429,6 +468,12 @@ async function popularCamposGestao() {
 }
 
 async function atualizarDadosGerais() {
+    // NOVO: Proteção adicional: Somente permitir atualização se o usuário for um 'dono'
+    if (verifiedUserType !== 'dono') {
+        alert("Você não tem permissão para atualizar essas configurações.");
+        return;
+    }
+
     const novosDadosEstab = {
         nome_fantasia: document.getElementById('edit-nome-fantasia').value,
         razao_social: document.getElementById('edit-razao-social').value,
@@ -459,6 +504,12 @@ async function atualizarDadosGerais() {
 }
 
 async function cadastrarServico() {
+    // NOVO: Proteção adicional: Somente permitir cadastro se o usuário for um 'dono'
+    if (verifiedUserType !== 'dono') {
+        alert("Você não tem permissão para cadastrar serviços.");
+        return;
+    }
+
     const nome = document.getElementById('new-servico-nome').value;
     const preco = parseFloat(document.getElementById('new-servico-preco').value);
     const duracao = parseInt(document.getElementById('new-servico-duracao').value);
@@ -485,6 +536,12 @@ async function cadastrarServico() {
 }
 
 async function cadastrarProfissional() {
+    // NOVO: Proteção adicional: Somente permitir cadastro se o usuário for um 'dono'
+    if (verifiedUserType !== 'dono') {
+        alert("Você não tem permissão para cadastrar profissionais.");
+        return;
+    }
+
     const nome = document.getElementById('new-prof-nome').value;
     const especialidade = document.getElementById('new-prof-especialidade').value;
     const whatsapp = document.getElementById('new-prof-whatsapp').value;
@@ -518,7 +575,7 @@ async function cadastrarProfissional() {
 
 const PERFIS = {
     cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
-    funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }],
+    funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }], // Manter esta opção se for implementar funcionários no futuro
     dono: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA GERAL' }, { id: 'dashboard', label: 'DASHBOARD' }]
 };
 
@@ -526,14 +583,16 @@ const monitorarAgenda = supabaseClient
     .channel('agenda-realtime')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => {
         const tabAtiva = document.querySelector('.tab.active');
+        // NOVO: Passar verifiedUserType ao chamar switchTabLite no monitoramento
         if (tabAtiva && tabAtiva.innerText.includes('AGENDA')) {
-            switchTabLite('agenda', tabAtiva);
+            switchTabLite('agenda', tabAtiva, verifiedUserType);
         }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes_financeiras' }, () => {
         const tabAtiva = document.querySelector('.tab.active');
+        // NOVO: Passar verifiedUserType ao chamar switchTabLite no monitoramento
         if (tabAtiva && tabAtiva.innerText.includes('AGENDA')) {
-            switchTabLite('agenda', tabAtiva);
+            switchTabLite('agenda', tabAtiva, verifiedUserType);
         }
     })
     .subscribe();

@@ -2,7 +2,7 @@ const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Configuração Global de Segurança
+// Configuração Global de Segurança - correcao iao
 const LISTA_PLANOS = ['conecta-facil', 'agenda-pro', 'gestao-total'];
 let userLogado = null;
 const urlParams = new URLSearchParams(window.location.search);

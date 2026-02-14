@@ -1,10 +1,27 @@
-// 1. Configuração (Sempre no topo) - mercuria ativa - 1
+// 1. Configuração (Sempre no topo) - logout iao
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let dadosEstabelecimento = null;
 let slotSelecionado = null; 
+
+async function logout() {
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            console.error("Erro ao fazer logout:", error.message);
+            alert("Erro ao sair: " + error.message);
+        } else {
+            console.log("Usuário desconectado.");
+            // Redireciona o usuário para a página inicial após o logout
+            window.location.href = 'https://vendisia.ia.br/'; 
+        }
+    } catch (err) {
+        console.error("Exceção durante o logout:", err);
+        alert("Ocorreu um erro inesperado ao tentar sair.");
+    }
+}
 
 function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
     const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;

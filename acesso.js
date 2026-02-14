@@ -15,6 +15,13 @@ function showStep(stepId) {
     document.getElementById(stepId).classList.add('active');
 }
 
+// --- NOVA FUNÇÃO: Selecionar plano na própria página e liberar trava ---
+function selecionarPlano(idPlano) {
+    planoEscolhido = idPlano;
+    localStorage.setItem('plano_mercuria', idPlano);
+    showStep('step-cadastro'); // Avança para o cadastro do nome do negócio
+}
+
 async function init() {
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();

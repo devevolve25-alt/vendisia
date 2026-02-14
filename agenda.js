@@ -26,7 +26,8 @@ async function logout() {
     }
 }
 
-function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
+function gerarGradeHorarios(abertura, fechamento, agendados) {
+    const intervalo = 30; // Intervalo de 30 minutos padronizado
     const diasParaGerar = window.periodoAgenda === 'semana' ? 7 : 1;
     const gradeTotal = [];
 
@@ -42,7 +43,13 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
 
             const agendamentoNoSlot = agendados.find(a => {
                 const inicio = new Date(a.data_hora_inicio).getTime();
-                return tempoSlot === inicio;
+                // Assumindo que 'servicos' e 'duracao_minutos' estão aninhados corretamente.
+                // Se o serviço não estiver disponível ou a duração for zero, usa 30 minutos como padrão.
+                const duracaoMs = (a.servicos?.duracao_minutos || 30) * 60 * 1000;
+                const fimAgendamento = inicio + duracaoMs;
+                // Um slot está ocupado se seu início estiver dentro de um agendamento existente
+                // ou se o agendamento começar no slot atual.
+                return (tempoSlot >= inicio && tempoSlot < fimAgendamento);
             });
 
             gradeTotal.push({
@@ -52,7 +59,7 @@ function gerarGradeHorarios(abertura, fechamento, intervalo, agendados) {
             });
 
             let [h, m] = horaAtual.split(':').map(Number);
-            m += intervalo;
+            m += intervalo; // Usa o intervalo hardcoded
             if (m >= 60) { h++; m -= 60; }
             horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
         }
@@ -246,8 +253,7 @@ async function switchTabLite(viewId, element, userType) {
             .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
             .order('data_hora_inicio');       
         
-        const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, dadosEstabelecimento.intervalo_slot, agendamentos || []);
-        
+const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, agendamentos || []);        
         let htmlAgenda = '<div class="agenda-list">';
         let ultimaData = "";
 

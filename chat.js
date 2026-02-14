@@ -1,4 +1,4 @@
-// 1. Configuração Supabase - corrigido scroll
+// 1. Configuração Supabase - corrigido iao
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -6,7 +6,8 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // 2. Configuração n8n
 const N8N_WEBHOOK_URL = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt';
 
-const chatWindow = document.getElementById('chat-window');
+// ALTERAÇÃO: Referência atualizada para o novo container das mensagens
+const chatMessagesContainer = document.getElementById('chat-messages');
 const userInput = document.getElementById('user-input');
 const plansContainer = document.getElementById('plans-container');
 
@@ -22,9 +23,9 @@ async function carregarPrecos() {
             const id = `price-${p.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`;
             const elemento = document.getElementById(id);
             if (elemento) {
-                elemento.innerText = p.preco_mensal.toLocaleString('pt-BR', { 
-                    style: 'currency', 
-                    currency: 'BRL' 
+                elemento.innerText = p.preco_mensal.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
                 });
             }
         });
@@ -40,42 +41,42 @@ document.addEventListener('DOMContentLoaded', carregarPrecos);
 function addMessage(text, sender) {
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message', sender === 'user' ? 'user-msg' : 'mercuria-msg');
-    
-    // Estilização inline mantida conforme original
-    msgDiv.style.padding = "12px 18px";
-    msgDiv.style.borderRadius = "10px";
-    msgDiv.style.marginBottom = "10px";
-    msgDiv.style.maxWidth = "80%";
-    msgDiv.style.wordWrap = "break-word";
-    
-    if (sender === 'user') {
-        msgDiv.style.alignSelf = "flex-end";
-        msgDiv.style.backgroundColor = "#00BFFF22";
-        msgDiv.style.border = "1px solid #00BFFF";
-    } else {
-        msgDiv.style.alignSelf = "flex-start";
-        msgDiv.style.backgroundColor = "#FFD70011";
-        msgDiv.style.border = "1px solid #FFD700";
-    }
+
+    // ALTERAÇÃO: Removida estilização inline, agora gerenciada pelo chat.css
+    // msgDiv.style.padding = "12px 18px";
+    // msgDiv.style.borderRadius = "10px";
+    // msgDiv.style.marginBottom = "10px";
+    // msgDiv.style.maxWidth = "80%";
+    // msgDiv.style.wordWrap = "break-word";
+
+    // if (sender === 'user') {
+    //     msgDiv.style.alignSelf = "flex-end";
+    //     msgDiv.style.backgroundColor = "#00BFFF22";
+    //     msgDiv.style.border = "1px solid #00BFFF";
+    // } else {
+    //     msgDiv.style.alignSelf = "flex-start";
+    //     msgDiv.style.backgroundColor = "#FFD70011";
+    //     msgDiv.style.border = "1px solid #FFD700";
+    // }
 
     msgDiv.innerText = text;
-    
-    // ALTERAÇÃO: Agora anexamos ao final do chatWindow (sem insertBefore fixo)
-    chatWindow.appendChild(msgDiv); 
-    
-    // Garante que o scroll acompanhe a nova mensagem
-    chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+
+    // ALTERAÇÃO: Agora anexamos ao NOVO container de mensagens
+    chatMessagesContainer.appendChild(msgDiv);
+
+    // Garante que o scroll acompanhe a nova mensagem no container de mensagens
+    chatMessagesContainer.scrollTo({ top: chatMessagesContainer.scrollHeight, behavior: 'smooth' });
 }
 
 function triggerPlans() {
-    // MOVE o container de planos para o final do chat (após a última mensagem)
-    chatWindow.appendChild(plansContainer);
+    // ALTERAÇÃO: Não é mais necessário mover o container de planos. Apenas o torna visível.
     plansContainer.style.display = 'block';
-    
-    // Pequeno delay para o navegador calcular o novo scrollHeight após o display:block
-    setTimeout(() => {
-        chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
-    }, 150);
+
+    // Opcional: Se desejar que a rolagem das mensagens vá para o final APÓS os planos aparecerem.
+    // Isso pode não ser estritamente necessário, pois os planos estão fora da área de rolagem das mensagens.
+    // setTimeout(() => {
+    //     chatMessagesContainer.scrollTo({ top: chatMessagesContainer.scrollHeight, behavior: 'smooth' });
+    // }, 150);
 }
 
 async function sendMessage() {
@@ -89,10 +90,10 @@ async function sendMessage() {
         const response = await fetch(N8N_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 message: text,
                 timestamp: new Date().toISOString(),
-                sessao_id: "demo_landing_page" 
+                sessao_id: "demo_landing_page"
             })
         });
 

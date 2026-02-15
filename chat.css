@@ -13,8 +13,8 @@ background-color: #1a1a1a; /* Cor de fundo escuro conforme o padrão do site */
 display: flex;
 flex-direction: column; /* Organiza os filhos em coluna: planos, mensagens, input */
 width: 100%; /* Ocupa toda a largura disponível */
-height: 100dvh; /* Prioriza a altura dinâmica da viewport (lida melhor com teclado virtual no mobile) */
-height: 100vh; /* Fallback para navegadores que não suportam 100dvh */
+height: 90dvh; /* Prioriza a altura dinâmica da viewport (lida melhor com teclado virtual no mobile) */
+height: 90vh; /* Fallback para navegadores que não suportam 100dvh */
 border-radius: 0;
 background-color: #2a2a2a; /* Fundo do chat um pouco mais claro que o body, para contraste */
 overflow: hidden; /* Garante que nenhum conteúdo transborde */

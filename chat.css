@@ -1,4 +1,4 @@
-/* Adicionado/Ajustado: Reinicia margens, paddings e define box-sizing globalmente */ iao - 1
+/* Adicionado/Ajustado: Reinicia margens, paddings e define box-sizing globalmente */ iao - 1.2
 html {
   box-sizing: border-box;
   height: 100%; /* Garante que o html ocupe 100% da altura da viewport */

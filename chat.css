@@ -222,3 +222,29 @@ body {
         font-size: 0.9em;
     }
 }
+
+/* Estilos para a barra de rolagem (WebKit) */
+::-webkit-scrollbar {
+    width: 6px; /* Largura da barra de rolagem vertical */
+    height: 6px; /* Altura da barra de rolagem horizontal */
+}
+
+::-webkit-scrollbar-track {
+    background: transparent; /* Fundo transparente para a trilha da barra de rolagem */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ffffff; /* Linha branca para a barra de rolagem */
+    border-radius: 3px; /* Borda arredondada para a barra de rolagem */
+}
+
+/* Opcional: Estilo para a barra de rolagem ao passar o mouse */
+::-webkit-scrollbar-thumb:hover {
+    background: #cccccc; /* Cor levemente diferente ao passar o mouse */
+}
+
+/* Para compatibilidade com Firefox (aparência mais limitada) */
+* {
+  scrollbar-width: thin; /* 'auto' ou 'thin' */
+  scrollbar-color: #ffffff transparent; /* cor-do-thumb cor-da-track */
+}

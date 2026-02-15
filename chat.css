@@ -1,12 +1,15 @@
-/* Estilos globais para o corpo da página */ iao - 1
-body, html {
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+/* Configurações da Página */
+body { 
+    background-color: #0A0A0A; 
+    height: 100dvh; /* Alterado para 100dvh para evitar cortes em navegadores mobile */
+    display: flex; 
+    flex-direction: column; 
     margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: Arial, sans-serif;
-    background-color: #1a1a1a;
-    overflow: hidden; /* ADICIONAR ESTA LINHA */
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+    overflow: hidden; /* Impede que o corpo role, mantendo o input fixo */
 }
 
 /* NOVO: Estilos para o container principal do chat */

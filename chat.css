@@ -50,7 +50,7 @@ color: #f0f0f0;
 
 plan-header {
     display: flex; /* Transforma o container em um flex container */
-    justify-content: space-between; /* Alinha o h3 à esquerda e o p à direita */
+    justify-content: row; /* Alinha o h3 à esquerda e o p à direita */
     align-items: center; /* Centraliza verticalmente o h3 e o p */
     margin-bottom: 10px; /* Adiciona um pequeno espaço abaixo do cabeçalho */
 }

@@ -1,4 +1,4 @@
-/* Estilos globais para o corpo da página 
+/* Estilos globais para o corpo da página */
 body, html {
 margin: 0;
 padding: 0;
@@ -6,7 +6,7 @@ width: 100%; /* Garante que o body ocupe 100% da largura */
 height: 100%; /* Ocupa a altura total da viewport */
 font-family: Arial, sans-serif;
 background-color: #1a1a1a; /* Cor de fundo escuro conforme o padrão do site */
-} */
+} 
 
 /* NOVO: Estilos para o container principal do chat */
 #chat-wrapper {

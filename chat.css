@@ -9,7 +9,6 @@ html {
 body {
     margin: 0;
     padding: 0;
-    height: 100%; /* Garante que o body ocupe 100% da altura do html */
     overflow: hidden; /* Importante para evitar scroll no body */
 }
 /* Estilos globais para o corpo da página */ 

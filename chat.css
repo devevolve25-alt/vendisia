@@ -1,4 +1,11 @@
-/* Estilos globais para o corpo da página */ iao - 2
+html {
+  box-sizing: border-box;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* Estilos globais para o corpo da página */
 body, html {
     margin: 0;
     padding: 0;
@@ -6,8 +13,6 @@ body, html {
     height: 100%; /* Ocupa a altura total da viewport */
     font-family: Arial, sans-serif;
     background-color: #1a1a1a; /* Cor de fundo escuro conforme o padrão do site */
-    /* REMOVIDO: display flex, justify-content e align-items do body para evitar centralização indesejada.
-                 O #chat-wrapper agora preencherá o body diretamente. */
 }
 
 /* NOVO: Estilos para o container principal do chat */
@@ -17,7 +22,7 @@ body, html {
     width: 100%; /* Ocupa toda a largura disponível */
     height: 100dvh; /* Prioriza a altura dinâmica da viewport (lida melhor com teclado virtual no mobile) */
     height: 100vh; /* Fallback para navegadores que não suportam 100dvh */
-    border-radius: 0; /* REMOVIDO: border-radius para ocupar a tela toda sem cantos arredondados */
+    border-radius: 0;
     background-color: #2a2a2a; /* Fundo do chat um pouco mais claro que o body, para contraste */
     overflow: hidden; /* Garante que nenhum conteúdo transborde */
 }
@@ -25,58 +30,60 @@ body, html {
 /* Estilos para o container de planos (agora fixo no topo do chat-wrapper) */
 #plans-container {
     flex: 0 0 auto; /* Não cresce, não encolhe, baseia-se no tamanho do conteúdo */
-    padding: 15px;
-    border-bottom: 1px solid #444; /* Separador visual em tema escuro */
-    background-color: #3a3a3a; /* Fundo dos planos em tema escuro */
+    padding: 10px; /* ALTERADO: Reduzido padding vertical para mobile e desktop */
+    border-bottom: 1px solid #444;
+    background-color: #3a3a3a;
 }
 
 #plans-carousel {
-    display: flex; /* Para os cards ficarem lado a lado */
-    overflow-x: auto; /* Adiciona rolagem horizontal se os cards excederem a largura */
-    padding-bottom: 10px; /* Espaço para a barra de rolagem horizontal se aparecer */
-    gap: 15px; /* Espaçamento entre os cards */
-    justify-content: flex-start; /* Alinha os cards ao início */
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 5px; /* ALTERADO: Reduzido padding para a barra de rolagem */
+    gap: 10px; /* ALTERADO: Reduzido espaçamento entre os cards */
+    justify-content: flex-start;
 }
 
 .plan-card {
-    flex-shrink: 0; /* Impede que os cards encolham e mantém a largura fixa */
-    width: 280px; /* Largura fixa para cada card */
-    background-color: #4a4a4a; /* Fundo do card em tema escuro */
-    border: 1px solid #666; /* Borda do card em tema escuro */
+    flex-shrink: 0;
+    width: 280px; /* Largura padrão para desktop */
+    background-color: #4a4a4a;
+    border: 1px solid #666;
     border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra ajustada para fundo escuro */
+    padding: 15px; /* ALTERADO: Reduzido padding interno do card */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     text-align: center;
-    color: #f0f0f0; /* Cor do texto padrão do card */
+    color: #f0f0f0;
 }
 
 .plan-card h3 {
-    color: #ffffff; /* Títulos mais claros */
+    color: #ffffff;
     margin-top: 0;
+    font-size: 1.1em; /* ALTERADO: Levemente reduzido o tamanho da fonte para economizar espaço */
 }
 
 .plan-price {
-    font-size: 1.5em;
+    font-size: 1.3em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
     font-weight: bold;
-    color: #4CAF50; /* Cor de preço ajustada para o tema escuro (verde) */
-    margin: 10px 0;
+    color: #4CAF50;
+    margin: 8px 0; /* ALTERADO: Reduzido margem vertical */
 }
 
-/* ALTERADO: Estilos para a lista de features com altura reduzida e scroll interno */
+/* ALTERADO: Estilos para a lista de features com altura mais reduzida e scroll interno */
 .plan-features {
     list-style: none;
     padding: 0;
     text-align: left;
-    margin-bottom: 20px;
-    max-height: 120px; /* Altura máxima para a lista de features */
-    overflow-y: auto; /* Adiciona barra de rolagem vertical se exceder max-height */
-    padding-right: 8px; /* Espaço para a barra de rolagem não sobrepor o texto */
+    margin-bottom: 15px; /* ALTERADO: Reduzido margem */
+    max-height: 90px; /* ALTERADO: Altura máxima para a lista de features, mais compacta */
+    overflow-y: auto;
+    padding-right: 8px;
 }
 
 .plan-features li {
-    padding: 5px 0;
-    border-bottom: 1px dotted #555; /* Borda pontilhada mais clara */
-    color: #cccccc; /* Cor do texto das features */
+    padding: 4px 0; /* ALTERADO: Reduzido padding vertical */
+    border-bottom: 1px dotted #555;
+    color: #cccccc;
+    font-size: 0.9em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
 }
 
 .plan-features li:last-child {
@@ -87,10 +94,10 @@ body, html {
     background-color: #007bff;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 8px 15px; /* ALTERADO: Reduzido padding do botão */
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.9em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
     transition: background-color 0.3s ease;
 }
 
@@ -99,38 +106,39 @@ body, html {
 }
 
 .highlight-pro {
-    border-color: #FFD700; /* Borda dourada para destacar */
-    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); /* Sombra dourada mais pronunciada */
+    border-color: #FFD700;
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
 }
 
 /* ALTERADO: Estilos para o container das mensagens (scrollable com 50% de altura preferencial) */
 #chat-messages {
     flex: 1 1 50%; /* Permite crescer/encolher, mas tenta ocupar 50% do espaço disponível */
-    overflow-y: auto; /* Adiciona barra de rolagem vertical quando o conteúdo exceder */
-    padding: 15px;
-    display: flex; /* Para alinhar as mensagens corretamente */
-    flex-direction: column; /* Mensagens uma abaixo da outra */
+    min-height: 0; /* Adicionado para garantir que possa encolher abaixo do conteúdo em um flex container */
+    overflow-y: auto;
+    padding: 10px; /* ALTERADO: Reduzido padding */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Estilos para as mensagens */
 .message {
-    padding: 12px 18px;
+    padding: 10px 15px; /* ALTERADO: Reduzido padding */
     border-radius: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* ALTERADO: Reduzido margem */
     max-width: 80%;
     word-wrap: break-word;
-    color: #e0e0e0; /* Cor do texto das mensagens para fundo escuro */
+    color: #e0e0e0;
 }
 
 .user-msg {
-    align-self: flex-end; /* Alinha mensagens do usuário à direita */
-    background-color: #00BFFF44; /* Fundo da mensagem do usuário com mais opacidade */
+    align-self: flex-end;
+    background-color: #00BFFF44;
     border: 1px solid #00BFFF;
 }
 
 .mercuria-msg {
-    align-self: flex-start; /* Alinha mensagens da MercurIA à esquerda */
-    background-color: #FFD70022; /* Fundo da mensagem da MercurIA com mais opacidade */
+    align-self: flex-start;
+    background-color: #FFD70022;
     border: 1px solid #FFD700;
 }
 
@@ -138,34 +146,34 @@ body, html {
 .input-area {
     flex: 0 0 auto; /* Não cresce, não encolhe, baseia-se no tamanho do conteúdo */
     display: flex;
-    padding: 15px;
-    border-top: 1px solid #444; /* Separador visual em tema escuro */
-    background-color: #3a3a3a; /* Fundo da área de input em tema escuro */
+    padding: 10px; /* ALTERADO: Reduzido padding */
+    border-top: 1px solid #444;
+    background-color: #3a3a3a;
 }
 
 .input-area input {
-    flex-grow: 1; /* Faz com que o input ocupe o espaço restante */
-    padding: 10px;
-    border: 1px solid #666; /* Borda do input em tema escuro */
+    flex-grow: 1;
+    padding: 8px 10px; /* ALTERADO: Reduzido padding */
+    border: 1px solid #666;
     border-radius: 5px;
-    margin-right: 10px;
-    font-size: 1em;
-    background-color: #555; /* Fundo do input em tema escuro */
-    color: #eee; /* Cor do texto do input */
+    margin-right: 8px; /* ALTERADO: Reduzido margem */
+    font-size: 0.95em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
+    background-color: #555;
+    color: #eee;
 }
 
 .input-area input::placeholder {
-    color: #bbb; /* Cor do placeholder */
+    color: #bbb;
 }
 
 .input-area .send-btn {
     background-color: #28a745;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 8px 12px; /* ALTERADO: Reduzido padding do botão */
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.95em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
     transition: background-color 0.3s ease;
 }
 
@@ -175,32 +183,45 @@ body, html {
 
 /* Responsividade para telas menores (mobile) */
 @media (max-width: 768px) {
-    /* REMOVIDO: width e height no #chat-wrapper em media query, pois 100dvh/100vh já cuida disso */
-
-    #plans-container {
-        padding: 10px;
-    }
-
-    #plans-carousel {
-        gap: 10px;
-        padding-bottom: 5px; /* Ajuste para rolagem horizontal em mobile */
-    }
-
     .plan-card {
-        width: 250px; /* Largura um pouco menor para cards em mobile */
-        padding: 15px;
+        width: 240px; /* ALTERADO: Largura um pouco menor para cards em mobile */
+        padding: 12px; /* ALTERADO: Padding do card em mobile */
     }
 
-    /* Ajuste para garantir que a rolagem interna dos cards seja visível em mobile */
+    .plan-card h3 {
+        font-size: 1em;
+    }
+
+    .plan-price {
+        font-size: 1.2em;
+    }
+
     .plan-features {
-        max-height: 100px; /* Um pouco menor em mobile para liberar mais espaço */
+        max-height: 80px; /* ALTERADO: Altura máxima das features ainda mais compacta em mobile */
+        margin-bottom: 10px;
+    }
+
+    .plan-features li {
+        font-size: 0.85em;
+    }
+
+    .cta-button-card {
+        padding: 7px 12px;
+        font-size: 0.85em;
     }
 
     .message {
-        max-width: 90%; /* Mensagens podem ocupar mais espaço em mobile */
+        padding: 8px 12px; /* ALTERADO: Padding das mensagens em mobile */
+        margin-bottom: 6px;
     }
 
-    .input-area {
-        padding: 10px;
+    .input-area input {
+        padding: 7px 8px; /* ALTERADO: Padding do input em mobile */
+        font-size: 0.9em;
+    }
+
+    .input-area .send-btn {
+        padding: 7px 10px;
+        font-size: 0.9em;
     }
 }

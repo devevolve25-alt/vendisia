@@ -1,11 +1,18 @@
+/* Adicionado/Ajustado: Reinicia margens, paddings e define box-sizing globalmente */ iao - 1
 html {
   box-sizing: border-box;
+  height: 100%; /* Garante que o html ocupe 100% da altura da viewport */
 }
 *, *::before, *::after {
   box-sizing: inherit;
 }
-
-/* Estilos globais para o corpo da página */ iao - 4
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%; /* Garante que o body ocupe 100% da altura do html */
+    overflow: hidden; /* Importante para evitar scroll no body */
+}
+/* Estilos globais para o corpo da página */ 
 body, html {
     margin: 0;
     padding: 0;

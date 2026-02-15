@@ -1,14 +1,13 @@
-/* Estilos globais para o corpo da página */ iao
+/* Estilos globais para o corpo da página */ iao - 2
 body, html {
     margin: 0;
     padding: 0;
-    width: 100%; /* Adicionado para garantir que o body ocupe 100% da largura */
+    width: 100%; /* Garante que o body ocupe 100% da largura */
     height: 100%; /* Ocupa a altura total da viewport */
     font-family: Arial, sans-serif;
     background-color: #1a1a1a; /* Cor de fundo escuro conforme o padrão do site */
-    /* ALTERADO: Removidos display flex, justify-content e align-items do body.
-                 O #chat-wrapper agora ocupará 100% da largura e altura do body diretamente,
-                 não precisando ser centralizado. */
+    /* REMOVIDO: display flex, justify-content e align-items do body para evitar centralização indesejada.
+                 O #chat-wrapper agora preencherá o body diretamente. */
 }
 
 /* NOVO: Estilos para o container principal do chat */
@@ -16,9 +15,8 @@ body, html {
     display: flex;
     flex-direction: column; /* Organiza os filhos em coluna: planos, mensagens, input */
     width: 100%; /* Ocupa toda a largura disponível */
-    height: 100%; /* Ocupa toda a altura disponível */
-    /* REMOVIDO: max-width que causava o centragem e limitava a largura no desktop */
-    /* REMOVIDO: border e box-shadow para um visual de tela cheia, integrado ao fundo escuro */
+    height: 100dvh; /* Prioriza a altura dinâmica da viewport (lida melhor com teclado virtual no mobile) */
+    height: 100vh; /* Fallback para navegadores que não suportam 100dvh */
     border-radius: 0; /* REMOVIDO: border-radius para ocupar a tela toda sem cantos arredondados */
     background-color: #2a2a2a; /* Fundo do chat um pouco mais claro que o body, para contraste */
     overflow: hidden; /* Garante que nenhum conteúdo transborde */
@@ -26,10 +24,10 @@ body, html {
 
 /* Estilos para o container de planos (agora fixo no topo do chat-wrapper) */
 #plans-container {
+    flex: 0 0 auto; /* Não cresce, não encolhe, baseia-se no tamanho do conteúdo */
     padding: 15px;
     border-bottom: 1px solid #444; /* Separador visual em tema escuro */
     background-color: #3a3a3a; /* Fundo dos planos em tema escuro */
-    flex-shrink: 0; /* Impede que este container encolha */
 }
 
 #plans-carousel {
@@ -64,11 +62,15 @@ body, html {
     margin: 10px 0;
 }
 
+/* ALTERADO: Estilos para a lista de features com altura reduzida e scroll interno */
 .plan-features {
     list-style: none;
     padding: 0;
     text-align: left;
     margin-bottom: 20px;
+    max-height: 120px; /* Altura máxima para a lista de features */
+    overflow-y: auto; /* Adiciona barra de rolagem vertical se exceder max-height */
+    padding-right: 8px; /* Espaço para a barra de rolagem não sobrepor o texto */
 }
 
 .plan-features li {
@@ -101,9 +103,9 @@ body, html {
     box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); /* Sombra dourada mais pronunciada */
 }
 
-/* NOVO: Estilos para o container das mensagens (este será o scrollable) */
+/* ALTERADO: Estilos para o container das mensagens (scrollable com 50% de altura preferencial) */
 #chat-messages {
-    flex-grow: 1; /* Faz com que este container ocupe todo o espaço vertical restante */
+    flex: 1 1 50%; /* Permite crescer/encolher, mas tenta ocupar 50% do espaço disponível */
     overflow-y: auto; /* Adiciona barra de rolagem vertical quando o conteúdo exceder */
     padding: 15px;
     display: flex; /* Para alinhar as mensagens corretamente */
@@ -134,11 +136,11 @@ body, html {
 
 /* Estilos para a área de input (fixa na parte inferior do chat-wrapper) */
 .input-area {
+    flex: 0 0 auto; /* Não cresce, não encolhe, baseia-se no tamanho do conteúdo */
     display: flex;
     padding: 15px;
     border-top: 1px solid #444; /* Separador visual em tema escuro */
     background-color: #3a3a3a; /* Fundo da área de input em tema escuro */
-    flex-shrink: 0; /* Impede que este container encolha */
 }
 
 .input-area input {
@@ -173,10 +175,7 @@ body, html {
 
 /* Responsividade para telas menores (mobile) */
 @media (max-width: 768px) {
-    #chat-wrapper {
-        width: 100vw; /* Ocupa a largura total da viewport em mobile */
-        height: 100vh; /* Ocupa a altura total da viewport em mobile */
-    }
+    /* REMOVIDO: width e height no #chat-wrapper em media query, pois 100dvh/100vh já cuida disso */
 
     #plans-container {
         padding: 10px;
@@ -190,6 +189,11 @@ body, html {
     .plan-card {
         width: 250px; /* Largura um pouco menor para cards em mobile */
         padding: 15px;
+    }
+
+    /* Ajuste para garantir que a rolagem interna dos cards seja visível em mobile */
+    .plan-features {
+        max-height: 100px; /* Um pouco menor em mobile para liberar mais espaço */
     }
 
     .message {

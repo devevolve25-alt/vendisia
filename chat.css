@@ -48,9 +48,16 @@ text-align: center;
 color: #f0f0f0;
 }
 
+plan-header {
+    display: flex; /* Transforma o container em um flex container */
+    justify-content: space-between; /* Alinha o h3 à esquerda e o p à direita */
+    align-items: center; /* Centraliza verticalmente o h3 e o p */
+    margin-bottom: 10px; /* Adiciona um pequeno espaço abaixo do cabeçalho */
+}
+
 .plan-card h3 {
 color: #ffffff;
-margin-top: 0;
+margin: 0;
 font-size: 1.1em; /* ALTERADO: Levemente reduzido o tamanho da fonte para economizar espaço */
 }
 
@@ -58,7 +65,7 @@ font-size: 1.1em; /* ALTERADO: Levemente reduzido o tamanho da fonte para econom
 font-size: 1.3em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
 font-weight: bold;
 color: #4CAF50;
-margin: 8px 0; /* ALTERADO: Reduzido margem vertical */
+margin: 0; /* ALTERADO: Reduzido margem vertical */
 }
 
 /* ALTERADO: Estilos para a lista de features com altura mais reduzida e scroll interno */

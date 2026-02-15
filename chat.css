@@ -1,250 +1,220 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
-
-/* Configurações da Página */ - iao
-body { 
-    background-color: #0A0A0A; 
-    height: 100dvh; /* Alterado para 100dvh para evitar cortes em navegadores mobile */
-    display: flex; 
-    flex-direction: column; 
-    margin: 0;
-    font-family: 'Montserrat', sans-serif;
-    color: white;
-    overflow: hidden; /* Impede que o corpo role, mantendo o input fixo */
+/* Estilos globais para o corpo da página */
+body, html {
+margin: 0;
+padding: 0;
+width: 100%; /* Garante que o body ocupe 100% da largura */
+height: 100%; /* Ocupa a altura total da viewport */
+font-family: Arial, sans-serif;
+background-color: #1a1a1a; /* Cor de fundo escuro conforme o padrão do site */
 }
 
 /* NOVO: Estilos para o container principal do chat */
 #chat-wrapper {
-    display: flex;
-    flex-direction: column; /* Organiza os filhos em coluna: planos, mensagens, input */
-    width: 100%; /* Ocupa toda a largura disponível */
-    height: 100dvh; /* Prioriza a altura dinâmica da viewport (lida melhor com teclado virtual no mobile) */
-    height: 100vh; /* Fallback para navegadores que não suportam 100dvh */
-    border-radius: 0;
-    background-color: #2a2a2a; /* Fundo do chat um pouco mais claro que o body, para contraste */
-    overflow: hidden; /* Garante que nenhum conteúdo transborde */
+display: flex;
+flex-direction: column; /* Organiza os filhos em coluna: planos, mensagens, input */
+width: 100%; /* Ocupa toda a largura disponível */
+height: 100dvh; /* Prioriza a altura dinâmica da viewport (lida melhor com teclado virtual no mobile) */
+height: 100vh; /* Fallback para navegadores que não suportam 100dvh */
+border-radius: 0;
+background-color: #2a2a2a; /* Fundo do chat um pouco mais claro que o body, para contraste */
+overflow: hidden; /* Garante que nenhum conteúdo transborde */
 }
 
 /* Estilos para o container de planos (agora fixo no topo do chat-wrapper) */
 #plans-container {
-    flex: 0 0 auto;; /* Ocupará 50% do espaço flexível disponível */
-    padding: 10px; /* ALTERADO: Reduzido padding vertical para mobile e desktop */
-    border-bottom: 1px solid #444;
-    background-color: #3a3a3a;
+flex: 0 0 auto; /* Não cresce, não encolhe, baseia-se no tamanho do conteúdo */
+padding: 10px; /* ALTERADO: Reduzido padding vertical para mobile e desktop */
+border-bottom: 1px solid #444;
+background-color: #3a3a3a;
 }
 
 #plans-carousel {
-    display: flex;
-    overflow-x: auto;
-    padding-bottom: 5px; /* ALTERADO: Reduzido padding para a barra de rolagem */
-    gap: 10px; /* ALTERADO: Reduzido espaçamento entre os cards */
-    justify-content: flex-start;
+display: flex;
+overflow-x: auto;
+padding-bottom: 5px; /* ALTERADO: Reduzido padding para a barra de rolagem */
+gap: 10px; /* ALTERADO: Reduzido espaçamento entre os cards */
+justify-content: flex-start;
 }
 
 .plan-card {
-    flex-shrink: 0;
-    width: 280px; /* Largura padrão para desktop */
-    background-color: #4a4a4a;
-    border: 1px solid #666;
-    border-radius: 10px;
-    padding: 15px; /* ALTERADO: Reduzido padding interno do card */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    text-align: center;
-    color: #f0f0f0;
+flex-shrink: 0;
+width: 280px; /* Largura padrão para desktop */
+background-color: #4a4a4a;
+border: 1px solid #666;
+border-radius: 10px;
+padding: 15px; /* ALTERADO: Reduzido padding interno do card */
+box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+text-align: center;
+color: #f0f0f0;
 }
 
 .plan-card h3 {
-    color: #ffffff;
-    margin-top: 0;
-    font-size: 1.1em; /* ALTERADO: Levemente reduzido o tamanho da fonte para economizar espaço */
+color: #ffffff;
+margin-top: 0;
+font-size: 1.1em; /* ALTERADO: Levemente reduzido o tamanho da fonte para economizar espaço */
 }
 
 .plan-price {
-    font-size: 1.3em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
-    font-weight: bold;
-    color: #4CAF50;
-    margin: 8px 0; /* ALTERADO: Reduzido margem vertical */
+font-size: 1.3em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
+font-weight: bold;
+color: #4CAF50;
+margin: 8px 0; /* ALTERADO: Reduzido margem vertical */
 }
 
 /* ALTERADO: Estilos para a lista de features com altura mais reduzida e scroll interno */
 .plan-features {
-    list-style: none;
-    padding: 0;
-    text-align: left;
-    margin-bottom: 15px; /* ALTERADO: Reduzido margem */
-    max-height: 90px; /* ALTERADO: Altura máxima para a lista de features, mais compacta */
-    overflow-y: auto;
-    padding-right: 8px;
+list-style: none;
+padding: 0;
+text-align: left;
+margin-bottom: 15px; /* ALTERADO: Reduzido margem */
+max-height: 90px; /* ALTERADO: Altura máxima para a lista de features, mais compacta */
+overflow-y: auto;
+padding-right: 8px;
 }
 
 .plan-features li {
-    padding: 4px 0; /* ALTERADO: Reduzido padding vertical */
-    border-bottom: 1px dotted #555;
-    color: #cccccc;
-    font-size: 0.9em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
+padding: 4px 0; /* ALTERADO: Reduzido padding vertical */
+border-bottom: 1px dotted #555;
+color: #cccccc;
+font-size: 0.9em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
 }
 
 .plan-features li:last-child {
-    border-bottom: none;
+border-bottom: none;
 }
 
 .cta-button-card {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 15px; /* ALTERADO: Reduzido padding do botão */
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
-    transition: background-color 0.3s ease;
+background-color: #007bff;
+color: white;
+border: none;
+padding: 8px 15px; /* ALTERADO: Reduzido padding do botão */
+border-radius: 5px;
+cursor: pointer;
+font-size: 0.9em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
+transition: background-color 0.3s ease;
 }
 
 .cta-button-card:hover {
-    background-color: #0056b3;
+background-color: #0056b3;
 }
 
 .highlight-pro {
-    border-color: #FFD700;
-    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
+border-color: #FFD700;
+box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
 }
 
 /* ALTERADO: Estilos para o container das mensagens (scrollable com 50% de altura preferencial) */
 #chat-messages {
-    flex: 1; /* Ocupará os outros 50% do espaço flexível disponível */
-    min-height: 0; /* Garante que possa encolher o suficiente */
-    overflow-y: auto;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
+flex: 1; /* Altera de '1 1 50%' para '1', permitindo que ocupe o espaço restante */
+min-height: 0; /* Garante que possa encolher o suficiente */
+overflow-y: auto;
+padding: 10px;
+display: flex;
+flex-direction: column;
 }
 
 /* Estilos para as mensagens */
 .message {
-    padding: 10px 15px; /* ALTERADO: Reduzido padding */
-    border-radius: 10px;
-    margin-bottom: 8px; /* ALTERADO: Reduzido margem */
-    max-width: 80%;
-    word-wrap: break-word;
-    color: #e0e0e0;
+padding: 10px 15px; /* ALTERADO: Reduzido padding */
+border-radius: 10px;
+margin-bottom: 8px; /* ALTERADO: Reduzido margem */
+max-width: 80%;
+word-wrap: break-word;
+color: #e0e0e0;
 }
 
 .user-msg {
-    align-self: flex-end;
-    background-color: #00BFFF44;
-    border: 1px solid #00BFFF;
+align-self: flex-end;
+background-color: #00BFFF44;
+border: 1px solid #00BFFF;
 }
 
 .mercuria-msg {
-    align-self: flex-start;
-    background-color: #FFD70022;
-    border: 1px solid #FFD700;
+align-self: flex-start;
+background-color: #FFD70022;
+border: 1px solid #FFD700;
 }
 
 /* Estilos para a área de input (fixa na parte inferior do chat-wrapper) */
 .input-area {
-    flex: 0 0 auto; /* Não cresce, não encolhe, baseia-se no tamanho do conteúdo */
-    display: flex;
-    padding: 10px; /* ALTERADO: Reduzido padding */
-    border-top: 1px solid #444;
-    background-color: #3a3a3a;
+flex: 0 0 auto; /* Não cresce, não encolhe, baseia-se no tamanho do conteúdo */
+display: flex;
+padding: 10px; /* ALTERADO: Reduzido padding */
+border-top: 1px solid #444;
+background-color: #3a3a3a;
 }
 
 .input-area input {
-    flex-grow: 1;
-    padding: 8px 10px; /* ALTERADO: Reduzido padding */
-    border: 1px solid #666;
-    border-radius: 5px;
-    margin-right: 8px; /* ALTERADO: Reduzido margem */
-    font-size: 0.95em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
-    background-color: #555;
-    color: #eee;
+flex-grow: 1;
+padding: 8px 10px; /* ALTERADO: Reduzido padding */
+border: 1px solid #666;
+border-radius: 5px;
+margin-right: 8px; /* ALTERADO: Reduzido margem */
+font-size: 0.95em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
+background-color: #555;
+color: #eee;
 }
 
 .input-area input::placeholder {
-    color: #bbb;
+color: #bbb;
 }
 
 .input-area .send-btn {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 8px 12px; /* ALTERADO: Reduzido padding do botão */
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.95em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
-    transition: background-color 0.3s ease;
+background-color: #28a745;
+color: white;
+border: none;
+padding: 8px 12px; /* ALTERADO: Reduzido padding do botão */
+border-radius: 5px;
+cursor: pointer;
+font-size: 0.95em; /* ALTERADO: Levemente reduzido o tamanho da fonte */
+transition: background-color 0.3s ease;
 }
 
 .input-area .send-btn:hover {
-    background-color: #218838;
+background-color: #218838;
 }
 
 /* Responsividade para telas menores (mobile) */
 @media (max-width: 768px) {
-    .plan-card {
-        width: 240px; /* ALTERADO: Largura um pouco menor para cards em mobile */
-        padding: 12px; /* ALTERADO: Padding do card em mobile */
-    }
-
-    .plan-card h3 {
-        font-size: 1em;
-    }
-
-    .plan-price {
-        font-size: 1.2em;
-    }
-
-    .plan-features {
-        max-height: 80px; /* ALTERADO: Altura máxima das features ainda mais compacta em mobile */
-        margin-bottom: 10px;
-    }
-
-    .plan-features li {
-        font-size: 0.85em;
-    }
-
-    .cta-button-card {
-        padding: 7px 12px;
-        font-size: 0.85em;
-    }
-
-    .message {
-        padding: 8px 12px; /* ALTERADO: Padding das mensagens em mobile */
-        margin-bottom: 6px;
-    }
-
-    .input-area input {
-        padding: 7px 8px; /* ALTERADO: Padding do input em mobile */
-        font-size: 0.9em;
-    }
-
-    .input-area .send-btn {
-        padding: 7px 10px;
-        font-size: 0.9em;
-    }
+.plan-card {
+width: 240px; /* ALTERADO: Largura um pouco menor para cards em mobile */
+padding: 12px; /* ALTERADO: Padding do card em mobile */
 }
 
-/* Estilos para a barra de rolagem (WebKit) */
-::-webkit-scrollbar {
-    width: 6px; /* Largura da barra de rolagem vertical */
-    height: 6px; /* Altura da barra de rolagem horizontal */
+.plan-card h3 {
+font-size: 1em;
 }
 
-::-webkit-scrollbar-track {
-    background: transparent; /* Fundo transparente para a trilha da barra de rolagem */
+.plan-price {
+font-size: 1.2em;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #ffffff; /* Linha branca para a barra de rolagem */
-    border-radius: 3px; /* Borda arredondada para a barra de rolagem */
+.plan-features {
+max-height: 80px; /* ALTERADO: Altura máxima das features ainda mais compacta em mobile */
+margin-bottom: 10px;
 }
 
-/* Opcional: Estilo para a barra de rolagem ao passar o mouse */
-::-webkit-scrollbar-thumb:hover {
-    background: #cccccc; /* Cor levemente diferente ao passar o mouse */
+.plan-features li {
+font-size: 0.85em;
 }
 
-/* Para compatibilidade com Firefox (aparência mais limitada) */
-* {
-  scrollbar-width: thin; /* 'auto' ou 'thin' */
-  scrollbar-color: #ffffff transparent; /* cor-do-thumb cor-da-track */
+.cta-button-card {
+padding: 7px 12px;
+font-size: 0.85em;
+}
+
+.message {
+padding: 8px 12px; /* ALTERADO: Padding das mensagens em mobile */
+margin-bottom: 6px;
+}
+
+.input-area input {
+padding: 7px 8px; /* ALTERADO: Padding do input em mobile */
+font-size: 0.9em;
+}
+
+.input-area .send-btn {
+padding: 7px 10px;
+font-size: 0.9em;
+}
 }

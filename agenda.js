@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - agenda por profissional - 4
+// 1. Configuração (Sempre no topo) - agenda por profissional - 5
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -278,7 +278,7 @@ async function switchTabLite(viewId, element, userType) {
             .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(nome), servicos(nome, duracao_minutos)')
             .eq('estabelecimento_id', dadosEstabelecimento.id)
             .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
-            .lte('data_hora_inicio', dataFFimISO + 'T23:59:59')
+            .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
             .order('data_hora_inicio');       
         
         const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, agendamentos || []);        

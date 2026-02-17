@@ -978,7 +978,7 @@ async function salvarEdicaoProfissional() {
     const nome = document.getElementById('edit-prof-nome').value;
     const especialidade = document.getElementById('edit-prof-especialidade').value;
     const whatsapp = document.getElementById('edit-prof-whatsapp').value;
-    const tipoRemuner = document.getElementById('edit-prof-tipo-remuneracao').value;
+    const tipoRemun = document.getElementById('edit-prof-tipo-remuneracao').value;
     const valorComissao = parseFloat(document.getElementById('edit-prof-comissao').value) || 0;
     const horarioInicio = document.getElementById('edit-prof-hora-inicio').value;
     const horarioFim = document.getElementById('edit-prof-hora-fim').value;

@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - agenda por profissional - 1
+// 1. Configuração (Sempre no topo) - agenda por profissional - 3
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -177,13 +177,39 @@ function vincularEventosGestao() {
 
     const btnAddProf = document.getElementById('btn-salvar-prof');
     if(btnAddProf) btnAddProf.onclick = cadastrarProfissional;
+
+    // NOVO: Eventos para edição de serviços
+    const selectServicoEdicao = document.getElementById('select-servico-para-editar');
+    const btnEditarServico = document.getElementById('btn-editar-servico-selecionado');
+    const btnExcluirServico = document.getElementById('btn-excluir-servico-selecionado');
+    if (selectServicoEdicao && btnEditarServico && btnExcluirServico) {
+        selectServicoEdicao.onchange = () => {
+            btnEditarServico.disabled = !selectServicoEdicao.value;
+            btnExcluirServico.style.display = selectServicoEdicao.value ? 'block' : 'none'; // Mostra/oculta o botão de excluir
+        };
+        btnEditarServico.onclick = () => abrirModalEdicaoServico(selectServicoEdicao.value);
+        btnExcluirServico.onclick = () => excluirServico(selectServicoEdicao.value);
+        btnEditarServico.disabled = true; // Desabilita inicialmente
+    }
+
+
+    // NOVO: Eventos para edição de profissionais
+    const selectProfEdicao = document.getElementById('select-prof-para-editar');
+    const btnEditarProf = document.getElementById('btn-editar-prof-selecionado');
+    const btnExcluirProf = document.getElementById('btn-excluir-prof-selecionado');
+    if (selectProfEdicao && btnEditarProf && btnExcluirProf) {
+        selectProfEdicao.onchange = () => {
+            btnEditarProf.disabled = !selectProfEdicao.value;
+            btnExcluirProf.style.display = selectProfEdicao.value ? 'block' : 'none'; // Mostra/oculta o botão de excluir
+        };
+        btnEditarProf.onclick = () => abrirModalEdicaoProfissional(selectProfEdicao.value);
+        btnExcluirProf.onclick = () => excluirProfissional(selectProfEdicao.value);
+        btnEditarProf.disabled = true; // Desabilita inicialmente
+    }
 }
 
 // NOVO: setupTabs agora aceita o userType como argumento
 function setupTabs(userType) {
-    // const params = new URLSearchParams(window.location.search); // LINHA REMOVIDA
-    // const userType = params.get('u') || 'cliente'; // LINHA REMOVIDA - userType vem do argumento
-    
     const tabsContainer = document.getElementById('dynamic-tabs');
     const abasPermitidas = PERFIS[userType];
     tabsContainer.innerHTML = '';
@@ -223,6 +249,8 @@ async function switchTabLite(viewId, element, userType) {
         body.innerHTML = ""; 
         // abaGestao.style.display já é controlado acima
         popularCamposGestao();
+        await popularDropdownServicosParaEdicao(); // NOVO: Popular dropdown de serviços
+        await popularDropdownProfissionaisParaEdicao(); // NOVO: Popular dropdown de profissionais
         return; 
     }
 
@@ -250,7 +278,7 @@ async function switchTabLite(viewId, element, userType) {
             .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(nome), servicos(nome, duracao_minutos)')
             .eq('estabelecimento_id', dadosEstabelecimento.id)
             .gte('data_hora_inicio', dataSelecionada + 'T00:00:00')
-            .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
+            .lte('data_hora_inicio', dataFFimISO + 'T23:59:59')
             .order('data_hora_inicio');       
         
         const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, agendamentos || []);        
@@ -322,6 +350,10 @@ async function switchTabLite(viewId, element, userType) {
 
 // --- FUNÇÃO PARA CANCELAR AGENDAMENTO (DONO) ---
 async function cancelarAgendamento(agendamentoId) {
+    if (verifiedUserType !== 'dono') {
+        alert("Você não tem permissão para cancelar agendamentos.");
+        return;
+    }
     const confirmar = confirm("Deseja realmente CANCELAR este agendamento? Isso removerá os dados financeiros vinculados.");
     if (confirmar) {
         await supabaseClient.from('movimentacoes_financeiras').delete().eq('agendamento_id', agendamentoId);
@@ -458,7 +490,7 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
 }
 
 
-function fecharModal() {
+function fecharModalAgendamento() {
     document.getElementById('modal-agendamento').style.display = 'none';
     document.getElementById('agend-nome').value = "";
     document.getElementById('agend-whatsapp').value = "";
@@ -536,7 +568,7 @@ async function confirmarAgendamento() {
     }
 
     alert("Agendamento realizado com sucesso!");
-    fecharModal();
+    fecharModalAgendamento();
     setTimeout(() => {
         const tabAtiva = document.querySelector('.tab.active');
         // NOVO: Usar verifiedUserType ao chamar switchTabLite novamente
@@ -636,6 +668,7 @@ async function cadastrarServico() {
         document.getElementById('new-servico-preco').value = "";
         document.getElementById('new-servico-duracao').value = "";
         document.getElementById('new-servico-desc').value = "";
+        await popularDropdownServicosParaEdicao(); // NOVO: Atualiza a lista após cadastro
     }
 }
 
@@ -670,7 +703,7 @@ async function cadastrarProfissional() {
         whatsapp: whatsapp,
         tipo_remuneracao: tipoRemun,
         valor_comissao_porcentagem: parseFloat(valorComissao) || 0,
-        // INSERÇÃO DOS NOVOS CAMPOS
+// INSERÇÃO DOS NOVOS CAMPOS
         horario_trabalho_inicio: horarioInicio,
         horario_trabalho_fim: horarioFim,
         dias_trabalho_json: diasTrabalho // Supabase aceitará um array JS e converterá para JSONB
@@ -688,9 +721,20 @@ async function cadastrarProfissional() {
         document.getElementById('new-prof-hora-inicio').value = "09:00"; // Reset para o valor padrão
         document.getElementById('new-prof-hora-fim').value = "18:00"; // Reset para o valor padrão
         document.querySelectorAll('.new-prof-dia-checkbox').forEach(cb => { cb.checked = true; }); // Marca todos novamente
+        await popularDropdownProfissionaisParaEdicao(); // NOVO: Atualiza a lista após cadastro
     }
 }
+```
 
+
+---
+
+### **2. Novas Funções de Gestão de Serviços e Profissionais**
+
+**Insira TODO o código abaixo no final do seu arquivo `agenda.js`, logo antes da linha `window.onload = init;` (ou antes de qualquer outro `window.onload` ou `addEventListener('DOMContentLoaded')`):**
+
+
+```javascript
 const PERFIS = {
     cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
     funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }], // Manter esta opção se for implementar funcionários no futuro
@@ -714,5 +758,304 @@ const monitorarAgenda = supabaseClient
         }
     })
     .subscribe();
+
+
+// --- NOVAS FUNÇÕES PARA GESTÃO DE SERVIÇOS E PROFISSIONAIS ---
+
+// Função para popular o dropdown de serviços para edição
+async function popularDropdownServicosParaEdicao() {
+    if (verifiedUserType !== 'dono' || !dadosEstabelecimento) return;
+
+    const selectServico = document.getElementById('select-servico-para-editar');
+    selectServico.innerHTML = '<option value="">Selecione um Serviço...</option>'; // Limpa opções existentes
+
+    const { data: servicos, error } = await supabaseClient
+        .from('servicos')
+        .select('id, nome')
+        .eq('estabelecimento_id', dadosEstabelecimento.id)
+        .order('nome');
+
+    if (error) {
+        console.error("Erro ao carregar serviços para edição:", error.message);
+        return;
+    }
+
+    servicos.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.id;
+        option.innerText = s.nome;
+        selectServico.appendChild(option);
+    });
+
+    document.getElementById('btn-editar-servico-selecionado').disabled = true;
+    document.getElementById('btn-excluir-servico-selecionado').style.display = 'none';
+}
+
+// Função para popular o dropdown de profissionais para edição
+async function popularDropdownProfissionaisParaEdicao() {
+    if (verifiedUserType !== 'dono' || !dadosEstabelecimento) return;
+
+    const selectProfissional = document.getElementById('select-prof-para-editar');
+    selectProfissional.innerHTML = '<option value="">Selecione um Profissional...</option>'; // Limpa opções existentes
+
+    const { data: profissionais, error } = await supabaseClient
+        .from('profissionais')
+        .select('id, nome')
+        .eq('estabelecimento_id', dadosEstabelecimento.id)
+        .order('nome');
+
+    if (error) {
+        console.error("Erro ao carregar profissionais para edição:", error.message);
+        return;
+    }
+
+    profissionais.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.innerText = p.nome;
+        selectProfissional.appendChild(option);
+    });
+
+    document.getElementById('btn-editar-prof-selecionado').disabled = true;
+    document.getElementById('btn-excluir-prof-selecionado').style.display = 'none';
+}
+
+// --- Funções para Modal de Edição de Serviço ---
+async function abrirModalEdicaoServico(servicoId) {
+    if (verifiedUserType !== 'dono' || !servicoId) {
+        alert("Você não tem permissão para editar serviços ou nenhum serviço selecionado.");
+        return;
+    }
+
+    const { data: servico, error } = await supabaseClient
+        .from('servicos')
+        .select('*')
+        .eq('id', servicoId)
+        .single();
+
+    if (error) {
+        alert("Erro ao carregar serviço: " + error.message);
+        return;
+    }
+
+    document.getElementById('edit-servico-id').value = servico.id;
+    document.getElementById('edit-servico-nome').value = servico.nome;
+    document.getElementById('edit-servico-desc').value = servico.descricao || '';
+    document.getElementById('edit-servico-preco').value = servico.preco;
+    document.getElementById('edit-servico-duracao').value = servico.duracao_minutos;
+
+    document.getElementById('modal-edicao-servico').style.display = 'flex';
+}
+
+function fecharModalEdicaoServico() {
+    document.getElementById('modal-edicao-servico').style.display = 'none';
+}
+
+async function salvarEdicaoServico() {
+    if (verifiedUserType !== 'dono') {
+        alert("Você não tem permissão para salvar alterações de serviços.");
+        return;
+    }
+
+    const servicoId = document.getElementById('edit-servico-id').value;
+    const nome = document.getElementById('edit-servico-nome').value;
+    const descricao = document.getElementById('edit-servico-desc').value;
+    const preco = parseFloat(document.getElementById('edit-servico-preco').value);
+    const duracao = parseInt(document.getElementById('edit-servico-duracao').value);
+
+    if (!nome || isNaN(preco) || isNaN(duracao)) {
+        alert("Preencha Nome, Preço e Duração corretamente.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('servicos')
+        .update({ nome, descricao, preco, duracao_minutos: duracao })
+        .eq('id', servicoId);
+
+    if (error) {
+        alert("Erro ao salvar serviço: " + error.message);
+    } else {
+        alert("Serviço atualizado com sucesso!");
+        fecharModalEdicaoServico();
+        await popularDropdownServicosParaEdicao(); // Atualiza o dropdown
+        const tabAtiva = document.querySelector('.tab.active');
+        if (tabAtiva && tabAtiva.innerText.includes('SERVIÇOS')) { // Se estiver na aba de serviços, atualiza
+            switchTabLite('servicos', tabAtiva, verifiedUserType);
+        }
+    }
+}
+
+async function excluirServico(servicoId) {
+    if (verifiedUserType !== 'dono') {
+        alert("Você não tem permissão para excluir serviços.");
+        return;
+    }
+    const confirmar = confirm("ATENÇÃO: Deseja realmente EXCLUIR este serviço? Esta ação é irreversível e removerá todos os agendamentos futuros e movimentações financeiras vinculadas a ele.");
+    if (confirmar) {
+        // Primeiro, remover agendamentos e movimentações financeiras relacionadas
+        // (Isso depende da sua lógica de chave estrangeira no Supabase, CASCADE DELETE seria ideal)
+        const { error: agendamentoError } = await supabaseClient.from('agendamentos').delete().eq('servico_id', servicoId);
+        if (agendamentoError) {
+             console.error("Erro ao excluir agendamentos vinculados:", agendamentoError.message);
+             // Não retornamos aqui para tentar excluir o serviço mesmo com erro nos agendamentos
+        }
+        
+        const { error: movFinError } = await supabaseClient.from('movimentacoes_financeiras').delete().eq('servico_id', servicoId);
+        if (movFinError) {
+            console.error("Erro ao excluir movimentações financeiras vinculadas:", movFinError.message);
+        }
+
+        const { error } = await supabaseClient
+            .from('servicos')
+            .delete()
+            .eq('id', servicoId);
+
+        if (error) {
+            alert("Erro ao excluir serviço: " + error.message);
+        } else {
+            alert("Serviço excluído com sucesso!");
+            await popularDropdownServicosParaEdicao(); // Atualiza o dropdown
+            document.getElementById('select-servico-para-editar').value = ""; // Limpa a seleção
+            document.getElementById('btn-excluir-servico-selecionado').style.display = 'none'; // Esconde o botão
+            document.getElementById('btn-editar-servico-selecionado').disabled = true; // Desabilita o botão
+            const tabAtiva = document.querySelector('.tab.active');
+            if (tabAtiva && tabAtiva.innerText.includes('SERVIÇOS')) { // Se estiver na aba de serviços, atualiza
+                switchTabLite('servicos', tabAtiva, verifiedUserType);
+            }
+        }
+    }
+}
+
+
+// --- Funções para Modal de Edição de Profissional ---
+async function abrirModalEdicaoProfissional(profId) {
+    if (verifiedUserType !== 'dono' || !profId) {
+        alert("Você não tem permissão para editar profissionais ou nenhum profissional selecionado.");
+        return;
+    }
+
+    const { data: profissional, error } = await supabaseClient
+        .from('profissionais')
+        .select('*')
+        .eq('id', profId)
+        .single();
+
+    if (error) {
+        alert("Erro ao carregar profissional: " + error.message);
+        return;
+    }
+
+    document.getElementById('edit-prof-id').value = profissional.id;
+    document.getElementById('edit-prof-nome').value = profissional.nome;
+    document.getElementById('edit-prof-especialidade').value = profissional.especialidade || '';
+    document.getElementById('edit-prof-whatsapp').value = profissional.whatsapp || '';
+    document.getElementById('edit-prof-tipo-remuneracao').value = profissional.tipo_remuneracao || 'comissao';
+    document.getElementById('edit-prof-comissao').value = profissional.valor_comissao_porcentagem || 0;
+    document.getElementById('edit-prof-hora-inicio').value = profissional.horario_trabalho_inicio || '09:00';
+    document.getElementById('edit-prof-hora-fim').value = profissional.horario_trabalho_fim || '18:00';
+
+    // Marcar os dias de trabalho
+    const diasTrabalho = profissional.dias_trabalho_json || [];
+    document.querySelectorAll('.edit-prof-dia-checkbox').forEach(checkbox => {
+        checkbox.checked = diasTrabalho.includes(checkbox.value);
+    });
+
+    document.getElementById('modal-edicao-profissional').style.display = 'flex';
+}
+
+function fecharModalEdicaoProfissional() {
+    document.getElementById('modal-edicao-profissional').style.display = 'none';
+}
+
+async function salvarEdicaoProfissional() {
+    if (verifiedUserType !== 'dono') {
+        alert("Você não tem permissão para salvar alterações de profissionais.");
+        return;
+    }
+
+    const profId = document.getElementById('edit-prof-id').value;
+    const nome = document.getElementById('edit-prof-nome').value;
+    const especialidade = document.getElementById('edit-prof-especialidade').value;
+    const whatsapp = document.getElementById('edit-prof-whatsapp').value;
+    const tipoRemuner = document.getElementById('edit-prof-tipo-remuneracao').value;
+    const valorComissao = parseFloat(document.getElementById('edit-prof-comissao').value) || 0;
+    const horarioInicio = document.getElementById('edit-prof-hora-inicio').value;
+    const horarioFim = document.getElementById('edit-prof-hora-fim').value;
+    const diasTrabalhoCheckboxes = document.querySelectorAll('.edit-prof-dia-checkbox:checked');
+    const diasTrabalho = Array.from(diasTrabalhoCheckboxes).map(cb => cb.value);
+
+    if (!nome) {
+        alert("O nome do profissional é obrigatório.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('profissionais')
+        .update({
+            nome,
+            especialidade,
+            whatsapp,
+            tipo_remuneracao: tipoRemun,
+            valor_comissao_porcentagem: valorComissao,
+            horario_trabalho_inicio: horarioInicio,
+            horario_trabalho_fim: horarioFim,
+            dias_trabalho_json: diasTrabalho
+        })
+        .eq('id', profId);
+
+    if (error) {
+        alert("Erro ao salvar profissional: " + error.message);
+    } else {
+        alert("Profissional atualizado com sucesso!");
+        fecharModalEdicaoProfissional();
+        await popularDropdownProfissionaisParaEdicao(); // Atualiza o dropdown
+        // Opcional: Recarregar a aba de agenda se ela exibir profissionais
+        const tabAtiva = document.querySelector('.tab.active');
+        if (tabAtiva && (tabAtiva.innerText.includes('AGENDA') || tabAtiva.innerText.includes('DASHBOARD'))) {
+            switchTabLite(tabAtiva.dataset.viewId || 'dashboard', tabAtiva, verifiedUserType); // Recarrega a aba atual para refletir as mudanças
+        }
+    }
+}
+
+async function excluirProfissional(profId) {
+    if (verifiedUserType !== 'dono') {
+        alert("Você não tem permissão para excluir profissionais.");
+        return;
+    }
+    const confirmar = confirm("ATENÇÃO: Deseja realmente EXCLUIR este profissional? Esta ação é irreversível e removerá todos os agendamentos futuros e movimentações financeiras vinculadas a ele.");
+    if (confirmar) {
+        // Primeiro, remover agendamentos e movimentações financeiras relacionadas
+        // (Isso depende da sua lógica de chave estrangeira no Supabase, CASCADE DELETE seria ideal)
+        const { error: agendamentoError } = await supabaseClient.from('agendamentos').delete().eq('profissional_id', profId);
+        if (agendamentoError) {
+             console.error("Erro ao excluir agendamentos vinculados:", agendamentoError.message);
+        }
+        
+        const { error: movFinError } = await supabaseClient.from('movimentacoes_financeiras').delete().eq('profissional_id', profId);
+        if (movFinError) {
+            console.error("Erro ao excluir movimentações financeiras vinculadas:", movFinError.message);
+        }
+
+        const { error } = await supabaseClient
+            .from('profissionais')
+            .delete()
+            .eq('id', profId);
+
+        if (error) {
+            alert("Erro ao excluir profissional: " + error.message);
+        } else {
+            alert("Profissional excluído com sucesso!");
+            await popularDropdownProfissionaisParaEdicao(); // Atualiza o dropdown
+            document.getElementById('select-prof-para-editar').value = ""; // Limpa a seleção
+            document.getElementById('btn-excluir-prof-selecionado').style.display = 'none'; // Esconde o botão
+            document.getElementById('btn-editar-prof-selecionado').disabled = true; // Desabilita o botão
+            const tabAtiva = document.querySelector('.tab.active');
+            if (tabAtiva && (tabAtiva.innerText.includes('AGENDA') || tabAtiva.innerText.includes('DASHBOARD'))) { // Recarrega a aba de agenda
+                switchTabLite(tabAtiva.dataset.viewId || 'dashboard', tabAtiva, verifiedUserType);
+            }
+        }
+    }
+}
 
 window.onload = init;

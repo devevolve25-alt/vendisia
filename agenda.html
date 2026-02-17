@@ -104,78 +104,106 @@
                                 </div>
                             </div>
 
-<div class="service-card" style="margin-bottom: 20px;">
-    <h3>Novo Serviço</h3>
-    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
-        <input type="text" id="new-servico-nome" placeholder="Nome do Serviço (ex: Corte de Cabelo)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        <textarea id="new-servico-desc" placeholder="Descrição para a MercurIA saber como vender este serviço..." style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
-        
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="new-servico-preco" placeholder="Preço (R$)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-            <input type="number" id="new-servico-duracao" placeholder="Duração (Minutos)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        </div>
-        
-        <button class="btn-generate" id="btn-salvar-servico" style="width: 100%; margin-top: 10px;">+ CADASTRAR SERVIÇO</button>
-    </div>
-</div>
-                            
-     <div class="service-card" style="margin-bottom: 20px;">
-    <h3>Novo Profissional</h3>
-    <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
-        <input type="text" id="new-prof-nome" placeholder="Nome do Profissional" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        <input type="text" id="new-prof-especialidade" placeholder="Especialidade (ex: Barbeiro, Colorista)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        <input type="text" id="new-prof-whatsapp" placeholder="WhatsApp do Profissional (com DDD)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        
-        <div style="display: flex; gap: 10px;">
-            <select id="new-prof-tipo-remuneracao" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                <option value="comissao">Comissão (%)</option>
-                <option value="fixo">Salário Fixo</option>
-            </select>
-            <input type="number" id="new-prof-comissao" placeholder="Valor/Porcentagem" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-        </div>
+                            <div class="service-card" style="margin-bottom: 20px;">
+                                <h3>Novo Serviço</h3>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                                    <input type="text" id="new-servico-nome" placeholder="Nome do Serviço (ex: Corte de Cabelo)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <textarea id="new-servico-desc" placeholder="Descrição para a MercurIA saber como vender este serviço..." style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; height: 60px; font-family: 'Montserrat';"></textarea>
+                                    
+                                    <div style="display: flex; gap: 10px;">
+                                        <input type="number" id="new-servico-preco" placeholder="Preço (R$)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                        <input type="number" id="new-servico-duracao" placeholder="Duração (Minutos)" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    </div>
+                                    
+                                    <button class="btn-generate" id="btn-salvar-servico" style="width: 100%; margin-top: 10px;">+ CADASTRAR SERVIÇO</button>
+                                </div>
+                            </div>
 
-        <!-- NOVOS INPUTS DE HORÁRIO E DIAS DE TRABALHO -->
-        <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;">
-                <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">INÍCIO EXPEDIENTE</label>
-                <input type="time" id="new-prof-hora-inicio" value="09:00" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
-            </div>
-            <div style="flex: 1;">
-                <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">FIM EXPEDIENTE</label>
-                <input type="time" id="new-prof-hora-fim" value="18:00" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
-            </div>
-        </div>
+                            <!-- NOVO: Gerenciar Serviços Existentes -->
+                            <div class="service-card" style="margin-bottom: 20px;">
+                                <h3>Gerenciar Serviços</h3>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <select id="select-servico-para-editar" style="flex: 1; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
+                                            <option value="">Selecione um Serviço...</option>
+                                        </select>
+                                        <button class="btn-generate" id="btn-editar-servico-selecionado" style="padding: 10px 15px; background: var(--creative-color); color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; flex-shrink: 0;">EDITAR</button>
+                                    </div>
+                                    <button class="btn-generate" id="btn-excluir-servico-selecionado" style="padding: 10px 15px; background: #e74c3c; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 5px; display: none;">EXCLUIR SERVIÇO</button>
+                                </div>
+                            </div>
+                                                        
+                            <div class="service-card" style="margin-bottom: 20px;">
+                                <h3>Novo Profissional</h3>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                                    <input type="text" id="new-prof-nome" placeholder="Nome do Profissional" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <input type="text" id="new-prof-especialidade" placeholder="Especialidade (ex: Barbeiro, Colorista)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <input type="text" id="new-prof-whatsapp" placeholder="WhatsApp do Profissional (com DDD)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    
+                                    <div style="display: flex; gap: 10px;">
+                                        <select id="new-prof-tipo-remuneracao" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                            <option value="comissao">Comissão (%)</option>
+                                            <option value="fixo">Salário Fixo</option>
+                                        </select>
+                                        <input type="number" id="new-prof-comissao" placeholder="Valor/Porcentagem" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    </div>
 
-        <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px;">
-            <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 8px;">DIAS DE TRABALHO</label>
-            <div id="new-prof-dias-trabalho" style="display: flex; flex-wrap: wrap; gap: 12px;">
-                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
-                    <input type="checkbox" class="new-prof-dia-checkbox" value="dom" checked style="accent-color: var(--creative-color);"> Dom
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
-                    <input type="checkbox" class="new-prof-dia-checkbox" value="seg" checked style="accent-color: var(--creative-color);"> Seg
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
-                    <input type="checkbox" class="new-prof-dia-checkbox" value="ter" checked style="accent-color: var(--creative-color);"> Ter
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
-                    <input type="checkbox" class="new-prof-dia-checkbox" value="qua" checked style="accent-color: var(--creative-color);"> Qua
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
-                    <input type="checkbox" class="new-prof-dia-checkbox" value="qui" checked style="accent-color: var(--creative-color);"> Qui
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
-                    <input type="checkbox" class="new-prof-dia-checkbox" value="sex" checked style="accent-color: var(--creative-color);"> Sex
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
-                    <input type="checkbox" class="new-prof-dia-checkbox" value="sab" checked style="accent-color: var(--creative-color);"> Sáb
-                </label>
-            </div>
-        </div>
+                                    <!-- NOVOS INPUTS DE HORÁRIO E DIAS DE TRABALHO -->
+                                    <div style="display: flex; gap: 10px;">
+                                        <div style="flex: 1;">
+                                            <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">INÍCIO EXPEDIENTE</label>
+                                            <input type="time" id="new-prof-hora-inicio" value="09:00" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">FIM EXPEDIENTE</label>
+                                            <input type="time" id="new-prof-hora-fim" value="18:00" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                                        </div>
+                                    </div>
 
-        <button class="btn-generate" id="btn-salvar-prof" style="width: 100%; margin-top: 10px;">+ CADASTRAR PROFISSIONAL</button>
-    </div>
-</div>
+                                    <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px;">
+                                        <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 8px;">DIAS DE TRABALHO</label>
+                                        <div id="new-prof-dias-trabalho" style="display: flex; flex-wrap: wrap; gap: 12px;">
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                                <input type="checkbox" class="new-prof-dia-checkbox" value="dom" checked style="accent-color: var(--creative-color);"> Dom
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                                <input type="checkbox" class="new-prof-dia-checkbox" value="seg" checked style="accent-color: var(--creative-color);"> Seg
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                                <input type="checkbox" class="new-prof-dia-checkbox" value="ter" checked style="accent-color: var(--creative-color);"> Ter
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                                <input type="checkbox" class="new-prof-dia-checkbox" value="qua" checked style="accent-color: var(--creative-color);"> Qua
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                                <input type="checkbox" class="new-prof-dia-checkbox" value="qui" checked style="accent-color: var(--creative-color);"> Qui
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                                <input type="checkbox" class="new-prof-dia-checkbox" value="sex" checked style="accent-color: var(--creative-color);"> Sex
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                                                <input type="checkbox" class="new-prof-dia-checkbox" value="sab" checked style="accent-color: var(--creative-color);"> Sáb
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <button class="btn-generate" id="btn-salvar-prof" style="width: 100%; margin-top: 10px;">+ CADASTRAR PROFISSIONAL</button>
+                                </div>
+                            </div>
+
+                            <!-- NOVO: Gerenciar Profissionais Existentes -->
+                            <div class="service-card" style="margin-bottom: 20px;">
+                                <h3>Gerenciar Profissionais</h3>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <select id="select-prof-para-editar" style="flex: 1; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:5px;">
+                                            <option value="">Selecione um Profissional...</option>
+                                        </select>
+                                        <button class="btn-generate" id="btn-editar-prof-selecionado" style="padding: 10px 15px; background: var(--creative-color); color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; flex-shrink: 0;">EDITAR</button>
+                                    </div>
+                                    <button class="btn-generate" id="btn-excluir-prof-selecionado" style="padding: 10px 15px; background: #e74c3c; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 5px; display: none;">EXCLUIR PROFISSIONAL</button>
+                                </div>
+                            </div>
                         </div>
                     </div> 
 
@@ -203,8 +231,91 @@
                 </select>
 
                 <div style="display:flex; gap:10px; margin-top:15px;">
-                    <button onclick="fecharModal()" style="flex:1; padding:12px; background:#333; color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight: 600;">CANCELAR</button>
+                    <button onclick="fecharModalAgendamento()" style="flex:1; padding:12px; background:#333; color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight: 600;">CANCELAR</button>
                     <button onclick="confirmarAgendamento()" style="flex:1; padding:12px; background:var(--creative-color); color:#000; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">CONFIRMAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOVO: Modal de Edição de Serviço -->
+    <div id="modal-edicao-servico" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; padding: 20px;">
+        <div style="background:#111; padding:25px; border:1px solid var(--creative-color); border-radius:10px; width:100%; max-width:400px; font-family:'Montserrat';">
+            <h2 style="font-family:'Bebas Neue'; color:var(--creative-color); margin-bottom:15px; letter-spacing: 1px;">Editar Serviço</h2>
+            <input type="hidden" id="edit-servico-id">
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" id="edit-servico-nome" placeholder="Nome do Serviço" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                <textarea id="edit-servico-desc" placeholder="Descrição do Serviço" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px; height: 80px; font-family: 'Montserrat';"></textarea>
+                <input type="number" id="edit-servico-preco" placeholder="Preço (R$)" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                <input type="number" id="edit-servico-duracao" placeholder="Duração (Minutos)" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button onclick="fecharModalEdicaoServico()" style="flex:1; padding:12px; background:#333; color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight: 600;">CANCELAR</button>
+                    <button onclick="salvarEdicaoServico()" style="flex:1; padding:12px; background:var(--creative-color); color:#000; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">SALVAR ALTERAÇÕES</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOVO: Modal de Edição de Profissional -->
+    <div id="modal-edicao-profissional" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; padding: 20px;">
+        <div style="background:#111; padding:25px; border:1px solid var(--creative-color); border-radius:10px; width:100%; max-width:400px; font-family:'Montserrat';">
+            <h2 style="font-family:'Bebas Neue'; color:var(--creative-color); margin-bottom:15px; letter-spacing: 1px;">Editar Profissional</h2>
+            <input type="hidden" id="edit-prof-id">
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" id="edit-prof-nome" placeholder="Nome do Profissional" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                <input type="text" id="edit-prof-especialidade" placeholder="Especialidade" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                <input type="text" id="edit-prof-whatsapp" placeholder="WhatsApp do Profissional" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                
+                <div style="display: flex; gap: 10px;">
+                    <select id="edit-prof-tipo-remuneracao" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                        <option value="comissao">Comissão (%)</option>
+                        <option value="fixo">Salário Fixo</option>
+                    </select>
+                    <input type="number" id="edit-prof-comissao" placeholder="Valor/Porcentagem" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">INÍCIO EXPEDIENTE</label>
+                        <input type="time" id="edit-prof-hora-inicio" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">FIM EXPEDIENTE</label>
+                        <input type="time" id="edit-prof-hora-fim" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px;">
+                    <label style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 8px;">DIAS DE TRABALHO</label>
+                    <div id="edit-prof-dias-trabalho" style="display: flex; flex-wrap: wrap; gap: 12px;">
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                            <input type="checkbox" class="edit-prof-dia-checkbox" value="dom" style="accent-color: var(--creative-color);"> Dom
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                            <input type="checkbox" class="edit-prof-dia-checkbox" value="seg" style="accent-color: var(--creative-color);"> Seg
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                            <input type="checkbox" class="edit-prof-dia-checkbox" value="ter" style="accent-color: var(--creative-color);"> Ter
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                            <input type="checkbox" class="edit-prof-dia-checkbox" value="qua" style="accent-color: var(--creative-color);"> Qua
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                            <input type="checkbox" class="edit-prof-dia-checkbox" value="qui" style="accent-color: var(--creative-color);"> Qui
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                            <input type="checkbox" class="edit-prof-dia-checkbox" value="sex" style="accent-color: var(--creative-color);"> Sex
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                            <input type="checkbox" class="edit-prof-dia-checkbox" value="sab" style="accent-color: var(--creative-color);"> Sáb
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button onclick="fecharModalEdicaoProfissional()" style="flex:1; padding:12px; background:#333; color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight: 600;">CANCELAR</button>
+                    <button onclick="salvarEdicaoProfissional()" style="flex:1; padding:12px; background:var(--creative-color); color:#000; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">SALVAR ALTERAÇÕES</button>
                 </div>
             </div>
         </div>

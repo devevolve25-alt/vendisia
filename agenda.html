@@ -137,7 +137,10 @@
                                 <h3>Novo Profissional</h3>
                                 <div style="display: flex; flex-direction: column; gap: 10px; margin-top:15px;">
                                     <input type="text" id="new-prof-nome" placeholder="Nome do Profissional" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
-                                    <input type="text" id="new-prof-especialidade" placeholder="Especialidade (ex: Barbeiro, Colorista)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    <label for="new-prof-servicos-especializados" style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">Serviços Especializados:</label>
+<select id="new-prof-servicos-especializados" multiple size="5" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #333; background-color: #222; color: #eee;">
+    <!-- As opções serão carregadas e pré-selecionadas pelo JavaScript -->
+</select>
                                     <input type="text" id="new-prof-whatsapp" placeholder="WhatsApp do Profissional (com DDD)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
                                     
                                     <div style="display: flex; gap: 10px;">
@@ -264,7 +267,10 @@
             <input type="hidden" id="edit-prof-id">
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <input type="text" id="edit-prof-nome" placeholder="Nome do Profissional" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
-                <input type="text" id="edit-prof-especialidade" placeholder="Especialidade" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
+                <label for="edit-prof-servicos-especializados" style="font-size: 10px; color: var(--creative-color); display: block; margin-bottom: 5px;">Serviços Especializados:</label>
+<select id="edit-prof-servicos-especializados" multiple size="5" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #333; background-color: #222; color: #eee;">
+    <!-- As opções serão carregadas e pré-selecionadas pelo JavaScript -->
+</select>
                 <input type="text" id="edit-prof-whatsapp" placeholder="WhatsApp do Profissional" style="width:100%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius: 4px;">
                 
                 <div style="display: flex; gap: 10px;">

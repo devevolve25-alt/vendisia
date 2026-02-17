@@ -3,6 +3,10 @@
 
 import { supabaseClient } from './config.js';
 
+/**
+ * Realiza o logout do usuário atual e o redireciona.
+ * @returns {Promise<void>}
+ */
 async function logout() {
     try {
         const { error } = await supabaseClient.auth.signOut();
@@ -20,4 +24,23 @@ async function logout() {
     }
 }
 
-export { logout };
+/**
+ * Verifica se há um usuário logado e retorna seus dados.
+ * Se não houver, ou se a sessão for inválida, retorna null.
+ * @returns {Promise<Object|null>} Os dados do usuário logado ou null.
+ */
+async function verifyUser() {
+    try {
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        if (error) {
+            console.error("Erro ao verificar usuário:", error.message);
+            return null;
+        }
+        return user;
+    } catch (err) {
+        console.error("Exceção ao verificar usuário:", err);
+        return null;
+    }
+}
+
+export { logout, verifyUser };

@@ -437,12 +437,15 @@ function updateSalonNameUI(nome) {
 }
 
 /**
- * Controla a visibilidade do botão do dashboard.
- * @param {boolean} isVisible - True para mostrar, false para ocultar.
+ * Controla a visibilidade do botão do dashboard com base no tipo de usuário e plano ativo.
+ * @param {string} userType - O tipo de usuário (e.g., 'dono', 'cliente').
+ * @param {string} planoAtivo - O plano ativo do estabelecimento (e.g., 'gestao-total').
  */
-function toggleDashboardButton(isVisible) {
+function toggleDashboardButton(userType, planoAtivo) {
     const btnDashboard = document.getElementById('container-link-dashboard');
     if (btnDashboard) {
+        // O botão é visível apenas se o usuário for 'dono' E o plano for 'gestao-total'
+        const isVisible = (userType === 'dono' && planoAtivo === 'gestao-total');
         btnDashboard.style.display = isVisible ? 'block' : 'none';
     }
 }

@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Tenta obter o slug da URL
     const urlParams = new URLSearchParams(window.location.search);
-    const slug = urlParams.get('slug');
+    const slug = urlParams.get('s');
 
     if (!slug) {
         console.error("Slug do estabelecimento não encontrado na URL.");

@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - agenda por profissional - 3
+// 1. Configuração (Sempre no topo) - agenda por profissional - 4
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -724,17 +724,7 @@ async function cadastrarProfissional() {
         await popularDropdownProfissionaisParaEdicao(); // NOVO: Atualiza a lista após cadastro
     }
 }
-```
 
-
----
-
-### **2. Novas Funções de Gestão de Serviços e Profissionais**
-
-**Insira TODO o código abaixo no final do seu arquivo `agenda.js`, logo antes da linha `window.onload = init;` (ou antes de qualquer outro `window.onload` ou `addEventListener('DOMContentLoaded')`):**
-
-
-```javascript
 const PERFIS = {
     cliente: [{ id: 'servicos', label: 'SERVIÇOS' }, { id: 'agenda', label: 'AGENDA' }],
     funcionario: [{ id: 'agenda', label: 'MINHA AGENDA' }], // Manter esta opção se for implementar funcionários no futuro

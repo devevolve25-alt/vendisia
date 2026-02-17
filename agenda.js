@@ -1,4 +1,4 @@
-// 1. Configuração (Sempre no topo) - segurança iao
+// 1. Configuração (Sempre no topo) - agenda por profissional - 1
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -253,7 +253,7 @@ async function switchTabLite(viewId, element, userType) {
             .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
             .order('data_hora_inicio');       
         
-const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, agendamentos || []);        
+        const grade = gerarGradeHorarios(dadosEstabelecimento.hora_abertura, dadosEstabelecimento.hora_fechamento, agendamentos || []);        
         let htmlAgenda = '<div class="agenda-list">';
         let ultimaData = "";
 
@@ -342,49 +342,128 @@ async function abrirModalAgendamento(data, hora) {
     document.getElementById('modal-agendamento').style.display = 'flex';
     document.getElementById('info-slot').innerText = `Agendando para: ${new Date(data + 'T12:00:00').toLocaleDateString('pt-BR')} às ${hora}`;
 
-    const { data: servicos } = await supabaseClient.from('servicos').select('id, nome').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
+    const { data: servicos } = await supabaseClient.from('servicos').select('id, nome, duracao_minutos').eq('estabelecimento_id', dadosEstabelecimento.id).order('nome');
     const sSelect = document.getElementById('agend-servico');
     sSelect.innerHTML = '<option value="">Selecione o Serviço...</option>';
-    servicos?.forEach(s => sSelect.innerHTML += `<option value="${s.id}">${s.nome}</option>`);
+    servicos?.forEach(s => sSelect.innerHTML += `<option value="${s.id}" data-duracao="${s.duracao_minutos || 30}">${s.nome}</option>`);
     
-    document.getElementById('agend-profissional').innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
+    const pSelect = document.getElementById('agend-profissional');
+    pSelect.innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
 
     sSelect.onchange = async function() {
-        const servicoSelecionadoNome = this.options[this.selectedIndex].text;
-        const pSelect = document.getElementById('agend-profissional');
+        const servicoId = this.value;
+        const duracaoServico = parseInt(this.options[this.selectedIndex].dataset.duracao);
         
-        if (!this.value) {
+        if (!servicoId) {
             pSelect.innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
             return;
         }
 
         pSelect.innerHTML = '<option value="">Buscando profissionais...</option>';
 
-        const { data: profs } = await supabaseClient
-            .from('profissionais')
-            .select('id, nome, especialidade')
-            .eq('estabelecimento_id', dadosEstabelecimento.id);
-
-        const filtrados = profs.filter(p => {
-            const esp = p.especialidade?.toLowerCase() || "";
-            const serv = servicoSelecionadoNome.toLowerCase();
-            return serv.includes(esp) || esp.includes(serv);
-        });
+        // NOVO: Chama a função para buscar profissionais disponíveis para o slot
+        const profissionaisDisponiveis = await getProfissionaisDisponiveisNoSlot(servicoId, slotSelecionado.data, slotSelecionado.hora, duracaoServico);
 
         pSelect.innerHTML = '<option value="">Selecione o Profissional...</option>';
         
-        if (filtrados.length === 0) {
-            profs?.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+        if (profissionaisDisponiveis.length === 0) {
+            pSelect.innerHTML = '<option value="">Nenhum profissional disponível para este serviço/horário.</option>';
+            pSelect.disabled = true;
+            document.querySelector('#modal-agendamento button:last-child').disabled = true; // Desabilita o botão de confirmar
         } else {
-            filtrados.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
+            profissionaisDisponiveis.forEach(p => pSelect.innerHTML += `<option value="${p.id}">${p.nome} (${p.especialidade})</option>`);
+            pSelect.disabled = false;
+            document.querySelector('#modal-agendamento button:last-child').disabled = false;
         }
     };
 }
+
+// NOVO: Função para buscar profissionais disponíveis para um slot específico
+async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoServico) {
+    const { data: servico } = await supabaseClient
+        .from('servicos')
+        .select('id, duracao_minutos')
+        .eq('id', servicoId)
+        .single();
+
+    if (!servico) return [];
+
+    const inicioSlot = new Date(`${data}T${hora}:00`);
+    const fimSlot = new Date(inicioSlot.getTime() + (servico.duracao_minutos || duracaoServico) * 60 * 1000); // Usa a duração real do serviço
+
+    // Obter todos os profissionais que podem realizar este serviço
+    // Nota: Assumindo que 'servico_profissional' é uma tabela de junção.
+    // Se a especialidade do profissional no campo 'especialidade' for usada para isso, ajuste a query.
+    const { data: profsParaServico } = await supabaseClient
+        .from('profissionais')
+        .select('id, nome, especialidade, horario_trabalho_inicio, horario_trabalho_fim, dias_trabalho_json')
+        .eq('estabelecimento_id', dadosEstabelecimento.id);
+
+    // Filtrar os profissionais para os que realmente podem fazer o serviço (via especialidade ou tabela de junção)
+    // Para simplificar, vou manter a lógica de especialidade vs nome do serviço, mas o ideal é a tabela de junção.
+    const { data: servicoInfoParaProf } = await supabaseClient.from('servicos').select('nome').eq('id', servicoId).single();
+    const nomeServico = servicoInfoParaProf?.nome.toLowerCase();
+
+    const profissionaisCandidatos = profsParaServico.filter(p => {
+        const especialidadeProf = p.especialidade?.toLowerCase();
+        return especialidadeProf && nomeServico && (nomeServico.includes(especialidadeProf) || especialidadeProf.includes(nomeServico));
+    });
+
+    const profissionaisDisponiveis = [];
+
+    for (const prof of profissionaisCandidatos) {
+        const diaSemana = inicioSlot.toLocaleDateString('pt-BR', { weekday: 'short' }).substring(0,3).toLowerCase(); // ex: seg, ter
+        const diasTrabalho = prof.dias_trabalho_json;
+
+        // Verifica se o profissional trabalha neste dia da semana
+        if (!diasTrabalho || !diasTrabalho.includes(diaSemana)) {
+            continue;
+        }
+
+        // Verifica o horário de trabalho do profissional
+        const inicioExpediente = new Date(`${data}T${prof.horario_trabalho_inicio}:00`);
+        const fimExpediente = new Date(`${data}T${prof.horario_trabalho_fim}:00`);
+
+        if (inicioSlot < inicioExpediente || fimSlot > fimExpediente) {
+            continue; // Fora do horário de expediente do profissional
+        }
+
+        // Verifica se há conflito com outros agendamentos do profissional
+        const { data: agendamentosProfissional } = await supabaseClient
+            .from('agendamentos')
+            .select('data_hora_inicio, servicos(duracao_minutos)')
+            .eq('profissional_id', prof.id)
+            .gte('data_hora_inicio', new Date(inicioSlot.getFullYear(), inicioSlot.getMonth(), inicioSlot.getDate()).toISOString()) // Começo do dia
+            .lte('data_hora_inicio', new Date(inicioSlot.getFullYear(), inicioSlot.getMonth(), inicioSlot.getDate(), 23, 59, 59).toISOString()); // Fim do dia
+
+        let conflito = false;
+        for (const agendamento of agendamentosProfissional) {
+            const agInicio = new Date(agendamento.data_hora_inicio);
+            const agDuracao = agendamento.servicos?.duracao_minutos || 30; // Pega a duração do serviço agendado
+            const agFim = new Date(agInicio.getTime() + agDuracao * 60 * 1000);
+
+            // Verifica se os intervalos se sobrepõem
+            if (inicioSlot < agFim && fimSlot > agInicio) {
+                conflito = true;
+                break;
+            }
+        }
+
+        if (!conflito) {
+            profissionaisDisponiveis.push(prof);
+        }
+    }
+
+    return profissionaisDisponiveis;
+}
+
 
 function fecharModal() {
     document.getElementById('modal-agendamento').style.display = 'none';
     document.getElementById('agend-nome').value = "";
     document.getElementById('agend-whatsapp').value = "";
+    document.getElementById('agend-servico').value = ""; // Limpa seleção de serviço
+    document.getElementById('agend-profissional').value = ""; // Limpa seleção de profissional
 }
 
 async function confirmarAgendamento() {
@@ -398,6 +477,25 @@ async function confirmarAgendamento() {
     }
 
     const dataObjeto = new Date(`${slotSelecionado.data}T${slotSelecionado.hora.substring(0, 5)}:00`);
+
+    // NOVA VALIDAÇÃO: Confirma a disponibilidade do profissional novamente antes de agendar
+    const { data: servicoParaConfirmar } = await supabaseClient
+        .from('servicos')
+        .select('duracao_minutos')
+        .eq('id', servicoId)
+        .single();
+    
+    if (!servicoParaConfirmar) {
+        return alert("Erro: Serviço não encontrado.");
+    }
+
+    const profissionaisDisponiveis = await getProfissionaisDisponiveisNoSlot(servicoId, slotSelecionado.data, slotSelecionado.hora, servicoParaConfirmar.duracao_minutos);
+    const profissionalAindaDisponivel = profissionaisDisponiveis.some(p => p.id === profId);
+
+    if (!profissionalAindaDisponivel) {
+        return alert("O profissional selecionado não está mais disponível para este horário. Por favor, escolha outro slot ou profissional.");
+    }
+
 
     const payload = {
         estabelecimento_id: dadosEstabelecimento.id,
@@ -521,7 +619,7 @@ async function cadastrarServico() {
     const duracao = parseInt(document.getElementById('new-servico-duracao').value);
     const descricao = document.getElementById('new-servico-desc').value;
 
-    if (!nome || !preco) return alert("Preencha Nome e Preço.");
+    if (!nome || isNaN(preco) || isNaN(duracao)) return alert("Preencha Nome, Preço e Duração corretamente.");
 
     const { error } = await supabaseClient.from('servicos').insert([{
         estabelecimento_id: dadosEstabelecimento.id,
@@ -556,6 +654,13 @@ async function cadastrarProfissional() {
     const tipoRemun = document.getElementById('new-prof-tipo-remuneracao').value;
     const valorComissao = document.getElementById('new-prof-comissao').value;
 
+    // NOVOS CAMPOS: Horário de trabalho e dias da semana
+    const horarioInicio = document.getElementById('new-prof-hora-inicio').value;
+    const horarioFim = document.getElementById('new-prof-hora-fim').value;
+    const diasTrabalhoCheckboxes = document.querySelectorAll('.new-prof-dia-checkbox:checked');
+    const diasTrabalho = Array.from(diasTrabalhoCheckboxes).map(cb => cb.value);
+
+
     if (!nome) return alert("Nome é obrigatório.");
 
     const { error } = await supabaseClient.from('profissionais').insert([{
@@ -564,7 +669,11 @@ async function cadastrarProfissional() {
         especialidade: especialidade,
         whatsapp: whatsapp,
         tipo_remuneracao: tipoRemun,
-        valor_comissao_porcentagem: parseFloat(valorComissao) || 0
+        valor_comissao_porcentagem: parseFloat(valorComissao) || 0,
+        // INSERÇÃO DOS NOVOS CAMPOS
+        horario_trabalho_inicio: horarioInicio,
+        horario_trabalho_fim: horarioFim,
+        dias_trabalho_json: diasTrabalho // Supabase aceitará um array JS e converterá para JSONB
     }]);
 
     if (error) {
@@ -576,6 +685,9 @@ async function cadastrarProfissional() {
         document.getElementById('new-prof-especialidade').value = "";
         document.getElementById('new-prof-whatsapp').value = "";
         document.getElementById('new-prof-comissao').value = "";
+        document.getElementById('new-prof-hora-inicio').value = "09:00"; // Reset para o valor padrão
+        document.getElementById('new-prof-hora-fim').value = "18:00"; // Reset para o valor padrão
+        document.querySelectorAll('.new-prof-dia-checkbox').forEach(cb => { cb.checked = true; }); // Marca todos novamente
     }
 }
 

@@ -178,14 +178,14 @@ function vincularEventosGestao() {
     const btnAddProf = document.getElementById('btn-salvar-prof');
     if(btnAddProf) btnAddProf.onclick = cadastrarProfissional;
 
-    // NOVO: Eventos para edição de serviços
+    // Eventos para edição de serviços
     const selectServicoEdicao = document.getElementById('select-servico-para-editar');
     const btnEditarServico = document.getElementById('btn-editar-servico-selecionado');
     const btnExcluirServico = document.getElementById('btn-excluir-servico-selecionado');
     if (selectServicoEdicao && btnEditarServico && btnExcluirServico) {
         selectServicoEdicao.onchange = () => {
             btnEditarServico.disabled = !selectServicoEdicao.value;
-            btnExcluirServico.style.display = selectServicoEdicao.value ? 'block' : 'none'; // Mostra/oculta o botão de excluir
+            btnExcluirServico.style.display = selectServicoEdicao.value ? 'block' : 'none';
         };
         btnEditarServico.onclick = () => abrirModalEdicaoServico(selectServicoEdicao.value);
         btnExcluirServico.onclick = () => excluirServico(selectServicoEdicao.value);
@@ -198,13 +198,23 @@ function vincularEventosGestao() {
     const btnEditarProf = document.getElementById('btn-editar-prof-selecionado');
     const btnExcluirProf = document.getElementById('btn-excluir-prof-selecionado');
     if (selectProfEdicao && btnEditarProf && btnExcluirProf) {
+        // Log para depuração: Verifica se os elementos foram encontrados
+        console.log("Elementos de edição de profissional encontrados:", {selectProfEdicao, btnEditarProf, btnExcluirProf});
+
         selectProfEdicao.onchange = () => {
-            btnEditarProf.disabled = !selectProfEdicao.value;
-            btnExcluirProf.style.display = selectProfEdicao.value ? 'block' : 'none'; // Mostra/oculta o botão de excluir
+            const selectedValue = selectProfEdicao.value;
+            btnEditarProf.disabled = !selectedValue;
+            btnExcluirProf.style.display = selectedValue ? 'block' : 'none';
+            console.log("Profissional selecionado no dropdown:", selectedValue, "Botão EDITAR desabilitado?", btnEditarProf.disabled);
         };
-        btnEditarProf.onclick = () => abrirModalEdicaoProfissional(selectProfEdicao.value);
+        btnEditarProf.onclick = () => {
+            console.log("Botão EDITAR Profissional clicado. ID selecionado:", selectProfEdicao.value);
+            abrirModalEdicaoProfissional(selectProfEdicao.value);
+        };
         btnExcluirProf.onclick = () => excluirProfissional(selectProfEdicao.value);
         btnEditarProf.disabled = true; // Desabilita inicialmente
+    } else {
+        console.warn("Um ou mais elementos de edição de profissional não foram encontrados.");
     }
 }
 

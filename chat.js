@@ -1,4 +1,4 @@
-// 1. Configuração Supabase - corrigido iao
+// 1. Configuração Supabase - corrigido iao - extração
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -10,6 +10,35 @@ const N8N_WEBHOOK_URL = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.
 const chatMessagesContainer = document.getElementById('chat-messages');
 const userInput = document.getElementById('user-input');
 const plansContainer = document.getElementById('plans-container');
+
+
+// ===============================================
+// NOVO: Função para extrair parâmetros da URL
+// ===============================================
+function getUrlParameters() {
+    const params = {};
+    // Pega a string de consulta (ex: "?param1=valor1&param2=valor2") e remove o '?' inicial
+    const queryString = window.location.search.substring(1);
+
+    if (queryString) {
+        queryString.split('&').forEach(pair => {
+            const parts = pair.split('=');
+            if (parts.length === 2) {
+                const key = decodeURIComponent(parts[0]);
+                const value = decodeURIComponent(parts[1]);
+                params[key] = value;
+            }
+        });
+    }
+    return params;
+}
+
+// NOVO: Armazena os parâmetros da URL assim que o script é carregado
+const urlParams = getUrlParameters();
+console.log("Parâmetros da URL detectados:", urlParams); // Para depuração
+
+// ===============================================
+
 
 async function carregarPrecos() {
     try {
@@ -41,42 +70,13 @@ document.addEventListener('DOMContentLoaded', carregarPrecos);
 function addMessage(text, sender) {
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message', sender === 'user' ? 'user-msg' : 'mercuria-msg');
-
-    // ALTERAÇÃO: Removida estilização inline, agora gerenciada pelo chat.css
-    // msgDiv.style.padding = "12px 18px";
-    // msgDiv.style.borderRadius = "10px";
-    // msgDiv.style.marginBottom = "10px";
-    // msgDiv.style.maxWidth = "80%";
-    // msgDiv.style.wordWrap = "break-word";
-
-    // if (sender === 'user') {
-    //     msgDiv.style.alignSelf = "flex-end";
-    //     msgDiv.style.backgroundColor = "#00BFFF22";
-    //     msgDiv.style.border = "1px solid #00BFFF";
-    // } else {
-    //     msgDiv.style.alignSelf = "flex-start";
-    //     msgDiv.style.backgroundColor = "#FFD70011";
-    //     msgDiv.style.border = "1px solid #FFD700";
-    // }
-
     msgDiv.innerText = text;
-
-    // ALTERAÇÃO: Agora anexamos ao NOVO container de mensagens
     chatMessagesContainer.appendChild(msgDiv);
-
-    // Garante que o scroll acompanhe a nova mensagem no container de mensagens
     chatMessagesContainer.scrollTo({ top: chatMessagesContainer.scrollHeight, behavior: 'smooth' });
 }
 
 function triggerPlans() {
-    // ALTERAÇÃO: Não é mais necessário mover o container de planos. Apenas o torna visível.
     plansContainer.style.display = 'block';
-
-    // Opcional: Se desejar que a rolagem das mensagens vá para o final APÓS os planos aparecerem.
-    // Isso pode não ser estritamente necessário, pois os planos estão fora da área de rolagem das mensagens.
-    // setTimeout(() => {
-    //     chatMessagesContainer.scrollTo({ top: chatMessagesContainer.scrollHeight, behavior: 'smooth' });
-    // }, 150);
 }
 
 async function sendMessage() {
@@ -87,24 +87,29 @@ async function sendMessage() {
     userInput.value = '';
 
     try {
+        // ===============================================
+        // ALTERAÇÃO: Incluindo os parâmetros da URL no corpo da requisição POST
+        // ===============================================
+        const payload = {
+            message: text,
+            timestamp: new Date().toISOString(),
+            sessao_id: "demo_landing_page",
+            ...urlParams // Espalha os parâmetros da URL aqui
+        };
+
         const response = await fetch(N8N_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: text,
-                timestamp: new Date().toISOString(),
-                sessao_id: "demo_landing_page"
-            })
+            body: JSON.stringify(payload) // Envia o payload completo
         });
+        // ===============================================
 
         const data = await response.json();
         let botResponse = data.output || data.text || "Estou processando sua solicitação...";
 
         if (botResponse.includes('[EXIBIR_PLANOS]')) {
             botResponse = botResponse.replace('[EXIBIR_PLANOS]', '').trim();
-            // Primeiro exibe o texto da IA
             if (botResponse) addMessage(botResponse, 'mercuria');
-            // Depois aciona os planos no fluxo correto
             triggerPlans();
         } else {
             addMessage(botResponse, 'mercuria');
@@ -126,3 +131,22 @@ window.activateTrial = function(planSlug) {
     localStorage.setItem('plano_selecionado', planSlug);
     window.location.href = `acesso.html?plano=${planSlug}`;
 };
+```
+
+
+---
+
+**Como usar:**
+
+1.  **Salve os arquivos:** Mantenha seu `index.html` e `chat.js` atualizados com os códigos acima.
+2.  **Teste a URL:** Acesse sua página de chat com parâmetros na URL, por exemplo: `suaurl.com/index.html?lead_id=12345&origem=google_ads`.
+3.  **Envie uma mensagem:** Quando o usuário digitar e enviar uma mensagem no chat, o objeto `payload` enviado ao seu webhook do n8n agora incluirá:
+    
+```json
+    {
+      "message": "Mensagem do usuário",
+      "timestamp": "2026-02-18T13:56:00.000Z",
+      "sessao_id": "demo_landing_page",
+      "lead_id": "12345", // Capturado da URL
+      "origem": "google_ads" // Capturado da URL
+    }

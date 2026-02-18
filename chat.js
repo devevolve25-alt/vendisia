@@ -131,22 +131,3 @@ window.activateTrial = function(planSlug) {
     localStorage.setItem('plano_selecionado', planSlug);
     window.location.href = `acesso.html?plano=${planSlug}`;
 };
-```
-
-
----
-
-**Como usar:**
-
-1.  **Salve os arquivos:** Mantenha seu `index.html` e `chat.js` atualizados com os códigos acima.
-2.  **Teste a URL:** Acesse sua página de chat com parâmetros na URL, por exemplo: `suaurl.com/index.html?lead_id=12345&origem=google_ads`.
-3.  **Envie uma mensagem:** Quando o usuário digitar e enviar uma mensagem no chat, o objeto `payload` enviado ao seu webhook do n8n agora incluirá:
-    
-```json
-    {
-      "message": "Mensagem do usuário",
-      "timestamp": "2026-02-18T13:56:00.000Z",
-      "sessao_id": "demo_landing_page",
-      "lead_id": "12345", // Capturado da URL
-      "origem": "google_ads" // Capturado da URL
-    }

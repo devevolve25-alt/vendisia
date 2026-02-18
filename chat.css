@@ -16,7 +16,7 @@ width: 100%; /* Ocupa toda a largura disponível */
 height: 90dvh; /* Prioriza a altura dinâmica da viewport (lida melhor com teclado virtual no mobile) */
 height: 90vh; /* Fallback para navegadores que não suportam 100dvh */
 border-radius: 0;
-background-color: #2a2a2a; /* Fundo do chat um pouco mais claro que o body, para contraste */
+background-color: #000000; /* Fundo do chat um pouco mais claro que o body, para contraste */
 overflow: hidden; /* Garante que nenhum conteúdo transborde */
 }
 
@@ -25,7 +25,7 @@ overflow: hidden; /* Garante que nenhum conteúdo transborde */
 flex: 0 0 auto; /* Não cresce, não encolhe, baseia-se no tamanho do conteúdo */
 padding: 10px; /* ALTERADO: Reduzido padding vertical para mobile e desktop */
 border-bottom: 1px solid #444;
-background-color: #3a3a3a;
+background-color: #000000;
 }
 
 #plans-carousel {

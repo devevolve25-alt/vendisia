@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação
+// app.js - Ponto de entrada e orquestrador da aplicação - corr
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -271,7 +271,10 @@ async function loadAndRenderGestao() {
     try {
         const dadosEstabelecimento = await ManagementService.getEstabelecimentoBySlug(localStorage.getItem('slug'));
         await UI.popularCamposGestao(dadosEstabelecimento, _donoId);
-        await UI.popularDropdownServicosParaEdicao(_estabelecimentoId);
+        // CORREÇÃO: Usar o nome correto da função popularServicosDropdownParaEdicao
+        await UI.popularServicosDropdownParaEdicao(_estabelecimentoId);
+        // NOVO: Chamar a função para popular os checkboxes de serviços para o novo profissional
+        await UI.popularServicosCheckboxesParaNovoProfissional(_estabelecimentoId);
         await UI.popularDropdownProfissionaisParaEdicao(_estabelecimentoId);
 
         // Vincula os eventos da UI de gestão
@@ -354,8 +357,8 @@ async function loadAndRenderGestao() {
                 const diasTrabalho = Array.from(document.querySelectorAll('.new-prof-dia-checkbox:checked')).map(cb => cb.value);
 
                 // --- NOVA LÓGICA PARA SERVIÇOS ESPECIALIZADOS (CADASTRO) ---
-                const selectMultiServicos = document.getElementById('new-prof-servicos-especializados');
-                const servicosEspecializados = Array.from(selectMultiServicos.selectedOptions).map(option => option.value);
+                // Coleta os IDs dos serviços selecionados nos checkboxes
+                const servicosEspecializados = Array.from(document.querySelectorAll('#new-prof-servicos-especializados input[type="checkbox"]:checked')).map(checkbox => checkbox.value);
                 // --- FIM DA NOVA LÓGICA ---
 
                 if (!nome || !whatsapp || !tipoRemuneracao || isNaN(comissao) || !horaInicio || !horaFim || diasTrabalho.length === 0) {
@@ -371,7 +374,7 @@ async function loadAndRenderGestao() {
                     horario_trabalho_inicio: horaInicio,
                     horario_trabalho_fim: horaFim,
                     dias_trabalho_json: diasTrabalho,
-                    servicos_especializados: servicosEspecializados // Envia o array de IDs
+                    servicos_especializados: servicosEspecializados // Envia o array de IDs (JSONB)
                 };
 
                 try {
@@ -379,7 +382,8 @@ async function loadAndRenderGestao() {
                     alert("Profissional cadastrado com sucesso!");
                     document.getElementById('new-prof-nome').value = '';
                     document.getElementById('new-prof-whatsapp').value = '';
-                    // Limpar outros campos do formulário se necessário
+                    // Limpar outros campos do formulário se necessário (incluindo desmarcar checkboxes)
+                    document.querySelectorAll('#new-prof-servicos-especializados input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
                     loadAndRenderGestao();
                 } catch (error) {
                     alert(error.message || "Erro ao cadastrar profissional.");

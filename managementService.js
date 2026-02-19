@@ -1,4 +1,4 @@
-/ managementService.js
+// managementService.js
 // Lógica de negócios e acesso a dados para gestão de estabelecimento, serviços e profissionais.
 
 import { supabaseClient } from './config.js';

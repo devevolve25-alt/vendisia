@@ -166,11 +166,17 @@ async function loadAndRenderAgenda() {
         const dataFimISO = dataFim.toLocaleDateString('sv-SE');
 
         const agendamentos = await AgendaService.getAgendamentosPorPeriodo(_estabelecimentoId, dataInicioISO, dataFimISO);
+        // NOVO: Buscar todos os serviços e profissionais para passar para gerarGradeHorarios
+        const allServices = await ManagementService.getServicos(_estabelecimentoId);
+        const allProfessionals = await ManagementService.getProfissionais(_estabelecimentoId);
+
         const grade = AgendaService.gerarGradeHorarios(
             localStorage.getItem('hora_abertura') || "08:00",
             localStorage.getItem('hora_fechamento') || "18:00",
             agendamentos,
-            _currentPeriodoAgenda
+            _currentPeriodoAgenda,
+            allServices, // Novo argumento
+            allProfessionals // Novo argumento
         );
 
         UI.renderAgendaContent(

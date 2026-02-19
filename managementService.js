@@ -1,4 +1,4 @@
-// managementService.js - 2
+// managementService.js - corr 3 (formato HH:MM profissionais)
 // Lógica de negócios e acesso a dados para gestão de estabelecimento, serviços e profissionais.
 
 import { supabaseClient } from './config.js';
@@ -48,6 +48,7 @@ async function updateDadosGerais(estabelecimentoId, novosDadosEstab, donoId, nov
     }
     
     // Adicionar validação de tempo para novosDadosEstab aqui também, se os campos estiverem presentes
+    // Os dados já devem vir truncados para HH:MM do app.js, mas a validação final ainda é útil.
     if (novosDadosEstab.hora_abertura) {
         novosDadosEstab.hora_abertura = _validateTimeFormat(novosDadosEstab.hora_abertura, "08:00");
     }
@@ -186,11 +187,11 @@ async function createProfissional(estabelecimentoId, dadosProfissional, verified
         throw new Error("Você não tem permissão para cadastrar profissionais.");
     }
     
-    // CORREÇÃO: Validar o formato das horas antes de inserir
+    // CORREÇÃO: Truncar e validar o formato das horas antes de inserir
     const profissionalPayload = {
         ...dadosProfissional,
-        horario_trabalho_inicio: _validateTimeFormat(dadosProfissional.horario_trabalho_inicio, "08:00"),
-        horario_trabalho_fim: _validateTimeFormat(dadosProfissional.horario_trabalho_fim, "18:00")
+        horario_trabalho_inicio: _validateTimeFormat(dadosProfissional.horario_trabalho_inicio.substring(0, 5), "08:00"),
+        horario_trabalho_fim: _validateTimeFormat(dadosProfissional.horario_trabalho_fim.substring(0, 5), "18:00")
     };
 
     const { error } = await supabaseClient.from('profissionais').insert([{
@@ -215,7 +216,13 @@ async function getProfissionais(estabelecimentoId) {
         console.error("Erro ao buscar profissionais:", error.message);
         throw new Error("Não foi possível carregar os profissionais.");
     }
-    return profissionais;
+    
+    // CORREÇÃO: Truncar os horários de trabalho para HH:MM antes de retornar
+    return profissionais.map(prof => ({
+        ...prof,
+        horario_trabalho_inicio: prof.horario_trabalho_inicio ? prof.horario_trabalho_inicio.substring(0, 5) : "08:00",
+        horario_trabalho_fim: prof.horario_trabalho_fim ? prof.horario_trabalho_fim.substring(0, 5) : "18:00"
+    }));
 }
 
 /**
@@ -238,7 +245,13 @@ async function getProfissionalById(profId, verifiedUserType) {
         console.error("Erro ao carregar profissional:", error.message);
         throw new Error("Erro ao carregar profissional: " + error.message);
     }
-    return profissional;
+
+    // CORREÇÃO: Truncar os horários de trabalho para HH:MM antes de retornar
+    return {
+        ...profissional,
+        horario_trabalho_inicio: profissional.horario_trabalho_inicio ? profissional.horario_trabalho_inicio.substring(0, 5) : "08:00",
+        horario_trabalho_fim: profissional.horario_trabalho_fim ? profissional.horario_trabalho_fim.substring(0, 5) : "18:00"
+    };
 }
 
 /**
@@ -253,13 +266,13 @@ async function updateProfissional(profId, dadosProfissional, verifiedUserType) {
         throw new Error("Você não tem permissão para salvar alterações de profissionais.");
     }
 
-    // CORREÇÃO: Validar o formato das horas antes de atualizar
+    // CORREÇÃO: Truncar e validar o formato das horas antes de atualizar
     const profissionalPayload = { ...dadosProfissional };
     if (profissionalPayload.horario_trabalho_inicio) {
-        profissionalPayload.horario_trabalho_inicio = _validateTimeFormat(profissionalPayload.horario_trabalho_inicio, "08:00");
+        profissionalPayload.horario_trabalho_inicio = _validateTimeFormat(profissionalPayload.horario_trabalho_inicio.substring(0, 5), "08:00");
     }
     if (profissionalPayload.horario_trabalho_fim) {
-        profissionalPayload.horario_trabalho_fim = _validateTimeFormat(profissionalPayload.horario_trabalho_fim, "18:00");
+        profissionalPayload.horario_trabalho_fim = _validateTimeFormat(profissionalPayload.horario_trabalho_fim.substring(0, 5), "18:00");
     }
 
     const { error } = await supabaseClient

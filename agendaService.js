@@ -1,20 +1,42 @@
-// agendaService.js
+// agendaService.js - 2
 // Lógica de negócios e acesso a dados para a funcionalidade de agenda.
 
 import { supabaseClient } from './config.js';
 
 /**
+ * Helper to create a UTC Date object from an ISO date string (YYYY-MM-DD) and a local time string (HH:MM).
+ * This function is crucial for consistently handling local times as UTC for comparison.
+ * @param {string} dateISO - Date in ISO format (YYYY-MM-DD).
+ * @param {string} timeHHMM - Time in HH:MM format (local time).
+ * @returns {Date} A Date object representing the given local date/time in UTC.
+ */
+function createUTCDateFromLocalDateAndTime(dateISO, timeHHMM) {
+    // Construct a local Date object first, so it correctly applies the local timezone offset
+    // Example: "2026-02-19T08:00:00" might be interpreted as 08:00 AM local time
+    const localDateTimeString = `${dateISO}T${timeHHMM}:00`;
+    const localDate = new Date(localDateTimeString);
+
+    // Now convert this local Date object to its UTC equivalent.
+    // toISOString() returns the UTC date and time in ISO format (e.g., "2026-02-19T11:00:00.000Z")
+    // This is the desired UTC representation that matches Supabase's timestampz.
+    return new Date(localDate.toISOString());
+}
+
+
+/**
  * Função auxiliar para verificar a disponibilidade de um profissional em um determinado período de tempo.
  * Considera dias de trabalho, horário de expediente e conflitos com agendamentos existentes.
  * @param {Object} prof - Objeto do profissional.
- * @param {Date} slotStart - Início do período a ser verificado (objeto Date).
- * @param {Date} slotEnd - Fim do período a ser verificado (objeto Date).
+ * @param {Date} slotStart - Início do período a ser verificado (objeto Date, já em UTC).
+ * @param {Date} slotEnd - Fim do período a ser verificado (objeto Date, já em UTC).
  * @param {Map<string, Array<Object>>} profAgendamentosMap - Mapa de agendamentos por profissional (para o dia em questão).
  * @param {string} dataISO - Data no formato ISO (YYYY-MM-DD) para construção de objetos Date de expediente.
  * @returns {boolean} True se o profissional estiver disponível, False caso contrário.
  */
 function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgendamentosMap, dataISO) {
     // 1. Verificar dias de trabalho
+    // slotStart já é um objeto Date em UTC. toLocaleDateString usará o fuso horário local.
+    // Isso é ok, pois estamos comparando o dia da semana local do slot com os dias de trabalho do profissional.
     const diaSemana = slotStart.toLocaleDateString('pt-BR', { weekday: 'short' }).substring(0,3).toLowerCase();
     const diasTrabalho = prof.dias_trabalho_json;
     if (!diasTrabalho || !Array.isArray(diasTrabalho) || !diasTrabalho.includes(diaSemana)) {
@@ -22,9 +44,9 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
     }
 
     // 2. Verificar horário de expediente
-    // CORREÇÃO: Usar 'Z' para garantir que sejam interpretados como UTC
-    const inicioExpediente = new Date(`${dataISO}T${prof.horario_trabalho_inicio}:00Z`);
-    const fimExpediente = new Date(`${dataISO}T${prof.horario_trabalho_fim}:00Z`);
+    // CORREÇÃO: Usar createUTCDateFromLocalDateAndTime para interpretar horários locais do profissional como UTC.
+    const inicioExpediente = createUTCDateFromLocalDateAndTime(dataISO, prof.horario_trabalho_inicio);
+    const fimExpediente = createUTCDateFromLocalDateAndTime(dataISO, prof.horario_trabalho_fim);
 
     // O slot deve começar depois ou no início do expediente e terminar antes ou no fim do expediente
     if (slotStart < inicioExpediente || slotEnd > fimExpediente) {
@@ -51,19 +73,22 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
 
 /**
  * Gera uma grade de horários para um período específico, considerando a disponibilidade combinada de profissionais e serviços.
- * @param {string} abertura - Hora de abertura do estabelecimento (ex: "08:00").
- * @param {string} fechamento - Hora de fechamento do estabelecimento (ex: "18:00").
- * @param {Array<Object>} agendados - Lista de agendamentos existentes no período.
+ * @param {string} abertura - Hora de abertura do estabelecimento (ex: "08:00" - hora local).
+ * @param {string} fechamento - Hora de fechamento do estabelecimento (ex: "18:00" - hora local).
+ * @param {Array<Object>} agendados - Lista de agendamentos existentes no período (já em UTC).
  * @param {'dia'|'semana'} periodoAgenda - O período a ser gerado ('dia' ou 'semana').
  * @param {Array<Object>} allServices - Todos os serviços oferecidos pelo estabelecimento.
  * @param {Array<Object>} allProfessionals - Todos os profissionais do estabelecimento.
  * @returns {Array<Object>} Uma grade de horários com slots e status de agendamento.
  */
 function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allServices, allProfessionals) {
-    console.log(allServices, allProfessionals)
+    console.log("gerarGradeHorarios - Services:", allServices, "Professionals:", allProfessionals);
     const intervaloPadraoSlot = 30; // Intervalo de 30 minutos para exibição na agenda
     const diasParaGerar = periodoAgenda === 'semana' ? 7 : 1;
     const gradeTotal = [];
+
+    // Obter o momento atual em UTC para comparações
+    const nowUTC = new Date(new Date().toISOString());
 
     // Pré-processar agendamentos para acesso rápido por profissional
     const profAgendamentosMap = new Map();
@@ -75,16 +100,33 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
     });
 
     for (let i = 0; i < diasParaGerar; i++) {
-        const dataReferencia = new Date();
-        dataReferencia.setHours(0, 0, 0, 0); // Zera hora para evitar problemas de fuso horário no cálculo da data
-        dataReferencia.setDate(dataReferencia.getDate() + i);
-        const dataISO = dataReferencia.toLocaleDateString('sv-SE'); // Formato YYYY-MM-DD
+        const today = new Date();
+        const futureDate = new Date(today);
+        futureDate.setDate(today.getDate() + i);
+        // CORREÇÃO: Obter dataISO no formato YYYY-MM-DD a partir de uma data UTC
+        const dataISO = futureDate.toISOString().split('T')[0];
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
-            // CORREÇÃO: Usar 'Z' para garantir que sejam interpretados como UTC
-            const slotStart = new Date(`${dataISO}T${horaAtual}:00Z`);
-            const fimExpedienteGlobal = new Date(`${dataISO}T${fechamento}:00Z`);
+            // CORREÇÃO: Usar createUTCDateFromLocalDateAndTime para criar slotStart e fimExpedienteGlobal como UTC Date objects
+            const slotStart = createUTCDateFromLocalDateAndTime(dataISO, horaAtual);
+            const fimExpedienteGlobal = createUTCDateFromLocalDateAndTime(dataISO, fechamento);
+
+            // CORREÇÃO: Adicionar verificação de horário no passado
+            if (slotStart < nowUTC) {
+                // Se o slot já passou, marque-o como indisponível e avance.
+                gradeTotal.push({
+                    data: dataISO,
+                    hora: horaAtual,
+                    dados: { status: 'passado' } // ou { status: 'indisponível' }
+                });
+                // Avança para o próximo slot padrão de exibição
+                let [h, m] = horaAtual.split(':').map(Number);
+                m += intervaloPadraoSlot;
+                if (m >= 60) { h++; m -= 60; }
+                horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                continue; // Pula o restante do loop para este slot
+            }
 
             let slotEntry = {
                 data: dataISO,
@@ -108,12 +150,11 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
 
                 // Itera sobre *todos* os serviços para ver se ALGUM pode ser atendido
                 for (const service of allServices) {
-                    // Assume que a duração mínima para ocupar um slot é o intervalo padrão,
-                    // mas para verificar a DISPONIBILIDADE do profissional, usamos a duração REAL do serviço.
                     const serviceDuration = service.duracao_minutos || intervaloPadraoSlot; // Usa duração real do serviço
+                    // slotStart já é UTC, então a adição de minutos mantém a consistência
                     const slotEndPotentialForService = new Date(slotStart.getTime() + serviceDuration * 60 * 1000);
 
-                    // Se o serviço for mais longo do que o tempo restante até o fechamento, ele não pode iniciar aqui
+                    // Se o serviço for mais longo do que o tempo restante até o fechamento global do estabelecimento, ele não pode iniciar aqui
                     if (slotEndPotentialForService > fimExpedienteGlobal) {
                         continue; // Tenta o próximo serviço (talvez um mais curto possa se encaixar)
                     }
@@ -197,9 +238,16 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
     }
     if (!servicoDetalhes) return [];
 
-    // CORREÇÃO: Usar 'Z' para garantir que sejam interpretados como UTC
-    const inicioSlot = new Date(`${data}T${hora}:00Z`);
+    // CORREÇÃO: Usar createUTCDateFromLocalDateAndTime para criar inicioSlot como UTC Date object
+    const inicioSlot = createUTCDateFromLocalDateAndTime(data, hora);
     const fimSlot = new Date(inicioSlot.getTime() + (servicoDetalhes.duracao_minutos || duracaoServico) * 60 * 1000);
+
+    // CORREÇÃO: Adicionar verificação de horário no passado
+    const nowUTC = new Date(new Date().toISOString());
+    if (inicioSlot < nowUTC) {
+        console.log("Slot no passado, retornando profissionais vazios.");
+        return []; // Slot está no passado, nenhum profissional disponível.
+    }
 
     // Busca todos os serviços do estabelecimento para mapear IDs para nomes (para a exibição no modal)
     const { data: todosServicos, error: todosServicosError } = await supabaseClient
@@ -235,17 +283,17 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
     const profIds = profissionaisCandidatos.map(p => p.id);
     let agendamentosDosCandidatosNoDia = [];
     if (profIds.length > 0) {
-        // CORREÇÃO: Construir as datas de início e fim do dia diretamente em UTC
-        const dataInicioDoDiaUTC = new Date(`${data}T00:00:00Z`);
-        const dataFimDoDiaUTC = new Date(`${data}T23:59:59Z`);
+        // CORREÇÃO: Construir as strings de data/hora de início e fim do dia diretamente em UTC para o filtro do Supabase
+        const dataInicioDoDiaISOString = `${data}T00:00:00Z`;
+        const dataFimDoDiaISOString = `${data}T23:59:59Z`;
 
         const { data: ags, error: agsError } = await supabaseClient
             .from('agendamentos')
             .select('profissional_id, data_hora_inicio, servicos(duracao_minutos)')
             .in('profissional_id', profIds)
-            // CORREÇÃO: Usar as strings ISO de datas UTC
-            .gte('data_hora_inicio', dataInicioDoDiaUTC.toISOString())
-            .lte('data_hora_inicio', dataFimDoDiaUTC.toISOString());
+            // CORREÇÃO: Usar as strings ISO de datas UTC nos filtros
+            .gte('data_hora_inicio', dataInicioDoDiaISOString)
+            .lte('data_hora_inicio', dataFimDoDiaISOString);
         
         if (agsError) {
             console.error("Erro ao buscar agendamentos dos profissionais candidatos:", agsError.message);

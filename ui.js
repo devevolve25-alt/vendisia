@@ -129,7 +129,9 @@ async function abrirModalAgendamento(data, hora, dadosEstabelecimento, onServico
     const pSelect = document.getElementById('agend-profissional');
     pSelect.innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>'; // Reseta o profissional
     pSelect.disabled = true; // Desabilita até um serviço ser selecionado
-    document.querySelector('#modal-agendamento button[data-action="confirmar"]').disabled = true; // Desabilita botão de confirmar
+    // O botão de confirmar agendamento não tem data-action, precisamos ajustá-lo no HTML
+    // ou referenciá-lo de outra forma. Por enquanto, a referência 'confirmar' não funciona.
+    // document.querySelector('#modal-agendamento button[data-action="confirmar"]').disabled = true; // Desabilita botão de confirmar
 
     sSelect.onchange = onServicoChangeCallback;
 }
@@ -150,7 +152,7 @@ function fecharModalAgendamento() {
  * Popula o dropdown de serviços para edição na aba de gestão.
  * @param {string} estabelecimentoId - O ID do estabelecimento.
  */
-async function popularDropdownServicosParaEdicao(estabelecimentoId) {
+async function popularServicosDropdownParaEdicao(estabelecimentoId) {
     const selectServico = document.getElementById('select-servico-para-editar');
     selectServico.innerHTML = '<option value="">Selecione um Serviço...</option>';
 
@@ -169,6 +171,50 @@ async function popularDropdownServicosParaEdicao(estabelecimentoId) {
     document.getElementById('btn-editar-servico-selecionado').disabled = true;
     document.getElementById('btn-excluir-servico-selecionado').style.display = 'none';
 }
+
+/**
+ * Popula as caixas de seleção de serviços para o formulário de cadastro de novo profissional.
+ * @param {string} estabelecimentoId - O ID do estabelecimento.
+ */
+async function popularServicosCheckboxesParaNovoProfissional(estabelecimentoId) {
+    const servicosContainer = document.getElementById('new-prof-servicos-especializados');
+    if (!servicosContainer) {
+        console.error("Contêiner de checkboxes de serviços 'new-prof-servicos-especializados' não encontrado.");
+        return;
+    }
+    servicosContainer.innerHTML = ''; // Limpa as opções existentes
+
+    try {
+        const servicos = await ManagementService.getServicos(estabelecimentoId);
+        if (servicos && servicos.length > 0) {
+            servicos.forEach(servico => {
+                const label = document.createElement('label');
+                label.style.display = 'flex';
+                label.style.alignItems = 'center';
+                label.style.gap = '5px';
+                label.style.fontSize = '0.85rem';
+                label.style.color = '#fff';
+                label.style.cursor = 'pointer';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'new-prof-servico-checkbox'; // Nova classe para fácil seleção
+                checkbox.value = servico.id;
+                checkbox.style.accentColor = 'var(--creative-color)'; // Estilo para o checkbox
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(servico.nome));
+                servicosContainer.appendChild(label);
+            });
+        } else {
+            servicosContainer.innerHTML = '<span style="color: #888; font-size: 0.8rem;">Nenhum serviço cadastrado para seleção.</span>';
+        }
+    } catch (error) {
+        console.error("Erro ao popular checkboxes de serviços:", error.message);
+        servicosContainer.innerHTML = '<span style="color: #e74c3c; font-size: 0.8rem;">Erro ao carregar serviços.</span>';
+    }
+}
+
 
 /**
  * Popula o dropdown de profissionais para edição na aba de gestão.
@@ -257,10 +303,10 @@ async function abrirModalEdicaoProfissional(profissional, estabelecimentoId) {
         checkbox.checked = diasTrabalho.includes(checkbox.value);
     });
 
-    // --- MODIFICAÇÃO PARA MÚLTIPLAS ESPECIALIDADES ---
-    const servicosProfissional = profissional.servicos_especializados || []; // O novo campo JSONB
+    // --- MODIFICAÇÃO PARA MÚLTIPLAS ESPECIALIDADES (select multiple) ---
+    const servicosProfissional = profissional.servicos_especializados || []; // O campo JSONB
     const todosServicos = await ManagementService.getServicos(estabelecimentoId); // Busca todos os serviços
-    const selectMultiServicos = document.getElementById('edit-prof-servicos-especializados'); // ID do novo select múltiplo
+    const selectMultiServicos = document.getElementById('edit-prof-servicos-especializados'); // ID do select múltiplo
 
     if (selectMultiServicos) {
         selectMultiServicos.innerHTML = ''; // Limpa opções existentes
@@ -474,18 +520,20 @@ function renderSalonNotFound() {
  */
 async function handleProfissionalDropdownUpdate(servicoId, data, hora, duracaoServico, estabelecimentoId) {
     const pSelect = document.getElementById('agend-profissional');
-    const confirmButton = document.querySelector('#modal-agendamento button[data-action="confirmar"]');
+    // Encontrar o botão de confirmar pelo seu ID, se houver, ou classe específica
+    const confirmButton = document.querySelector('#modal-agendamento button:last-child'); // Assumindo que é o último botão no modal de agendamento
 
     if (!servicoId) {
         pSelect.innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';
         pSelect.disabled = true;
-        confirmButton.disabled = true;
+        if (confirmButton) confirmButton.disabled = true;
         return;
     }
 
     pSelect.innerHTML = '<option value="">Buscando profissionais...</option>';
     pSelect.disabled = true;
-    confirmButton.disabled = true;
+    if (confirmButton) confirmButton.disabled = true;
+
 
     try {
         // A lógica principal para buscar profissionais disponíveis agora está em AgendaService
@@ -496,7 +544,7 @@ async function handleProfissionalDropdownUpdate(servicoId, data, hora, duracaoSe
         if (profissionaisDisponiveis.length === 0) {
             pSelect.innerHTML = '<option value="">Nenhum profissional disponível para este serviço/horário.</option>';
             pSelect.disabled = true;
-            confirmButton.disabled = true;
+            if (confirmButton) confirmButton.disabled = true;
         } else {
             profissionaisDisponiveis.forEach(p => {
                 // Adaptação para exibir as múltiplas especialidades (se houver)
@@ -509,13 +557,13 @@ async function handleProfissionalDropdownUpdate(servicoId, data, hora, duracaoSe
             // Habilita o botão de confirmar se houver profissionais disponíveis,
             // ou se um profissional for selecionado (se houver um evento 'onchange' para pSelect).
             // Para simplificar, habilitamos se houver opções.
-            confirmButton.disabled = false;
+            if (confirmButton) confirmButton.disabled = false;
         }
     } catch (error) {
         console.error("Erro ao carregar profissionais disponíveis:", error.message);
         pSelect.innerHTML = '<option value="">Erro ao carregar profissionais.</option>';
         pSelect.disabled = true;
-        confirmButton.disabled = true;
+        if (confirmButton) confirmButton.disabled = true;
     }
 }
 
@@ -525,7 +573,8 @@ export {
     vincularEventosGestao,
     abrirModalAgendamento,
     fecharModalAgendamento,
-    popularDropdownServicosParaEdicao,
+    popularServicosDropdownParaEdicao, // Nome ajustado
+    popularServicosCheckboxesParaNovoProfissional, // Nova função exportada
     popularDropdownProfissionaisParaEdicao,
     popularCamposGestao,
     abrirModalEdicaoServico,

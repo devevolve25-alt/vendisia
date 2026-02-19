@@ -433,9 +433,19 @@ async function handleTabClick(viewId, clickedTabElement) {
     clickedTabElement.classList.add('active');
 
     // Oculta a aba de gestão por padrão (será mostrada se a viewId for 'gestao')
-    document.getElementById('aba-gestao').style.display = 'none';
-
     document.getElementById('view-title').innerText = clickedTabElement.innerText.toUpperCase();
+
+    const viewBody = document.getElementById('view-body');
+    const abaGestao = document.getElementById('aba-gestao');
+
+    // Gerenciar a visibilidade das áreas de conteúdo
+    if (viewId === 'gestao') {
+        viewBody.style.display = 'none'; // Oculta a área de conteúdo genérica
+        abaGestao.style.display = 'block'; // Mostra a área de gestão dedicada
+    } else {
+        abaGestao.style.display = 'none'; // Oculta a área de gestão
+        viewBody.style.display = 'block'; // Mostra a área de conteúdo genérica
+    }
 
     if (_verifiedUserType === 'dono' || _verifiedUserType === 'funcionario') {
         switch (viewId) {

@@ -4,43 +4,143 @@
 import { supabaseClient } from './config.js';
 
 /**
- * Gera uma grade de horários para um período específico.
+ * Função auxiliar para verificar a disponibilidade de um profissional em um determinado período de tempo.
+ * Considera dias de trabalho, horário de expediente e conflitos com agendamentos existentes.
+ * @param {Object} prof - Objeto do profissional.
+ * @param {Date} slotStart - Início do período a ser verificado (objeto Date).
+ * @param {Date} slotEnd - Fim do período a ser verificado (objeto Date).
+ * @param {Map<string, Array<Object>>} profAgendamentosMap - Mapa de agendamentos por profissional (para o dia em questão).
+ * @param {string} dataISO - Data no formato ISO (YYYY-MM-DD) para construção de objetos Date de expediente.
+ * @returns {boolean} True se o profissional estiver disponível, False caso contrário.
+ */
+function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgendamentosMap, dataISO) {
+    // 1. Verificar dias de trabalho
+    const diaSemana = slotStart.toLocaleDateString('pt-BR', { weekday: 'short' }).substring(0,3).toLowerCase();
+    const diasTrabalho = prof.dias_trabalho_json;
+    if (!diasTrabalho || !Array.isArray(diasTrabalho) || !diasTrabalho.includes(diaSemana)) {
+        return false;
+    }
+
+    // 2. Verificar horário de expediente
+    const inicioExpediente = new Date(`${dataISO}T${prof.horario_trabalho_inicio}:00`);
+    const fimExpediente = new Date(`${dataISO}T${prof.horario_trabalho_fim}:00`);
+
+    // O slot deve começar depois ou no início do expediente e terminar antes ou no fim do expediente
+    if (slotStart < inicioExpediente || slotEnd > fimExpediente) {
+        return false;
+    }
+
+    // 3. Verificar conflitos com agendamentos existentes
+    const agendamentosDoProfissional = profAgendamentosMap.get(prof.id) || [];
+    for (const agendamento of agendamentosDoProfissional) {
+        const agInicio = new Date(agendamento.data_hora_inicio);
+        const agDuracao = agendamento.servicos?.duracao_minutos || 30; // Usar duração real do serviço agendado
+        const agFim = new Date(agInicio.getTime() + agDuracao * 60 * 1000);
+
+        // Verifica sobreposição: [slotStart, slotEnd) vs [agInicio, agFim)
+        if (slotStart < agFim && slotEnd > agInicio) {
+            return false; // Conflito encontrado
+        }
+    }
+
+    return true; // Profissional está disponível
+}
+
+
+/**
+ * Gera uma grade de horários para um período específico, considerando a disponibilidade combinada de profissionais e serviços.
  * @param {string} abertura - Hora de abertura do estabelecimento (ex: "08:00").
  * @param {string} fechamento - Hora de fechamento do estabelecimento (ex: "18:00").
- * @param {Array<Object>} agendados - Lista de agendamentos existentes.
+ * @param {Array<Object>} agendados - Lista de agendamentos existentes no período.
  * @param {'dia'|'semana'} periodoAgenda - O período a ser gerado ('dia' ou 'semana').
+ * @param {Array<Object>} allServices - Todos os serviços oferecidos pelo estabelecimento.
+ * @param {Array<Object>} allProfessionals - Todos os profissionais do estabelecimento.
  * @returns {Array<Object>} Uma grade de horários com slots e status de agendamento.
  */
-function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda) {
-    const intervalo = 30; // Intervalo de 30 minutos padronizado
+function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allServices, allProfessionals) {
+    const intervaloPadraoSlot = 30; // Intervalo de 30 minutos para exibição na agenda
     const diasParaGerar = periodoAgenda === 'semana' ? 7 : 1;
     const gradeTotal = [];
 
+    // Pré-processar agendamentos para acesso rápido por profissional
+    const profAgendamentosMap = new Map();
+    agendados.forEach(ag => {
+        if (!profAgendamentosMap.has(ag.profissional_id)) {
+            profAgendamentosMap.set(ag.profissional_id, []);
+        }
+        profAgendamentosMap.get(ag.profissional_id).push(ag);
+    });
+
     for (let i = 0; i < diasParaGerar; i++) {
         const dataReferencia = new Date();
-        dataReferencia.setHours(0, 0, 0, 0);
+        dataReferencia.setHours(0, 0, 0, 0); // Zera hora para evitar problemas de fuso horário no cálculo da data
         dataReferencia.setDate(dataReferencia.getDate() + i);
-        const dataISO = dataReferencia.toLocaleDateString('sv-SE');
+        const dataISO = dataReferencia.toLocaleDateString('sv-SE'); // Formato YYYY-MM-DD
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
-            const tempoSlot = new Date(`${dataISO}T${horaAtual.substring(0, 5)}:00`).getTime();
+            const slotStart = new Date(`${dataISO}T${horaAtual}:00`);
+            const fimExpedienteGlobal = new Date(`${dataISO}T${fechamento}:00`);
 
-            const agendamentoNoSlot = agendados.find(a => {
-                const inicio = new Date(a.data_hora_inicio).getTime();
-                const duracaoMs = (a.servicos?.duracao_minutos || 30) * 60 * 1000;
-                const fimAgendamento = inicio + duracaoMs;
-                return (tempoSlot >= inicio && tempoSlot < fimAgendamento);
-            });
-
-            gradeTotal.push({
+            let slotEntry = {
                 data: dataISO,
                 hora: horaAtual,
-                dados: agendamentoNoSlot || null
+                dados: null // Padrão: disponível
+            };
+
+            // --- Fase 1: Verificar agendamentos que *iniciam* neste slot ---
+            // Se um agendamento existente inicia exatamente neste slot de exibição (ex: 09:00),
+            // ele "ocupa" este slot para fins de exibição da agenda.
+            const agendamentoIniciandoNoSlot = agendados.find(a => {
+                const agInicio = new Date(a.data_hora_inicio);
+                return agInicio.getTime() === slotStart.getTime();
             });
 
+            if (agendamentoIniciandoNoSlot) {
+                slotEntry.dados = agendamentoIniciandoNoSlot;
+            } else {
+                // --- Fase 2: Se nenhum agendamento inicia aqui, verificar disponibilidade global de profissionais/serviços ---
+                let isSlotGloballyAvailable = false;
+
+                // Itera sobre *todos* os serviços para ver se ALGUM pode ser atendido
+                for (const service of allServices) {
+                    // Assume que a duração mínima para ocupar um slot é o intervalo padrão,
+                    // mas para verificar a DISPONIBILIDADE do profissional, usamos a duração REAL do serviço.
+                    const serviceDuration = service.duracao_minutos || intervaloPadraoSlot; // Usa duração real do serviço
+                    const slotEndPotentialForService = new Date(slotStart.getTime() + serviceDuration * 60 * 1000);
+
+                    // Se o serviço for mais longo do que o tempo restante até o fechamento, ele não pode iniciar aqui
+                    if (slotEndPotentialForService > fimExpedienteGlobal) {
+                        continue; // Tenta o próximo serviço (talvez um mais curto possa se encaixar)
+                    }
+
+                    // Itera sobre todos os profissionais para ver se ALGUM pode realizar este serviço
+                    for (const prof of allProfessionals) {
+                        // Verifica se o profissional oferece este serviço
+                        if (prof.servicos_especializados && Array.isArray(prof.servicos_especializados) && prof.servicos_especializados.includes(service.id)) {
+                            // Verifica se o profissional está disponível no período necessário para este *serviço específico*
+                            if (_checkProfissionalAvailabilityAtTime(prof, slotStart, slotEndPotentialForService, profAgendamentosMap, dataISO)) {
+                                isSlotGloballyAvailable = true;
+                                break; // Encontramos um profissional disponível para este serviço, então o slot é globalmente disponível.
+                            }
+                        }
+                    }
+                    if (isSlotGloballyAvailable) {
+                        break; // O slot é globalmente disponível, não precisamos verificar outros serviços.
+                    }
+                }
+
+                if (!isSlotGloballyAvailable) {
+                    // Se, após verificar todos os serviços e profissionais, ninguém estiver disponível, o slot está indisponível.
+                    slotEntry.dados = { status: 'indisponível' }; // Marcação customizada para slot indisponível
+                }
+            }
+
+            gradeTotal.push(slotEntry);
+
+            // Avança para o próximo slot padrão de exibição (intervaloPadraoSlot)
             let [h, m] = horaAtual.split(':').map(Number);
-            m += intervalo;
+            m += intervaloPadraoSlot;
             if (m >= 60) { h++; m -= 60; }
             horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
         }
@@ -57,7 +157,7 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda) {
  */
 async function getAgendamentosPorPeriodo(estabelecimentoId, dataInicioISO, dataFimISO) {
     const { data: agendamentos, error } = await supabaseClient.from('agendamentos')
-        .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(nome), servicos(nome, duracao_minutos)')
+        .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(id, nome), servicos(id, nome, duracao_minutos)')
         .eq('estabelecimento_id', estabelecimentoId)
         .gte('data_hora_inicio', dataInicioISO + 'T00:00:00')
         .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
@@ -95,7 +195,7 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
     const inicioSlot = new Date(`${data}T${hora}:00`);
     const fimSlot = new Date(inicioSlot.getTime() + (servicoDetalhes.duracao_minutos || duracaoServico) * 60 * 1000);
 
-    // Busca todos os serviços do estabelecimento para mapear IDs para nomes
+    // Busca todos os serviços do estabelecimento para mapear IDs para nomes (para a exibição no modal)
     const { data: todosServicos, error: todosServicosError } = await supabaseClient
         .from('servicos')
         .select('id, nome')
@@ -103,13 +203,13 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
 
     if (todosServicosError) {
         console.error("Erro ao buscar todos os serviços do estabelecimento para mapeamento:", todosServicosError.message);
-        return []; // Erro crítico para mapeamento de nomes de serviço
+        return [];
     }
     const servicoMap = new Map(todosServicos.map(s => [s.id, s.nome]));
 
     const { data: profsDoEstabelecimento, error: profsError } = await supabaseClient
         .from('profissionais')
-        .select('id, nome, servicos_especializados, horario_trabalho_inicio, horario_trabalho_fim, dias_trabalho_json') // Inclui a nova coluna
+        .select('id, nome, servicos_especializados, horario_trabalho_inicio, horario_trabalho_fim, dias_trabalho_json')
         .eq('estabelecimento_id', estabelecimentoId);
 
     if (profsError) {
@@ -118,59 +218,52 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
     }
 
     const profissionaisCandidatos = profsDoEstabelecimento.filter(p => {
-        // Filtra baseando-se no array JSONB 'servicos_especializados'
+        // Filtra baseando-se no array JSONB 'servicos_especializados' para garantir que o profissional oferece o serviço
         const isSpecialized = p.servicos_especializados && Array.isArray(p.servicos_especializados) && p.servicos_especializados.includes(servicoId);
         return isSpecialized;
     });
 
     const profissionaisDisponiveis = [];
 
-    for (const prof of profissionaisCandidatos) {
-        const diaSemana = inicioSlot.toLocaleDateString('pt-BR', { weekday: 'short' }).substring(0,3).toLowerCase();
-        const diasTrabalho = prof.dias_trabalho_json;
+    // Para evitar múltiplas chamadas de DB dentro do loop, busca todos os agendamentos dos profissionais candidatos de uma vez para o dia
+    const profIds = profissionaisCandidatos.map(p => p.id);
+    let agendamentosDosCandidatosNoDia = [];
+    if (profIds.length > 0) {
+        const dataInicioDia = new Date(inicioSlot.getFullYear(), inicioSlot.getMonth(), inicioSlot.getDate());
+        const dataFimDia = new Date(inicioSlot.getFullYear(), inicioSlot.getMonth(), inicioSlot.getDate(), 23, 59, 59);
 
-        // Verifica se diasTrabalho é um array e inclui o dia da semana
-        if (!diasTrabalho || !Array.isArray(diasTrabalho) || !diasTrabalho.includes(diaSemana)) {
-            continue;
-        }
-
-        const inicioExpediente = new Date(`${data}T${prof.horario_trabalho_inicio}:00`);
-        const fimExpediente = new Date(`${data}T${prof.horario_trabalho_fim}:00`);
-
-        if (inicioSlot < inicioExpediente || fimSlot > fimExpediente) {
-            continue;
-        }
-
-        const { data: agendamentosProfissional, error: agendProfError } = await supabaseClient
+        const { data: ags, error: agsError } = await supabaseClient
             .from('agendamentos')
-            .select('data_hora_inicio, servicos(duracao_minutos)')
-            .eq('profissional_id', prof.id)
-            .gte('data_hora_inicio', new Date(inicioSlot.getFullYear(), inicioSlot.getMonth(), inicioSlot.getDate()).toISOString())
-            .lte('data_hora_inicio', new Date(inicioSlot.getFullYear(), inicioSlot.getMonth(), inicioSlot.getDate(), 23, 59, 59).toISOString());
-
-        if (agendProfError) {
-            console.error("Erro ao buscar agendamentos do profissional:", agendProfError.message);
-            continue;
+            .select('profissional_id, data_hora_inicio, servicos(duracao_minutos)')
+            .in('profissional_id', profIds)
+            .gte('data_hora_inicio', dataInicioDia.toISOString())
+            .lte('data_hora_inicio', dataFimDia.toISOString());
+        
+        if (agsError) {
+            console.error("Erro ao buscar agendamentos dos profissionais candidatos:", agsError.message);
+        } else {
+            agendamentosDosCandidatosNoDia = ags;
         }
-
-        let conflito = false;
-        for (const agendamento of agendamentosProfissional) {
-            const agInicio = new Date(agendamento.data_hora_inicio);
-            const agDuracao = agendamento.servicos?.duracao_minutos || 30;
-            const agFim = new Date(agInicio.getTime() + agDuracao * 60 * 1000);
-
-            if (inicioSlot < agFim && fimSlot > agInicio) {
-                conflito = true;
-                break;
-            }
+    }
+    
+    // Constrói um mapa de agendamentos por profissional para a função auxiliar
+    const profAgendamentosMapParaSlot = new Map();
+    agendamentosDosCandidatosNoDia.forEach(ag => {
+        if (!profAgendamentosMapParaSlot.has(ag.profissional_id)) {
+            profAgendamentosMapParaSlot.set(ag.profissional_id, []);
         }
+        profAgendamentosMapParaSlot.get(ag.profissional_id).push(ag);
+    });
 
-        if (!conflito) {
+    for (const prof of profissionaisCandidatos) {
+        // Usa a função auxiliar para verificar a disponibilidade do profissional neste slot
+        // passando a duração do serviço selecionado.
+        if (_checkProfissionalAvailabilityAtTime(prof, inicioSlot, fimSlot, profAgendamentosMapParaSlot, data)) {
             profissionaisDisponiveis.push({
                 ...prof,
                 // Adiciona uma propriedade com os nomes dos serviços especializados para uso na UI
                 servicos_especializados_nomes: prof.servicos_especializados
-                    ? prof.servicos_especializados.map(id => servicoMap.get(id)).filter(Boolean) // Filtra `undefined` ou `null`
+                    ? prof.servicos_especializados.map(id => servicoMap.get(id)).filter(Boolean)
                     : []
             });
         }
@@ -236,13 +329,13 @@ async function confirmarAgendamento(payload, servicoId, profId, clienteNome, est
  * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao cancelar.
  */
 async function cancelarAgendamento(agendamentoId, verifiedUserType) {
-    if (verifiedUserType !== 'dono') {
+    if (verifiedUserType !== 'dono' && verifiedUserType !== 'funcionario') { // Adicionado funcionário para cancelar
         throw new Error("Você não tem permissão para cancelar agendamentos.");
     }
     // Primeiro, tenta remover as movimentações financeiras relacionadas
     const { error: movFinError } = await supabaseClient.from('movimentacoes_financeiras').delete().eq('agendamento_id', agendamentoId);
     if (movFinError) {
-        console.error("Erro ao excluir movimentações financeiras vinculadas:", movFinError.message);
+        console.warn("Aviso: Erro ao excluir movimentações financeiras vinculadas ao agendamento:", movFinError.message);
         // Continuamos para tentar excluir o agendamento mesmo com erro no financeiro
     }
 

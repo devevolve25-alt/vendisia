@@ -1,7 +1,22 @@
-// managementService.js
+// managementService.js - 2
 // Lógica de negócios e acesso a dados para gestão de estabelecimento, serviços e profissionais.
 
 import { supabaseClient } from './config.js';
+
+/**
+ * Função auxiliar para validar e padronizar formatos de hora (HH:MM).
+ * @param {string} timeString - A string de hora a ser validada.
+ * @param {string} defaultValue - O valor padrão a ser retornado se a string for inválida.
+ * @returns {string} A string de hora validada ou o valor padrão.
+ */
+function _validateTimeFormat(timeString, defaultValue) {
+    const timeRegex = /^(?:2[0-3]|[01]?[0-9]):(?:[0-5]?[0-9])$/; // HH:MM (00:00 a 23:59)
+    if (timeString && typeof timeString === 'string' && timeRegex.test(timeString)) {
+        return timeString;
+    }
+    console.warn(`[managementService.js] Formato de hora inválido recebido: "${timeString}". Usando valor padrão: "${defaultValue}"`);
+    return defaultValue;
+}
 
 /**
  * Busca os dados de um estabelecimento pelo seu slug.
@@ -31,6 +46,15 @@ async function updateDadosGerais(estabelecimentoId, novosDadosEstab, donoId, nov
     if (verifiedUserType !== 'dono') {
         throw new Error("Você não tem permissão para atualizar essas configurações.");
     }
+    
+    // Adicionar validação de tempo para novosDadosEstab aqui também, se os campos estiverem presentes
+    if (novosDadosEstab.hora_abertura) {
+        novosDadosEstab.hora_abertura = _validateTimeFormat(novosDadosEstab.hora_abertura, "08:00");
+    }
+    if (novosDadosEstab.hora_fechamento) {
+        novosDadosEstab.hora_fechamento = _validateTimeFormat(novosDadosEstab.hora_fechamento, "18:00");
+    }
+
     const { error: errorEstab } = await supabaseClient.from('estabelecimentos').update(novosDadosEstab).eq('id', estabelecimentoId);
     const { error: errorPerfil } = await supabaseClient.from('perfis').update(novosDadosPerfil).eq('id', donoId);
     if (errorEstab || errorPerfil) {
@@ -161,9 +185,17 @@ async function createProfissional(estabelecimentoId, dadosProfissional, verified
     if (verifiedUserType !== 'dono') {
         throw new Error("Você não tem permissão para cadastrar profissionais.");
     }
+    
+    // CORREÇÃO: Validar o formato das horas antes de inserir
+    const profissionalPayload = {
+        ...dadosProfissional,
+        horario_trabalho_inicio: _validateTimeFormat(dadosProfissional.horario_trabalho_inicio, "08:00"),
+        horario_trabalho_fim: _validateTimeFormat(dadosProfissional.horario_trabalho_fim, "18:00")
+    };
+
     const { error } = await supabaseClient.from('profissionais').insert([{
         estabelecimento_id: estabelecimentoId,
-        ...dadosProfissional
+        ...profissionalPayload
     }]);
     if (error) {
         console.error("Erro ao cadastrar profissional:", error.message);
@@ -220,9 +252,19 @@ async function updateProfissional(profId, dadosProfissional, verifiedUserType) {
     if (verifiedUserType !== 'dono') {
         throw new Error("Você não tem permissão para salvar alterações de profissionais.");
     }
+
+    // CORREÇÃO: Validar o formato das horas antes de atualizar
+    const profissionalPayload = { ...dadosProfissional };
+    if (profissionalPayload.horario_trabalho_inicio) {
+        profissionalPayload.horario_trabalho_inicio = _validateTimeFormat(profissionalPayload.horario_trabalho_inicio, "08:00");
+    }
+    if (profissionalPayload.horario_trabalho_fim) {
+        profissionalPayload.horario_trabalho_fim = _validateTimeFormat(profissionalPayload.horario_trabalho_fim, "18:00");
+    }
+
     const { error } = await supabaseClient
         .from('profissionais')
-        .update(dadosProfissional)
+        .update(profissionalPayload)
         .eq('id', profId);
     if (error) {
         console.error("Erro ao salvar profissional:", error.message);

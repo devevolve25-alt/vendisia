@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 2
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 3
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -22,6 +22,22 @@ window.logout = logout;
 window.fecharModalAgendamento = UI.fecharModalAgendamento;
 window.fecharModalEdicaoServico = UI.fecharModalEdicaoServico;
 window.fecharModalEdicaoProfissional = UI.fecharModalEdicaoProfissional;
+
+/**
+ * Função auxiliar para validar e padronizar formatos de hora (HH:MM).
+ * @param {string} timeString - A string de hora a ser validada.
+ * @param {string} defaultValue - O valor padrão a ser retornado se a string for inválida.
+ * @returns {string} A string de hora validada ou o valor padrão.
+ */
+function _validateTimeFormat(timeString, defaultValue) {
+    const timeRegex = /^(?:2[0-3]|[01]?[0-9]):(?:[0-5]?[0-9])$/; // HH:MM (00:00 a 23:59)
+    if (timeString && typeof timeString === 'string' && timeRegex.test(timeString)) {
+        return timeString;
+    }
+    console.warn(`[app.js] Formato de hora inválido recebido: "${timeString}". Usando valor padrão: "${defaultValue}"`);
+    return defaultValue;
+}
+
 
 /**
  * Lida com o clique no botão de enviar comando do chat.
@@ -50,13 +66,19 @@ window.confirmarAgendamento = async () => {
         return;
     }
 
+    // A string de data/hora é formatada aqui com 'Z' para ser explicitamente UTC.
+    // A função createUTCDateFromLocalDateAndTime em agendaService fará a conversão correta
+    // se for necessário interpretar data e hora locais antes de converter para UTC.
+    const dataHoraInicioUTC = AgendaService.createUTCDateFromLocalDateAndTime(_currentDataAgenda, _currentHoraAgenda).toISOString();
+
+
     const payload = {
         estabelecimento_id: _estabelecimentoId,
         servico_id: servicoId,
         profissional_id: profissionalId,
         cliente_nome: clienteNome,
         cliente_whatsapp: clienteWhatsapp,
-        data_hora_inicio: `${_currentDataAgenda}T${_currentHoraAgenda}:00.000Z`, // Formato ISO para Supabase
+        data_hora_inicio: dataHoraInicioUTC, 
         status: 'agendado'
     };
 
@@ -128,8 +150,8 @@ window.salvarEdicaoProfissional = async () => {
         whatsapp,
         tipo_remuneracao: tipoRemuneracao,
         valor_comissao_porcentagem: comissao,
-        horario_trabalho_inicio: horaInicio,
-        horario_trabalho_fim: horaFim,
+        horario_trabalho_inicio: _validateTimeFormat(horaInicio, "08:00"), // Validação aqui
+        horario_trabalho_fim: _validateTimeFormat(horaFim, "18:00"),     // Validação aqui
         dias_trabalho_json: diasTrabalho,
         servicos_especializados: servicosEspecializados // Envia o array de IDs
     };
@@ -154,16 +176,19 @@ window.salvarEdicaoProfissional = async () => {
 async function loadAndRenderAgenda() {
     UI.showLoadingState();
     try {
-        const hoje = new Date();
-        let dataInicio = new Date(hoje);
-        let dataFim = new Date(hoje);
+        // CORREÇÃO: Usar a data atual em UTC para consistência
+        const hojeUTC = new Date(new Date().toISOString());
+        let dataInicio = new Date(hojeUTC);
+        let dataFim = new Date(hojeUTC);
 
         if (_currentPeriodoAgenda === 'semana') {
-            dataFim.setDate(hoje.getDate() + 6); // Próximos 7 dias
+            dataFim.setDate(hojeUTC.getDate() + 6); // Próximos 7 dias
         }
 
-        const dataInicioISO = dataInicio.toLocaleDateString('sv-SE');
-        const dataFimISO = dataFim.toLocaleDateString('sv-SE');
+        // CORREÇÃO: Usar toISOString().split('T')[0] para obter YYYY-MM-DD em UTC
+        const dataInicioISO = dataInicio.toISOString().split('T')[0];
+        const dataFimISO = dataFim.toISOString().split('T')[0];
+
 
         const agendamentos = await AgendaService.getAgendamentosPorPeriodo(_estabelecimentoId, dataInicioISO, dataFimISO);
         // NOVO: Buscar todos os serviços e profissionais para passar para gerarGradeHorarios
@@ -292,8 +317,8 @@ async function loadAndRenderGestao() {
                     cnpj: document.getElementById('edit-cnpj').value,
                     whatsapp: document.getElementById('edit-whatsapp').value,
                     endereco_completo: document.getElementById('edit-endereco-completo').value,
-                    hora_abertura: document.getElementById('edit-hora-abertura').value,
-                    hora_fechamento: document.getElementById('edit-hora-fechamento').value,
+                    hora_abertura: _validateTimeFormat(document.getElementById('edit-hora-abertura').value, "08:00"), // Validação aqui
+                    hora_fechamento: _validateTimeFormat(document.getElementById('edit-hora-fechamento').value, "18:00"), // Validação aqui
                     intervalo_slot: parseInt(document.getElementById('edit-intervalo-slot').value, 10),
                 };
                 const novosDadosPerfil = {
@@ -377,8 +402,8 @@ async function loadAndRenderGestao() {
                     whatsapp,
                     tipo_remuneracao: tipoRemuneracao,
                     valor_comissao_porcentagem: comissao,
-                    horario_trabalho_inicio: horaInicio,
-                    horario_trabalho_fim: horaFim,
+                    horario_trabalho_inicio: _validateTimeFormat(horaInicio, "08:00"), // Validação aqui
+                    horario_trabalho_fim: _validateTimeFormat(horaFim, "18:00"),     // Validação aqui
                     dias_trabalho_json: diasTrabalho,
                     servicos_especializados: servicosEspecializados // Envia o array de IDs (JSONB)
                 };
@@ -532,8 +557,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);
-        localStorage.setItem('hora_abertura', estabelecimento.hora_abertura || "08:00");
-        localStorage.setItem('hora_fechamento', estabelecimento.hora_fechamento || "18:00");
+        // CORREÇÃO: Usar a função de validação ao salvar no localStorage
+        localStorage.setItem('hora_abertura', _validateTimeFormat(estabelecimento.hora_abertura, "08:00"));
+        localStorage.setItem('hora_fechamento', _validateTimeFormat(estabelecimento.hora_fechamento, "18:00"));
 
 
         // Determina o tipo de usuário com base no ID do dono

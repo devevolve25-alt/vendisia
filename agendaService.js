@@ -58,6 +58,7 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
  * @returns {Array<Object>} Uma grade de horários com slots e status de agendamento.
  */
 function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allServices, allProfessionals) {
+    console.log(allServices, allProfessionals)
     const intervaloPadraoSlot = 30; // Intervalo de 30 minutos para exibição na agenda
     const diasParaGerar = periodoAgenda === 'semana' ? 7 : 1;
     const gradeTotal = [];

@@ -1,4 +1,4 @@
-// agendaService.js - corr
+// agendaService.js - 3
 // Lógica de negócios e acesso a dados para a funcionalidade de agenda.
 
 import { supabaseClient } from './config.js';
@@ -6,18 +6,38 @@ import { supabaseClient } from './config.js';
 /**
  * Helper to create a UTC Date object from an ISO date string (YYYY-MM-DD) and a local time string (HH:MM).
  * This function is crucial for consistently handling local times as UTC for comparison.
+ *
  * @param {string} dateISO - Date in ISO format (YYYY-MM-DD).
  * @param {string} timeHHMM - Time in HH:MM format (local time).
- * @returns {Date} A Date object representing the given local date/time in UTC.
+ * @returns {Date} A Date object representing the given local date/time in UTC. Returns an invalid Date if inputs are malformed.
  */
 function createUTCDateFromLocalDateAndTime(dateISO, timeHHMM) {
-    // Construct a local Date object first, so it correctly applies the local timezone offset
-    // Example: "2026-02-19T08:00:00" might be interpreted as 08:00 AM local time
+    // Basic validation for inputs
+    if (!dateISO || !timeHHMM || typeof dateISO !== 'string' || typeof timeHHMM !== 'string') {
+        console.error(`[agendaService.js] createUTCDateFromLocalDateAndTime received invalid input: dateISO='${dateISO}', timeHHMM='${timeHHMM}'`);
+        return new Date(NaN); // Return invalid Date
+    }
+
+    // A more robust regex for HH:MM (00:00 to 23:59)
+    const timeRegex = /^(?:2[0-3]|[01]?[0-9]):(?:[0-5]?[0-9])$/;
+    if (!timeRegex.test(timeHHMM)) {
+        console.error(`[agendaService.js] createUTCDateFromLocalDateAndTime received malformed time string: '${timeHHMM}'`);
+        return new Date(NaN); // Return invalid Date
+    }
+
+    // Construct a local Date object first, so it correctly applies the local timezone offset.
+    // Example: "2026-02-19T08:00:00" might be interpreted as 08:00 AM local time based on the browser's timezone.
     const localDateTimeString = `${dateISO}T${timeHHMM}:00`;
     const localDate = new Date(localDateTimeString);
 
+    // If localDate is an "Invalid Date", it means the localDateTimeString was not parseable.
+    if (isNaN(localDate.getTime())) {
+        console.error(`[agendaService.js] createUTCDateFromLocalDateAndTime failed to parse local date string: '${localDateTimeString}'`);
+        return new Date(NaN);
+    }
+
     // Now convert this local Date object to its UTC equivalent.
-    // toISOString() returns the UTC date and time in ISO format (e.g., "2026-02-19T11:00:00.000Z")
+    // toISOString() returns the UTC date and time in ISO format (e.g., "2026-02-19T11:00:00.000Z").
     // This is the desired UTC representation that matches Supabase's timestampz.
     return new Date(localDate.toISOString());
 }
@@ -34,10 +54,16 @@ function createUTCDateFromLocalDateAndTime(dateISO, timeHHMM) {
  * @returns {boolean} True se o profissional estiver disponível, False caso contrário.
  */
 function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgendamentosMap, dataISO) {
+    // Ensure valid Date objects
+    if (isNaN(slotStart.getTime()) || isNaN(slotEnd.getTime())) {
+        console.warn("[agendaService.js] _checkProfissionalAvailabilityAtTime received invalid slotStart or slotEnd dates.");
+        return false;
+    }
+
     // 1. Verificar dias de trabalho
     // slotStart já é um objeto Date em UTC. toLocaleDateString usará o fuso horário local.
     // Isso é ok, pois estamos comparando o dia da semana local do slot com os dias de trabalho do profissional.
-    const diaSemana = slotStart.toLocaleDateString('pt-BR', { weekday: 'short' }).substring(0,3).toLowerCase();
+    const diaSemana = slotStart.toLocaleDateString('pt-BR', { weekday: 'short' }).substring(0, 3).toLowerCase();
     const diasTrabalho = prof.dias_trabalho_json;
     if (!diasTrabalho || !Array.isArray(diasTrabalho) || !diasTrabalho.includes(diaSemana)) {
         return false;
@@ -47,6 +73,12 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
     // CORREÇÃO: Usar createUTCDateFromLocalDateAndTime para interpretar horários locais do profissional como UTC.
     const inicioExpediente = createUTCDateFromLocalDateAndTime(dataISO, prof.horario_trabalho_inicio);
     const fimExpediente = createUTCDateFromLocalDateAndTime(dataISO, prof.horario_trabalho_fim);
+
+    // Ensure valid Date objects for comparison
+    if (isNaN(inicioExpediente.getTime()) || isNaN(fimExpediente.getTime())) {
+        console.warn(`[agendaService.js] _checkProfissionalAvailabilityAtTime: Invalid expediente times for professional ${prof.id}.`);
+        return false;
+    }
 
     // O slot deve começar depois ou no início do expediente e terminar antes ou no fim do expediente
     if (slotStart < inicioExpediente || slotEnd > fimExpediente) {
@@ -58,6 +90,11 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
     for (const agendamento of agendamentosDoProfissional) {
         // agendamento.data_hora_inicio já vem do Supabase (timestampz) e new Date() o interpreta como UTC
         const agInicio = new Date(agendamento.data_hora_inicio);
+        if (isNaN(agInicio.getTime())) {
+            console.warn(`[agendaService.js] _checkProfissionalAvailabilityAtTime: Invalid existing appointment start time for professional ${prof.id}.`);
+            continue; // Skip this invalid appointment
+        }
+
         const agDuracao = agendamento.servicos?.duracao_minutos || 30; // Usar duração real do serviço agendado
         const agFim = new Date(agInicio.getTime() + agDuracao * 60 * 1000);
 
@@ -82,7 +119,7 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
  * @returns {Array<Object>} Uma grade de horários com slots e status de agendamento.
  */
 function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allServices, allProfessionals) {
-    console.log("gerarGradeHorarios - Services:", allServices, "Professionals:", allProfessionals);
+    // console.log("gerarGradeHorarios - Services:", allServices, "Professionals:", allProfessionals);
     const intervaloPadraoSlot = 30; // Intervalo de 30 minutos para exibição na agenda
     const diasParaGerar = periodoAgenda === 'semana' ? 7 : 1;
     const gradeTotal = [];
@@ -103,7 +140,8 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
         const today = new Date();
         const futureDate = new Date(today);
         futureDate.setDate(today.getDate() + i);
-        // CORREÇÃO: Obter dataISO no formato YYYY-MM-DD a partir de uma data UTC
+        // CORREÇÃO: Obter dataISO no formato YYYY-MM-DD a partir de uma data UTC.
+        // Isso garante que dataISO sempre represente o "dia" correto em UTC para construção dos slots.
         const dataISO = futureDate.toISOString().split('T')[0];
 
         let horaAtual = abertura;
@@ -111,6 +149,17 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
             // CORREÇÃO: Usar createUTCDateFromLocalDateAndTime para criar slotStart e fimExpedienteGlobal como UTC Date objects
             const slotStart = createUTCDateFromLocalDateAndTime(dataISO, horaAtual);
             const fimExpedienteGlobal = createUTCDateFromLocalDateAndTime(dataISO, fechamento);
+
+            // Validação para garantir que as datas são válidas antes de continuar
+            if (isNaN(slotStart.getTime()) || isNaN(fimExpedienteGlobal.getTime())) {
+                console.error(`[agendaService.js] Invalid date/time generated for slot: dataISO=${dataISO}, horaAtual=${horaAtual}`);
+                // Avança para o próximo slot padrão de exibição
+                let [h, m] = horaAtual.split(':').map(Number);
+                m += intervaloPadraoSlot;
+                if (m >= 60) { h++; m -= 60; }
+                horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                continue;
+            }
 
             // CORREÇÃO: Adicionar verificação de horário no passado
             if (slotStart < nowUTC) {
@@ -139,7 +188,7 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
             // ele "ocupa" este slot para fins de exibição da agenda.
             const agendamentoIniciandoNoSlot = agendados.find(a => {
                 const agInicio = new Date(a.data_hora_inicio);
-                return agInicio.getTime() === slotStart.getTime();
+                return !isNaN(agInicio.getTime()) && agInicio.getTime() === slotStart.getTime();
             });
 
             if (agendamentoIniciandoNoSlot) {
@@ -242,6 +291,12 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
     const inicioSlot = createUTCDateFromLocalDateAndTime(data, hora);
     const fimSlot = new Date(inicioSlot.getTime() + (servicoDetalhes.duracao_minutos || duracaoServico) * 60 * 1000);
 
+    // Validação para garantir que as datas são válidas antes de continuar
+    if (isNaN(inicioSlot.getTime()) || isNaN(fimSlot.getTime())) {
+        console.error(`[agendaService.js] Invalid date/time generated for slot in getProfissionaisDisponiveisNoSlot: data=${data}, hora=${hora}`);
+        return [];
+    }
+
     // CORREÇÃO: Adicionar verificação de horário no passado
     const nowUTC = new Date(new Date().toISOString());
     if (inicioSlot < nowUTC) {
@@ -294,14 +349,14 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
             // CORREÇÃO: Usar as strings ISO de datas UTC nos filtros
             .gte('data_hora_inicio', dataInicioDoDiaISOString)
             .lte('data_hora_inicio', dataFimDoDiaISOString);
-        
+
         if (agsError) {
             console.error("Erro ao buscar agendamentos dos profissionais candidatos:", agsError.message);
         } else {
             agendamentosDosCandidatosNoDia = ags;
         }
     }
-    
+
     // Constrói um mapa de agendamentos por profissional para a função auxiliar
     const profAgendamentosMapParaSlot = new Map();
     agendamentosDosCandidatosNoDia.forEach(ag => {
@@ -338,6 +393,12 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
  * @throws {Error} Se ocorrer um erro ao agendar ou registrar a movimentação financeira.
  */
 async function confirmarAgendamento(payload, servicoId, profId, clienteNome, estabelecimentoId) {
+    // Basic payload validation
+    if (!payload || !payload.data_hora_inicio || isNaN(new Date(payload.data_hora_inicio).getTime())) {
+        console.error("[agendaService.js] Invalid 'data_hora_inicio' in payload for confirmarAgendamento:", payload?.data_hora_inicio);
+        throw new Error("Data e hora de início do agendamento inválidas.");
+    }
+    
     const { data: novoAgendamento, error: errorAg } = await supabaseClient
         .from('agendamentos')
         .insert([payload])
@@ -368,7 +429,7 @@ async function confirmarAgendamento(payload, servicoId, profId, clienteNome, est
             tipo: 'receita',
             valor: servicoInfo.preco,
             descricao: `Agendamento: ${servicoInfo.nome} - Cliente: ${clienteNome}`,
-            data_movimentacao: new Date().toISOString()
+            data_movimentacao: new Date().toISOString() // Data da movimentação em UTC
         }]);
         if (movFinError) {
             console.error("Erro ao registrar movimentação financeira:", movFinError.message);
@@ -381,11 +442,11 @@ async function confirmarAgendamento(payload, servicoId, profId, clienteNome, est
 /**
  * Cancela um agendamento e suas movimentações financeiras relacionadas.
  * @param {string} agendamentoId - O ID do agendamento a ser cancelado.
- * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode cancelar).
+ * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' ou 'funcionario' pode cancelar).
  * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao cancelar.
  */
 async function cancelarAgendamento(agendamentoId, verifiedUserType) {
-    if (verifiedUserType !== 'dono' && verifiedUserType !== 'funcionario') { // Adicionado funcionário para cancelar
+    if (verifiedUserType !== 'dono' && verifiedUserType !== 'funcionario') {
         throw new Error("Você não tem permissão para cancelar agendamentos.");
     }
     // Primeiro, tenta remover as movimentações financeiras relacionadas
@@ -408,5 +469,6 @@ export {
     getAgendamentosPorPeriodo,
     getProfissionaisDisponiveisNoSlot,
     confirmarAgendamento,
-    cancelarAgendamento
+    cancelarAgendamento,
+    createUTCDateFromLocalDateAndTime // Exportar para uso em app.js para consistência
 };

@@ -204,7 +204,7 @@ async function popularCamposGestao(dadosEstabelecimento, donoId) {
     document.getElementById('edit-razao-social').value = dadosEstabelecimento.razao_social || "";
     document.getElementById('edit-cnpj').value = dadosEstabelecimento.cnpj || "";
     document.getElementById('edit-whatsapp').value = dadosEstabelecimento.whatsapp || "";
-    document.getElementById('edit-endereco_completo').value = dadosEstabelecimento.endereco_completo || "";
+    document.getElementById('edit-endereco-completo').value = dadosEstabelecimento.endereco_completo || "";
     document.getElementById('edit-hora-abertura').value = dadosEstabelecimento.hora_abertura || "08:00";
     document.getElementById('edit-hora-fechamento').value = dadosEstabelecimento.hora_fechamento || "18:00";
     document.getElementById('edit-intervalo-slot').value = dadosEstabelecimento.intervalo_slot || 30;

@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 3
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 4 (formato HH:MM)
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -78,7 +78,7 @@ window.confirmarAgendamento = async () => {
         profissional_id: profissionalId,
         cliente_nome: clienteNome,
         cliente_whatsapp: clienteWhatsapp,
-        data_hora_inicio: dataHoraInicioUTC, 
+        data_hora_inicio: dataHoraInicioUTC,
         status: 'agendado'
     };
 
@@ -319,8 +319,10 @@ async function loadAndRenderGestao() {
                     cnpj: document.getElementById('edit-cnpj').value,
                     whatsapp: document.getElementById('edit-whatsapp').value,
                     endereco_completo: document.getElementById('edit-endereco-completo').value,
-                    hora_abertura: _validateTimeFormat(document.getElementById('edit-hora-abertura').value, "08:00"), // Validação aqui
-                    hora_fechamento: _validateTimeFormat(document.getElementById('edit-hora-fechamento').value, "18:00"), // Validação aqui
+                    // CORREÇÃO: Truncar para HH:MM antes de validar
+                    hora_abertura: _validateTimeFormat(document.getElementById('edit-hora-abertura').value.substring(0, 5), "08:00"), // Validação aqui
+                    // CORREÇÃO: Truncar para HH:MM antes de validar
+                    hora_fechamento: _validateTimeFormat(document.getElementById('edit-hora-fechamento').value.substring(0, 5), "18:00"), // Validação aqui
                     intervalo_slot: parseInt(document.getElementById('edit-intervalo-slot').value, 10),
                 };
                 const novosDadosPerfil = {
@@ -560,8 +562,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);
         // CORREÇÃO: Usar a função de validação ao salvar no localStorage
-        localStorage.setItem('hora_abertura', _validateTimeFormat(estabelecimento.hora_abertura, "08:00"));
-        localStorage.setItem('hora_fechamento', _validateTimeFormat(estabelecimento.hora_fechamento, "18:00"));
+        // APLICADO O .substring(0, 5) AQUI!
+        localStorage.setItem('hora_abertura', _validateTimeFormat(estabelecimento.hora_abertura.substring(0, 5), "08:00"));
+        // APLICADO O .substring(0, 5) AQUI!
+        localStorage.setItem('hora_fechamento', _validateTimeFormat(estabelecimento.hora_fechamento.substring(0, 5), "18:00"));
 
 
         // Determina o tipo de usuário com base no ID do dono

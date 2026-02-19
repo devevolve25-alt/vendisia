@@ -265,8 +265,9 @@ async function loadAndRenderServicos() {
  * Carrega e renderiza o conteúdo da aba "Gestão".
  */
 async function loadAndRenderGestao() {
-    UI.showLoadingState();
-    document.getElementById('aba-gestao').style.display = 'block'; // Mostra a aba de gestão
+    // A visibilidade do 'aba-gestao' e 'view-body' já é gerenciada por handleTabClick.
+    // Nenhuma mensagem de "loading" no 'view-body' é necessária aqui,
+    // pois o conteúdo da gestão já está no HTML e será preenchido.
     try {
         const dadosEstabelecimento = await ManagementService.getEstabelecimentoBySlug(localStorage.getItem('slug'));
         await UI.popularCamposGestao(dadosEstabelecimento, _donoId);
@@ -413,10 +414,14 @@ async function loadAndRenderGestao() {
             }
         });
         // Remova o estado de loading depois que tudo for carregado
-        document.getElementById('view-body').innerHTML = ''; // Ou exiba uma mensagem de boas-vindas na aba de gestão
+        // document.getElementById('view-body').innerHTML = ''; // Ou exiba uma mensagem de boas-vindas na aba de gestão
     } catch (error) {
         console.error("Erro ao carregar gestão:", error);
         alert("Erro ao carregar gestão: " + error.message);
+        // Exibe o erro no view-body, já que 'aba-gestao' está visível, mas o erro pode ser global
+        // e o 'view-body' é onde as outras abas exibem seu conteúdo.
+        document.getElementById('view-body').style.display = 'block'; // Garante que view-body esteja visível
+        document.getElementById('aba-gestao').style.display = 'none'; // Oculta aba-gestao em caso de erro
         document.getElementById('view-body').innerHTML = `<p style='text-align:center; opacity:0.5; color: #e74c3c;'>Erro ao carregar gestão.</p>`;
     }
 }

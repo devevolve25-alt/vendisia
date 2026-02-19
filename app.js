@@ -178,11 +178,12 @@ async function loadAndRenderAgenda() {
     try {
         // CORREÇÃO: Usar a data atual em UTC para consistência
         const hojeUTC = new Date(new Date().toISOString());
-        let dataInicio = new Date(hojeUTC);
-        let dataFim = new Date(hojeUTC);
+        let dataInicio = new Date(hojeUTC); // Isso é um objeto Date em UTC
+        let dataFim = new Date(hojeUTC); // Isso é um objeto Date em UTC
 
         if (_currentPeriodoAgenda === 'semana') {
-            dataFim.setDate(hojeUTC.getDate() + 6); // Próximos 7 dias
+            // CORREÇÃO: Usar setUTCDate para manipular a data em UTC
+            dataFim.setUTCDate(hojeUTC.getUTCDate() + 6); // Próximos 7 dias
         }
 
         // CORREÇÃO: Usar toISOString().split('T')[0] para obter YYYY-MM-DD em UTC
@@ -201,7 +202,8 @@ async function loadAndRenderAgenda() {
             agendamentos,
             _currentPeriodoAgenda,
             allServices, // Novo argumento
-            allProfessionals // Novo argumento
+            allProfessionals, // Novo argumento
+            dataInicio // NOVO: Passa a data de início (UTC) para consistência
         );
 
         UI.renderAgendaContent(

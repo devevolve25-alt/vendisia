@@ -534,7 +534,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         UI.updateSalonNameUI(estabelecimento.nome_fantasia);
-        UI.toggleDashboardButton(_verifiedUserType === 'dono'); // Botão do dashboard visível apenas para donos
+        // CORREÇÃO: Passando _verifiedUserType e o plano_ativo do estabelecimento
+        UI.toggleDashboardButton(_verifiedUserType, estabelecimento.plano_ativo);
 
         // Define as abas permitidas com base no tipo de usuário
         let abasPermitidas = [

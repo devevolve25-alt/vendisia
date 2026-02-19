@@ -129,9 +129,8 @@ async function abrirModalAgendamento(data, hora, dadosEstabelecimento, onServico
     const pSelect = document.getElementById('agend-profissional');
     pSelect.innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>'; // Reseta o profissional
     pSelect.disabled = true; // Desabilita até um serviço ser selecionado
-    // O botão de confirmar agendamento não tem data-action, precisamos ajustá-lo no HTML
-    // ou referenciá-lo de outra forma. Por enquanto, a referência 'confirmar' não funciona.
-    // document.querySelector('#modal-agendamento button[data-action="confirmar"]').disabled = true; // Desabilita botão de confirmar
+    const confirmButton = document.getElementById('btn-confirmar-agendamento'); // Referência ao botão pelo ID
+    if (confirmButton) confirmButton.disabled = true; 
 
     sSelect.onchange = onServicoChangeCallback;
 }
@@ -386,27 +385,41 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
         }
 
         const exibirPrivado = (verifiedUserType === 'dono' || verifiedUserType === 'funcionario');
-        const estaOcupado = slot.dados !== null;
+        // Identifica os estados do slot
+        const isActualAppointment = slot.dados && slot.dados.id; // Verifica se é um agendamento real
+        const isGloballyUnavailable = slot.dados && slot.dados.status === 'indisponível'; // Verifica se é o status customizado de indisponível
 
-        if (!exibirPrivado && estaOcupado) return;
+        // Para usuários públicos, slots com agendamento real ou globalmente indisponíveis não são exibidos.
+        if (!exibirPrivado && (isActualAppointment || isGloballyUnavailable)) return;
 
-        const nomeExibido = estaOcupado ? slot.dados.cliente_nome : "DISPONÍVEL";
-        const servicoExibido = estaOcupado ? (slot.dados.servicos?.nome || 'Serviço') : "Toque para agendar";
-        const profExibido = estaOcupado ? ` | Prof: ${slot.dados.profissionais?.nome || '---'}` : "";
-        const corStatus = estaOcupado ? "#e74c3c" : "#2ecc71";
+        let nomeExibido, servicoExibido, profExibido, corStatus, acaoClique;
 
-        let acaoClique = "";
-        if (!estaOcupado) {
+        if (isActualAppointment) {
+            nomeExibido = slot.dados.cliente_nome;
+            servicoExibido = slot.dados.servicos?.nome || 'Serviço';
+            profExibido = ` | Prof: ${slot.dados.profissionais?.nome || '---'}`;
+            corStatus = "#e74c3c"; // Vermelho para ocupado
+            // Ação de clique para cancelamento, visível apenas para usuários privados
+            acaoClique = exibirPrivado ? `onclick="${onSlotClickForCancelamento(slot.dados.id)}"` : "";
+        } else if (isGloballyUnavailable) {
+            nomeExibido = "INDISPONÍVEL";
+            servicoExibido = "Nenhum profissional disponível";
+            profExibido = "";
+            corStatus = "#7f8c8d"; // Cinza para globalmente indisponível
+            acaoClique = ""; // Sem ação de clique
+        } else { // Slot está realmente disponível
+            nomeExibido = "DISPONÍVEL";
+            servicoExibido = "Toque para agendar";
+            profExibido = "";
+            corStatus = "#2ecc71"; // Verde para disponível
             acaoClique = `onclick="${onSlotClickForAgendamento(slot.data, slot.hora)}"`;
-        } else if (exibirPrivado) {
-            acaoClique = `onclick="${onSlotClickForCancelamento(slot.dados.id)}"`;
         }
 
         htmlAgenda += `
-            <div class="agenda-item" ${acaoClique} style="border-left: 4px solid ${corStatus}; cursor: pointer;">
+            <div class="agenda-item" ${acaoClique} style="border-left: 4px solid ${corStatus}; cursor: ${acaoClique ? 'pointer' : 'default'};">
                 <div class="agenda-time">${slot.hora}</div>
                 <div class="agenda-details">
-                    <h4 style="color: ${estaOcupado ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
+                    <h4 style="color: ${isActualAppointment ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
                     <span style="font-size: 0.85em; opacity: 0.7;">${servicoExibido}${profExibido}</span>
                 </div>
             </div>`;
@@ -520,8 +533,7 @@ function renderSalonNotFound() {
  */
 async function handleProfissionalDropdownUpdate(servicoId, data, hora, duracaoServico, estabelecimentoId) {
     const pSelect = document.getElementById('agend-profissional');
-    // Encontrar o botão de confirmar pelo seu ID, se houver, ou classe específica
-    const confirmButton = document.querySelector('#modal-agendamento button:last-child'); // Assumindo que é o último botão no modal de agendamento
+    const confirmButton = document.getElementById('btn-confirmar-agendamento'); 
 
     if (!servicoId) {
         pSelect.innerHTML = '<option value="">Selecione o Serviço Primeiro...</option>';

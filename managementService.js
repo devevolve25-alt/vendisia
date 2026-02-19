@@ -1,4 +1,4 @@
-// managementService.js
+/ managementService.js
 // Lógica de negócios e acesso a dados para gestão de estabelecimento, serviços e profissionais.
 
 import { supabaseClient } from './config.js';
@@ -177,7 +177,8 @@ async function createProfissional(estabelecimentoId, dadosProfissional, verified
  * @returns {Promise<Array<Object>>} Lista de profissionais.
  */
 async function getProfissionais(estabelecimentoId) {
-    const { data: profissionais, error } = await supabaseClient.from('profissionais').select('id, nome').eq('estabelecimento_id', estabelecimentoId).order('nome');
+    // CORREÇÃO: Adicionando todas as colunas necessárias para a lógica da agenda
+    const { data: profissionais, error } = await supabaseClient.from('profissionais').select('id, nome, servicos_especializados, horario_trabalho_inicio, horario_trabalho_fim, dias_trabalho_json').eq('estabelecimento_id', estabelecimentoId).order('nome');
     if (error) {
         console.error("Erro ao buscar profissionais:", error.message);
         throw new Error("Não foi possível carregar os profissionais.");

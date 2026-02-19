@@ -1,4 +1,4 @@
-// agendaService.js - 3
+// agendaService.js - 4
 // Lógica de negócios e acesso a dados para a funcionalidade de agenda.
 
 import { supabaseClient } from './config.js';
@@ -118,8 +118,7 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
  * @param {Array<Object>} allProfessionals - Todos os profissionais do estabelecimento.
  * @returns {Array<Object>} Uma grade de horários com slots e status de agendamento.
  */
-function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allServices, allProfessionals) {
-    // console.log("gerarGradeHorarios - Services:", allServices, "Professionals:", allProfessionals);
+function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allServices, allProfessionals, baseStartDateUTC) {
     const intervaloPadraoSlot = 30; // Intervalo de 30 minutos para exibição na agenda
     const diasParaGerar = periodoAgenda === 'semana' ? 7 : 1;
     const gradeTotal = [];
@@ -137,12 +136,12 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
     });
 
     for (let i = 0; i < diasParaGerar; i++) {
-        const today = new Date();
-        const futureDate = new Date(today);
-        futureDate.setDate(today.getDate() + i);
-        // CORREÇÃO: Obter dataISO no formato YYYY-MM-DD a partir de uma data UTC.
-        // Isso garante que dataISO sempre represente o "dia" correto em UTC para construção dos slots.
-        const dataISO = futureDate.toISOString().split('T')[0];
+        // CORREÇÃO: Derivar a data do dia a partir da baseStartDateUTC (já um Date objeto em UTC)
+        const currentDateForDay = new Date(baseStartDateUTC);
+        currentDateForDay.setUTCDate(baseStartDateUTC.getUTCDate() + i);
+        
+        // Obter dataISO no formato YYYY-MM-DD a partir desta data UTC
+        const dataISO = currentDateForDay.toISOString().split('T')[0];
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
@@ -188,7 +187,9 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
             // ele "ocupa" este slot para fins de exibição da agenda.
             const agendamentoIniciandoNoSlot = agendados.find(a => {
                 const agInicio = new Date(a.data_hora_inicio);
-                return !isNaN(agInicio.getTime()) && agInicio.getTime() === slotStart.getTime();
+                // CORREÇÃO: Truncar os milissegundos para garantir a comparação no nível de minutos
+                // Isso resolve o problema de agendamentos com milissegundos diferentes.
+                return !isNaN(agInicio.getTime()) && Math.floor(agInicio.getTime() / (60 * 1000)) === Math.floor(slotStart.getTime() / (60 * 1000));
             });
 
             if (agendamentoIniciandoNoSlot) {

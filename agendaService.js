@@ -1,4 +1,4 @@
-// agendaService.js
+/ agendaService.js
 // Lógica de negócios e acesso a dados para a funcionalidade de agenda.
 
 import { supabaseClient } from './config.js';
@@ -22,8 +22,9 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
     }
 
     // 2. Verificar horário de expediente
-    const inicioExpediente = new Date(`${dataISO}T${prof.horario_trabalho_inicio}:00`);
-    const fimExpediente = new Date(`${dataISO}T${prof.horario_trabalho_fim}:00`);
+    // CORREÇÃO: Usar 'Z' para garantir que sejam interpretados como UTC
+    const inicioExpediente = new Date(`${dataISO}T${prof.horario_trabalho_inicio}:00Z`);
+    const fimExpediente = new Date(`${dataISO}T${prof.horario_trabalho_fim}:00Z`);
 
     // O slot deve começar depois ou no início do expediente e terminar antes ou no fim do expediente
     if (slotStart < inicioExpediente || slotEnd > fimExpediente) {
@@ -33,6 +34,7 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
     // 3. Verificar conflitos com agendamentos existentes
     const agendamentosDoProfissional = profAgendamentosMap.get(prof.id) || [];
     for (const agendamento of agendamentosDoProfissional) {
+        // agendamento.data_hora_inicio já vem do Supabase (timestampz) e new Date() o interpreta como UTC
         const agInicio = new Date(agendamento.data_hora_inicio);
         const agDuracao = agendamento.servicos?.duracao_minutos || 30; // Usar duração real do serviço agendado
         const agFim = new Date(agInicio.getTime() + agDuracao * 60 * 1000);
@@ -80,8 +82,9 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
-            const slotStart = new Date(`${dataISO}T${horaAtual}:00`);
-            const fimExpedienteGlobal = new Date(`${dataISO}T${fechamento}:00`);
+            // CORREÇÃO: Usar 'Z' para garantir que sejam interpretados como UTC
+            const slotStart = new Date(`${dataISO}T${horaAtual}:00Z`);
+            const fimExpedienteGlobal = new Date(`${dataISO}T${fechamento}:00Z`);
 
             let slotEntry = {
                 data: dataISO,
@@ -160,8 +163,9 @@ async function getAgendamentosPorPeriodo(estabelecimentoId, dataInicioISO, dataF
     const { data: agendamentos, error } = await supabaseClient.from('agendamentos')
         .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(id, nome), servicos(id, nome, duracao_minutos)')
         .eq('estabelecimento_id', estabelecimentoId)
-        .gte('data_hora_inicio', dataInicioISO + 'T00:00:00')
-        .lte('data_hora_inicio', dataFimISO + 'T23:59:59')
+        // CORREÇÃO: Adicionar 'Z' para garantir que os filtros sejam interpretados como UTC
+        .gte('data_hora_inicio', dataInicioISO + 'T00:00:00Z')
+        .lte('data_hora_inicio', dataFimISO + 'T23:59:59Z')
         .order('data_hora_inicio');
     if (error) {
         console.error("Erro ao buscar agendamentos:", error.message);
@@ -193,7 +197,8 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
     }
     if (!servicoDetalhes) return [];
 
-    const inicioSlot = new Date(`${data}T${hora}:00`);
+    // CORREÇÃO: Usar 'Z' para garantir que sejam interpretados como UTC
+    const inicioSlot = new Date(`${data}T${hora}:00Z`);
     const fimSlot = new Date(inicioSlot.getTime() + (servicoDetalhes.duracao_minutos || duracaoServico) * 60 * 1000);
 
     // Busca todos os serviços do estabelecimento para mapear IDs para nomes (para a exibição no modal)
@@ -230,15 +235,17 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
     const profIds = profissionaisCandidatos.map(p => p.id);
     let agendamentosDosCandidatosNoDia = [];
     if (profIds.length > 0) {
-        const dataInicioDia = new Date(inicioSlot.getFullYear(), inicioSlot.getMonth(), inicioSlot.getDate());
-        const dataFimDia = new Date(inicioSlot.getFullYear(), inicioSlot.getMonth(), inicioSlot.getDate(), 23, 59, 59);
+        // CORREÇÃO: Construir as datas de início e fim do dia diretamente em UTC
+        const dataInicioDoDiaUTC = new Date(`${data}T00:00:00Z`);
+        const dataFimDoDiaUTC = new Date(`${data}T23:59:59Z`);
 
         const { data: ags, error: agsError } = await supabaseClient
             .from('agendamentos')
             .select('profissional_id, data_hora_inicio, servicos(duracao_minutos)')
             .in('profissional_id', profIds)
-            .gte('data_hora_inicio', dataInicioDia.toISOString())
-            .lte('data_hora_inicio', dataFimDia.toISOString());
+            // CORREÇÃO: Usar as strings ISO de datas UTC
+            .gte('data_hora_inicio', dataInicioDoDiaUTC.toISOString())
+            .lte('data_hora_inicio', dataFimDoDiaUTC.toISOString());
         
         if (agsError) {
             console.error("Erro ao buscar agendamentos dos profissionais candidatos:", agsError.message);

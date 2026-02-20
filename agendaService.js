@@ -1,4 +1,4 @@
-// agendaService.js - 6
+// agendaService.js - 7
 // Lógica de negócios e acesso a dados para a funcionalidade de agenda.
 
 import { supabaseClient } from './config.js';
@@ -167,7 +167,7 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
                 isPast: false,            // Indica se o slot já passou
                 isBooked: false,          // Indica se um agendamento *inicia* neste slot de exibição
                 canBeBooked: false,       // Indica se um *novo* agendamento pode ser feito (considerando todos os pros/serviços)
-                existingAppointment: null // O objeto do agendamento existente, se 'isBooked' for true
+                existingAppointments: [] // <--- ALTERAÇÃO AQUI: Agora é um array para múltiplos agendamentos
             };
 
             // 1. Verificar se o slot já passou
@@ -177,17 +177,20 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
                 // Ainda verificamos por agendamentos existentes para fins de exibição.
             }
 
-            // 2. Verificar se há um agendamento existente que *inicia* exatamente neste slot de exibição
-            const agendamentoIniciandoNoSlot = agendados.find(a => {
+            // <--- ALTERAÇÃO AQUI: Coletar todos os agendamentos que iniciam no slot
+            // 2. Coletar *todos* os agendamentos existentes que *iniciam* exatamente neste slot de exibição
+            const agendamentosIniciandoNoSlot = agendados.filter(a => {
                 const agInicio = new Date(a.data_hora_inicio);
-                // Truncar os milissegundos para garantir a comparação no nível de minutos
-                return !isNaN(agInicio.getTime()) && Math.floor(agInicio.getTime() / (60 * 1000)) === Math.floor(slotStart.getTime() / (60 * 1000));
+                // Compara a data e hora do início do agendamento com a data e hora do início do slot.
+                // Como slotStart é construído para ser exato (sem milissegundos), a comparação direta de getTime() é apropriada.
+                return !isNaN(agInicio.getTime()) && agInicio.getTime() === slotStart.getTime();
             });
 
-            if (agendamentoIniciandoNoSlot) {
+            if (agendamentosIniciandoNoSlot.length > 0) {
                 slotEntry.isBooked = true;
-                slotEntry.existingAppointment = agendamentoIniciandoNoSlot;
+                slotEntry.existingAppointments = agendamentosIniciandoNoSlot; // <--- ALTERAÇÃO AQUI: Atribui o array
             }
+            // FIM DA ALTERAÇÃO
 
             // 3. Determinar se um *novo* agendamento PODE ser feito neste slot
             // (Esta é a lógica central para o problema de multi-profissional/serviço)
@@ -242,7 +245,9 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
  */
 async function getAgendamentosPorPeriodo(estabelecimentoId, dataInicioISO, dataFimISO) {
     const { data: agendamentos, error } = await supabaseClient.from('agendamentos')
-        .select('id, data_hora_inicio, servico_id, profissional_id, profissionais(id, nome), servicos(id, nome, duracao_minutos)')
+        // <--- ALTERAÇÃO AQUI: Adicionado 'cliente_id' e 'clientes(nome)'
+        .select('id, data_hora_inicio, servico_id, profissional_id, cliente_id, clientes(nome), profissionais(id, nome), servicos(id, nome, duracao_minutos)')
+        // FIM DA ALTERAÇÃO
         .eq('estabelecimento_id', estabelecimentoId)
         // CORREÇÃO: Adicionar 'Z' para garantir que os filtros sejam interpretados como UTC
         .gte('data_hora_inicio', dataInicioISO + 'T00:00:00Z')

@@ -118,6 +118,17 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
  * @param {Array<Object>} allProfessionals - Todos os profissionais do estabelecimento.
  * @returns {Array<Object>} Uma grade de horários com slots e status de agendamento.
  */
+/**
+ * Gera uma grade de horários para um período específico, considerando a disponibilidade combinada de profissionais e serviços.
+ * @param {string} abertura - Hora de abertura do estabelecimento (ex: "08:00" - hora local).
+ * @param {string} fechamento - Hora de fechamento do estabelecimento (ex: "18:00" - hora local).
+ * @param {Array<Object>} agendados - Lista de agendamentos existentes no período (já em UTC).
+ * @param {'dia'|'semana'} periodoAgenda - O período a ser gerado ('dia' ou 'semana').
+ * @param {Array<Object>} allServices - Todos os serviços oferecidos pelo estabelecimento.
+ * @param {Array<Object>} allProfessionals - Todos os profissionais do estabelecimento.
+ * @param {Date} baseStartDateUTC - A data base para o início da geração da grade (objeto Date, já em UTC).
+ * @returns {Array<Object>} Uma grade de horários com slots e status de agendamento detalhados.
+ */
 function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allServices, allProfessionals, baseStartDateUTC) {
     const intervaloPadraoSlot = 30; // Intervalo de 30 minutos para exibição na agenda
     const diasParaGerar = periodoAgenda === 'semana' ? 7 : 1;
@@ -136,7 +147,7 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
     });
 
     for (let i = 0; i < diasParaGerar; i++) {
-        // CORREÇÃO: Derivar a data do dia a partir da baseStartDateUTC (já um Date objeto em UTC)
+        // Derivar a data do dia a partir da baseStartDateUTC (já um Date objeto em UTC)
         const currentDateForDay = new Date(baseStartDateUTC);
         currentDateForDay.setUTCDate(baseStartDateUTC.getUTCDate() + i);
         
@@ -145,7 +156,7 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
 
         let horaAtual = abertura;
         while (horaAtual < fechamento) {
-            // CORREÇÃO: Usar createUTCDateFromLocalDateAndTime para criar slotStart e fimExpedienteGlobal como UTC Date objects
+            // Usar createUTCDateFromLocalDateAndTime para criar slotStart e fimExpedienteGlobal como UTC Date objects
             const slotStart = createUTCDateFromLocalDateAndTime(dataISO, horaAtual);
             const fimExpedienteGlobal = createUTCDateFromLocalDateAndTime(dataISO, fechamento);
 
@@ -160,77 +171,66 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
                 continue;
             }
 
-            // CORREÇÃO: Adicionar verificação de horário no passado
-            if (slotStart < nowUTC) {
-                // Se o slot já passou, marque-o como indisponível e avance.
-                gradeTotal.push({
-                    data: dataISO,
-                    hora: horaAtual,
-                    dados: { status: 'passado' } // ou { status: 'indisponível' }
-                });
-                // Avança para o próximo slot padrão de exibição
-                let [h, m] = horaAtual.split(':').map(Number);
-                m += intervaloPadraoSlot;
-                if (m >= 60) { h++; m -= 60; }
-                horaAtual = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                continue; // Pula o restante do loop para este slot
-            }
-
             let slotEntry = {
                 data: dataISO,
                 hora: horaAtual,
-                dados: null // Padrão: disponível
+                isPast: false,            // Indica se o slot já passou
+                isBooked: false,          // Indica se um agendamento *inicia* neste slot de exibição
+                canBeBooked: false,       // Indica se um *novo* agendamento pode ser feito (considerando todos os pros/serviços)
+                existingAppointment: null // O objeto do agendamento existente, se 'isBooked' for true
             };
 
-            // --- Fase 1: Verificar agendamentos que *iniciam* neste slot ---
-            // Se um agendamento existente inicia exatamente neste slot de exibição (ex: 09:00),
-            // ele "ocupa" este slot para fins de exibição da agenda.
+            // 1. Verificar se o slot já passou
+            if (slotStart < nowUTC) {
+                slotEntry.isPast = true;
+                // Não é agendável, mas pode ter sido agendado no passado.
+                // Ainda verificamos por agendamentos existentes para fins de exibição.
+            }
+
+            // 2. Verificar se há um agendamento existente que *inicia* exatamente neste slot de exibição
             const agendamentoIniciandoNoSlot = agendados.find(a => {
                 const agInicio = new Date(a.data_hora_inicio);
-                // CORREÇÃO: Truncar os milissegundos para garantir a comparação no nível de minutos
-                // Isso resolve o problema de agendamentos com milissegundos diferentes.
+                // Truncar os milissegundos para garantir a comparação no nível de minutos
                 return !isNaN(agInicio.getTime()) && Math.floor(agInicio.getTime() / (60 * 1000)) === Math.floor(slotStart.getTime() / (60 * 1000));
             });
 
             if (agendamentoIniciandoNoSlot) {
-                slotEntry.dados = agendamentoIniciandoNoSlot;
-            } else {
-                // --- Fase 2: Se nenhum agendamento inicia aqui, verificar disponibilidade global de profissionais/serviços ---
-                let isSlotGloballyAvailable = false;
+                slotEntry.isBooked = true;
+                slotEntry.existingAppointment = agendamentoIniciandoNoSlot;
+            }
 
-                // Itera sobre *todos* os serviços para ver se ALGUM pode ser atendido
+            // 3. Determinar se um *novo* agendamento PODE ser feito neste slot
+            // (Esta é a lógica central para o problema de multi-profissional/serviço)
+            let foundAvailableProfessionalForAnyService = false;
+            if (!slotEntry.isPast) { // Só verifica agendabilidade para slots futuros
                 for (const service of allServices) {
                     const serviceDuration = service.duracao_minutos || intervaloPadraoSlot; // Usa duração real do serviço
-                    // slotStart já é UTC, então a adição de minutos mantém a consistência
                     const slotEndPotentialForService = new Date(slotStart.getTime() + serviceDuration * 60 * 1000);
 
-                    // Se o serviço for mais longo do que o tempo restante até o fechamento global do estabelecimento, ele não pode iniciar aqui
+                    // Se o serviço for mais longo do que o tempo restante até o fechamento global do estabelecimento,
+                    // ele não pode iniciar aqui.
                     if (slotEndPotentialForService > fimExpedienteGlobal) {
                         continue; // Tenta o próximo serviço (talvez um mais curto possa se encaixar)
                     }
 
-                    // Itera sobre todos os profissionais para ver se ALGUM pode realizar este serviço
                     for (const prof of allProfessionals) {
                         // Verifica se o profissional oferece este serviço
                         if (prof.servicos_especializados && Array.isArray(prof.servicos_especializados) && prof.servicos_especializados.includes(service.id)) {
                             // Verifica se o profissional está disponível no período necessário para este *serviço específico*
                             if (_checkProfissionalAvailabilityAtTime(prof, slotStart, slotEndPotentialForService, profAgendamentosMap, dataISO)) {
-                                isSlotGloballyAvailable = true;
-                                break; // Encontramos um profissional disponível para este serviço, então o slot é globalmente disponível.
+                                foundAvailableProfessionalForAnyService = true;
+                                break; // Encontramos um profissional disponível para este serviço, então o slot é agendável.
                             }
                         }
                     }
-                    if (isSlotGloballyAvailable) {
-                        break; // O slot é globalmente disponível, não precisamos verificar outros serviços.
+                    if (foundAvailableProfessionalForAnyService) {
+                        break; // O slot é agendável, não precisamos verificar outros serviços.
                     }
-                }
-
-                if (!isSlotGloballyAvailable) {
-                    // Se, após verificar todos os serviços e profissionais, ninguém estiver disponível, o slot está indisponível.
-                    slotEntry.dados = { status: 'indisponível' }; // Marcação customizada para slot indisponível
                 }
             }
 
+            slotEntry.canBeBooked = foundAvailableProfessionalForAnyService;
+            
             gradeTotal.push(slotEntry);
 
             // Avança para o próximo slot padrão de exibição (intervaloPadraoSlot)

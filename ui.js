@@ -370,7 +370,7 @@ function setupTabsUI(abasPermitidas, onTabClickCallback) {
  * @param {Function} onSlotClickForAgendamento - Callback para clique em slot disponível.
  * @param {Function} onSlotClickForCancelamento - Callback para clique em agendamento existente (cancelamento).
  */
-unction renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriodoAgenda, onSlotClickForAgendamento, onSlotClickForCancelamento) {
+function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriodoAgenda, onSlotClickForAgendamento, onSlotClickForCancelamento) {
     const body = document.getElementById('view-body');
     const title = document.getElementById('view-title');
     title.innerText = "AGENDA";

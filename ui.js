@@ -446,7 +446,7 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
         // NOVO BLOCO: Sobrescreve propriedades se o slot estiver no passado, após o processamento dos agendamentos
         if (slot.isPast) {
             nomeExibido = "INDISPONÍVEL"; // Alterado de "PASSADO" para "INDISPONÍVEL"
-            servicoExibido = agendamentosDetalhesHtml ? "Ver detalhes abaixo (passado)" : "Este horário já passou."; // Ajusta a descrição se houver agendamentos
+            servicoExibido = agendamentosDetalhesHtml ? "Ver detalhes abaixo" : "Este horário já passou."; // Ajusta a descrição se houver agendamentos
             corStatus = "#555"; // Continua cinza
             acaoClique = ""; // Não clicável se no passado
             tooltipText = "Este horário já passou e não está disponível para novas ações.";

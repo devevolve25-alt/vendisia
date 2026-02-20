@@ -1,4 +1,4 @@
-// ui.js - 7
+// ui.js - 8
 // Funções para manipulação da interface do usuário (DOM), modais e renderização de elementos.
 
 import * as ManagementService from './managementService.js';
@@ -410,7 +410,7 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             acaoClique = ""; // Mantém o cancelamento por clique desativado
 
             if (exibirPrivado) { // Se for dono ou funcionário, exibe detalhes completos
-                nomeExibido = slot.existingAppointment.cliente_nome || `Cliente (ID: ${slot.existingAppointment.cliente_id || 'Desconhecido'})`;
+                nomeExibido = slot.existingAppointment.agendamento.clientes?.nome || `Cliente (ID: ${slot.existingAppointment.cliente_id || 'Desconhecido'})`;
                 servicoExibido = slot.existingAppointment.servicos?.nome || 'Serviço';
                 profExibido = ` | Prof: ${slot.existingAppointment.profissionais?.nome || '---'}`;
                 tooltipText = slot.canBeBooked ? `Agendado por: ${nomeExibido}. ${servicoExibido} ${profExibido}. Há outros horários/profissionais.` : `Agendado por: ${nomeExibido}. ${servicoExibido} ${profExibido}.`;

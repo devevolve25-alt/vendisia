@@ -402,7 +402,7 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
 
             if (exibirPrivado) { // Se for dono ou funcionário, exibe detalhes completos de cada agendamento
                 slot.existingAppointments.forEach(agendamento => {
-                    const clienteNome = agendamento.clientes?.nome || `Cliente (ID: ${agendamento.cliente_id || 'Desconhecido'})`;
+                    const clienteNome = agendamento.cliente_id?.nome || `Cliente Desconhecido`; // Agora acessa corretamente a propriedade 'nome' do objeto cliente_id
                     const servicoNome = agendamento.servicos?.nome || 'Serviço';
                     const profissionalNome = agendamento.profissionais?.nome || '---';
                     

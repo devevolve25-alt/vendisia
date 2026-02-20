@@ -406,12 +406,12 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             tooltipText = "Este horário já passou.";
         } else if (slot.isBooked) {
             // Se já está agendado por um cliente
-            nomeExibido = slot.existingAppointment.cliente_nome;
+            // ALTERAÇÃO AQUI: Tentar usar cliente_nome, fallback para cliente_id, ou "Cliente"
+            nomeExibido = slot.existingAppointment.cliente_nome || `Cliente (ID: ${slot.existingAppointment.cliente_id || 'Desconhecido'})`;
             servicoExibido = slot.existingAppointment.servicos?.nome || 'Serviço';
             profExibido = ` | Prof: ${slot.existingAppointment.profissionais?.nome || '---'}`;
             corStatus = slot.canBeBooked ? "#d4af37" : "#e74c3c"; // Ouro se ainda puder ser agendado, Vermelho se totalmente ocupado
             tooltipText = slot.canBeBooked ? "Agendado, mas há outros profissionais disponíveis para este horário." : "Agendado e sem mais profissionais disponíveis.";
-
             // Ação de clique: para cancelamento (se privado), ou nada (se público)
             acaoClique = exibirPrivado ? `onclick="${onSlotClickForCancelamento(slot.existingAppointment.id)}"` : "";
         } else if (slot.canBeBooked) {

@@ -246,7 +246,7 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
 async function getAgendamentosPorPeriodo(estabelecimentoId, dataInicioISO, dataFimISO) {
     const { data: agendamentos, error } = await supabaseClient.from('agendamentos')
         // <--- ALTERAÇÃO AQUI: Adicionado 'cliente_id' e 'clientes(nome)'
-        .select('id, data_hora_inicio, servico_id, profissional_id, cliente_id, cliente_id(nome), profissionais(id, nome), servicos(id, nome, duracao_minutos)')
+        .select('id, data_hora_inicio, servico_id, profissional_id, cliente_id(nome), profissionais(id, nome), servicos(id, nome, duracao_minutos)')
 
         // FIM DA ALTERAÇÃO
         .eq('estabelecimento_id', estabelecimentoId)

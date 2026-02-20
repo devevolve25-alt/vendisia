@@ -1,4 +1,4 @@
-// ui.js - 10
+// ui.js - 11
 // Funções para manipulação da interface do usuário (DOM), modais e renderização de elementos.
 
 import * as ManagementService from './managementService.js';
@@ -366,7 +366,6 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
     const title = document.getElementById('view-title');
     title.innerText = "AGENDA";
 
-    // ALTERAÇÃO: Mover a definição de exibirPrivado para o início da função
     const exibirPrivado = (verifiedUserType === 'dono' || verifiedUserType === 'funcionario'); 
 
     let htmlFiltros = `
@@ -387,8 +386,6 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             ultimaData = slot.data;
         }
 
-        // REMOVIDO DAQUI: const exibirPrivado = (verifiedUserType === 'dono' || verifiedUserType === 'funcionario');
-        
         let nomeExibido, servicoExibido, profExibido, corStatus, acaoClique, tooltipText = '';
         let agendamentosDetalhesHtml = ''; // Para acumular detalhes de múltiplos agendamentos
 
@@ -414,7 +411,6 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
                             <span class="appointment-client">${clienteNome}</span>
                             <span class="appointment-service">${servicoNome}</span>
                             <span class="appointment-prof"> | Prof: ${profissionalNome}</span>
-                            <button class="cancel-appointment-btn" data-id="${agendamento.id}" onclick="${onSlotClickForCancelamento(agendamento.id)}">Cancelar</button>
                         </div>
                     `;
                 });
@@ -462,17 +458,7 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
     });
     body.innerHTML = htmlFiltros + htmlAgenda + '</div>';
     
-    // Anexar event listeners para os botões de cancelar APÓS o HTML ser inserido no DOM
-    if (exibirPrivado) {
-        document.querySelectorAll('.cancel-appointment-btn').forEach(button => {
-            button.onclick = (event) => {
-                event.stopPropagation(); // Impede que o clique no botão ative o clique do slot pai
-                const agendamentoId = button.getAttribute('data-id');
-                // Chama a função de callback de cancelamento do app.js
-                if (onSlotClickForCancelamento) onSlotClickForCancelamento(agendamentoId);
-            };
-        });
-    }
+    // REMOVIDO: Bloco de event listener para o botão de cancelar (o botão não existe mais)
 }
 
 /**

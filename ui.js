@@ -1,4 +1,4 @@
-// ui.js - 12
+// ui.js - 13
 // Funções para manipulação da interface do usuário (DOM), modais e renderização de elementos.
 
 import * as ManagementService from './managementService.js';
@@ -389,20 +389,17 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
         let nomeExibido, servicoExibido, profExibido, corStatus, acaoClique, tooltipText = '';
         let agendamentosDetalhesHtml = ''; // Para acumular detalhes de múltiplos agendamentos
 
-        if (slot.isPast) {
-            nomeExibido = "PASSADO";
-            servicoExibido = "Não disponível para agendamento";
-            profExibido = "";
-            corStatus = "#555"; // Cinza escuro para slots passados
-            acaoClique = ""; // Nenhuma ação para slots passados
-            tooltipText = "Este horário já passou.";
-        } else if (slot.isBooked && slot.existingAppointments && slot.existingAppointments.length > 0) {
+        // Removido o bloco inicial 'if (slot.isPast)' para permitir que agendamentos antigos sejam processados
+        // O tratamento de slots passados será feito no final das condições.
+
+        if (slot.isBooked && slot.existingAppointments && slot.existingAppointments.length > 0) {
             // Se já está agendado por um cliente
             corStatus = slot.canBeBooked ? "#d4af37" : "#e74c3c"; // Ouro se ainda puder ser agendado, Vermelho se totalmente ocupado
 
             if (exibirPrivado) { // Se for dono ou funcionário, exibe detalhes completos de cada agendamento
                 slot.existingAppointments.forEach(agendamento => {
-                    const clienteNome = agendamento.cliente_id?.nome || `Cliente Desconhecido`; // Agora acessa corretamente a propriedade 'nome' do objeto cliente_id
+                    // Correção: Acessar a propriedade 'nome' diretamente do objeto cliente_id
+                    const clienteNome = agendamento.cliente_id?.nome || `Cliente Desconhecido`;
                     const servicoNome = agendamento.servicos?.nome || 'Serviço';
                     const profissionalNome = agendamento.profissionais?.nome || '---';
                     
@@ -444,6 +441,15 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             corStatus = "#7f8c8d"; // Cinza para globalmente indisponível
             acaoClique = ""; // Sem ação de clique
             tooltipText = "Todos os profissionais estão ocupados ou não atendem neste horário.";
+        }
+
+        // NOVO BLOCO: Sobrescreve propriedades se o slot estiver no passado, após o processamento dos agendamentos
+        if (slot.isPast) {
+            nomeExibido = "INDISPONÍVEL"; // Alterado de "PASSADO" para "INDISPONÍVEL"
+            servicoExibido = agendamentosDetalhesHtml ? "Ver detalhes abaixo (passado)" : "Este horário já passou."; // Ajusta a descrição se houver agendamentos
+            corStatus = "#555"; // Continua cinza
+            acaoClique = ""; // Não clicável se no passado
+            tooltipText = "Este horário já passou e não está disponível para novas ações.";
         }
 
         htmlAgenda += `

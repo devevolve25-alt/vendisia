@@ -413,7 +413,8 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             corStatus = slot.canBeBooked ? "#d4af37" : "#e74c3c"; // Ouro se ainda puder ser agendado, Vermelho se totalmente ocupado
             tooltipText = slot.canBeBooked ? "Agendado, mas há outros profissionais disponíveis para este horário." : "Agendado e sem mais profissionais disponíveis.";
             // Ação de clique: para cancelamento (se privado), ou nada (se público)
-            acaoClique = exibirPrivado ? `onclick="${onSlotClickForCancelamento(slot.existingAppointment.id)}"` : "";
+            // acaoClique = exibirPrivado ? `onclick="${onSlotClickForCancelamento(slot.existingAppointment.id)}"` : ""; // Desativado o cancelamento por clique no slot
+            acaoClique = ""; // Define explicitamente que não há ação de clique para este tipo de slot
         } else if (slot.canBeBooked) {
             // Se está livre e pode ser agendado
             nomeExibido = "DISPONÍVEL";

@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 4 (formato HH:MM)
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 5 (formato HH:MM)
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -54,41 +54,62 @@ window.generateContent = async () => {
 
 /**
  * Lida com a confirmação de um novo agendamento.
+ * Agora, primeiro encontra ou cria o cliente na tabela 'clientes'.
  */
 window.confirmarAgendamento = async () => {
-    const clienteNome = document.getElementById('agend-nome').value;
-    const clienteWhatsapp = document.getElementById('agend-whatsapp').value;
+    const clienteNome = document.getElementById('agend-nome').value.trim();
+    const clienteWhatsapp = document.getElementById('agend-whatsapp').value.trim();
+    const clienteEmail = document.getElementById('agend-email').value.trim(); // NOVO CAMPO
+    const clienteDataNascimento = document.getElementById('agend-data-nascimento').value; // NOVO CAMPO
+
     const servicoId = document.getElementById('agend-servico').value;
     const profissionalId = document.getElementById('agend-profissional').value;
 
     if (!clienteNome || !clienteWhatsapp || !servicoId || !profissionalId || !_currentDataAgenda || !_currentHoraAgenda) {
-        alert("Por favor, preencha todos os campos e selecione um profissional.");
+        alert("Por favor, preencha o Nome e WhatsApp do cliente, e selecione o Serviço e Profissional.");
         return;
     }
 
-    // A string de data/hora é formatada aqui com 'Z' para ser explicitamente UTC.
-    // A função createUTCDateFromLocalDateAndTime em agendaService fará a conversão correta
-    // se for necessário interpretar data e hora locais antes de converter para UTC.
-    const dataHoraInicioUTC = AgendaService.createUTCDateFromLocalDateAndTime(_currentDataAgenda, _currentHoraAgenda).toISOString();
-
-
-    const payload = {
-        estabelecimento_id: _estabelecimentoId,
-        servico_id: servicoId,
-        profissional_id: profissionalId,
-        cliente_nome: clienteNome,
-        cliente_whatsapp: clienteWhatsapp,
-        data_hora_inicio: dataHoraInicioUTC,
-        status: 'agendado'
-    };
-
     try {
-        await AgendaService.confirmarAgendamento(payload, servicoId, profissionalId, clienteNome, _estabelecimentoId);
+        // 1. Encontrar ou criar o cliente
+        const cliente = await AgendaService.findOrCreateClient(
+            _estabelecimentoId,
+            clienteNome,
+            clienteWhatsapp,
+            clienteEmail,
+            clienteDataNascimento // Passa a data de nascimento
+        );
+
+        if (!cliente || !cliente.id) {
+            throw new Error("Não foi possível obter ou criar o cliente.");
+        }
+
+        // A string de data/hora é formatada aqui com 'Z' para ser explicitamente UTC.
+        const dataHoraInicioUTC = AgendaService.createUTCDateFromLocalDateAndTime(_currentDataAgenda, _currentHoraAgenda).toISOString();
+
+        // 2. Criar o payload para o agendamento, usando o ID do cliente
+        const payloadAgendamento = {
+            estabelecimento_id: _estabelecimentoId,
+            servico_id: servicoId,
+            profissional_id: profissionalId,
+            cliente_id: cliente.id, // Usa o ID do cliente da tabela 'clientes'
+            // cliente_nome e cliente_whatsapp podem ser mantidos para compatibilidade ou exibição rápida,
+            // mas o vínculo primário é agora cliente_id.
+            cliente_nome: cliente.nome, // Usa o nome retornado/criado pelo findOrCreateClient
+            cliente_whatsapp: cliente.whatsapp, // Usa o whatsapp retornado/criado pelo findOrCreateClient
+            data_hora_inicio: dataHoraInicioUTC,
+            status: 'agendado'
+        };
+
+        // 3. Confirmar o agendamento
+        // Passa o nome do cliente (obtido ou criado) para a descrição da movimentação financeira
+        await AgendaService.confirmarAgendamento(payloadAgendamento, servicoId, profissionalId, cliente.nome, _estabelecimentoId);
+        
         alert("Agendamento confirmado com sucesso!");
         UI.fecharModalAgendamento();
         loadAndRenderAgenda(); // Recarregar a agenda
     } catch (error) {
-        console.error("Erro ao confirmar agendamento:", error);
+        console.error("Erro ao processar agendamento:", error);
         alert(error.message || "Erro ao confirmar agendamento.");
     }
 };

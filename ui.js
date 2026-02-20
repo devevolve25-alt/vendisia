@@ -1,4 +1,4 @@
-// ui.js - 11
+// ui.js - 12
 // Funções para manipulação da interface do usuário (DOM), modais e renderização de elementos.
 
 import * as ManagementService from './managementService.js';

@@ -1,4 +1,4 @@
-// ui.js - 8
+// ui.js - 9
 // Funções para manipulação da interface do usuário (DOM), modais e renderização de elementos.
 
 import * as ManagementService from './managementService.js';
@@ -361,15 +361,6 @@ function setupTabsUI(abasPermitidas, onTabClickCallback) {
  * @param {Function} onSlotClickForAgendamento - Callback para clique em slot disponível.
  * @param {Function} onSlotClickForCancelamento - Callback para clique em agendamento existente (cancelamento).
  */
-/**
- * Renderiza o conteúdo da aba "Agenda".
- * @param {Array<Object>} grade - Grade de horários a ser exibida.
- * @param {string} periodoAgenda - Período da agenda ('dia' ou 'semana').
- * @param {string} verifiedUserType - Tipo de usuário verificado.
- * @param {Function} onSetPeriodoAgenda - Callback para mudar o período da agenda.
- * @param {Function} onSlotClickForAgendamento - Callback para clique em slot disponível.
- * @param {Function} onSlotClickForCancelamento - Callback para clique em agendamento existente (cancelamento).
- */
 function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriodoAgenda, onSlotClickForAgendamento, onSlotClickForCancelamento) {
     const body = document.getElementById('view-body');
     const title = document.getElementById('view-title');
@@ -396,6 +387,7 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
         const exibirPrivado = (verifiedUserType === 'dono' || verifiedUserType === 'funcionario');
         
         let nomeExibido, servicoExibido, profExibido, corStatus, acaoClique, tooltipText = '';
+        let agendamentosDetalhesHtml = ''; // Para acumular detalhes de múltiplos agendamentos
 
         if (slot.isPast) {
             nomeExibido = "PASSADO";
@@ -404,28 +396,38 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             corStatus = "#555"; // Cinza escuro para slots passados
             acaoClique = ""; // Nenhuma ação para slots passados
             tooltipText = "Este horário já passou.";
-        } else if (slot.isBooked) {
+        } else if (slot.isBooked && slot.existingAppointments && slot.existingAppointments.length > 0) {
             // Se já está agendado por um cliente
             corStatus = slot.canBeBooked ? "#d4af37" : "#e74c3c"; // Ouro se ainda puder ser agendado, Vermelho se totalmente ocupado
-            acaoClique = ""; // Mantém o cancelamento por clique desativado
 
-            if (exibirPrivado) { // Se for dono ou funcionário, exibe detalhes completos
-                nomeExibido = slot.existingAppointment.agendamento.clientes?.nome || `Cliente (ID: ${slot.existingAppointment.cliente_id || 'Desconhecido'})`;
-                servicoExibido = slot.existingAppointment.servicos?.nome || 'Serviço';
-                profExibido = ` | Prof: ${slot.existingAppointment.profissionais?.nome || '---'}`;
-                tooltipText = slot.canBeBooked ? `Agendado por: ${nomeExibido}. ${servicoExibido} ${profExibido}. Há outros horários/profissionais.` : `Agendado por: ${nomeExibido}. ${servicoExibido} ${profExibido}.`;
+            if (exibirPrivado) { // Se for dono ou funcionário, exibe detalhes completos de cada agendamento
+                slot.existingAppointments.forEach(agendamento => {
+                    const clienteNome = agendamento.clientes?.nome || `Cliente (ID: ${agendamento.cliente_id || 'Desconhecido'})`;
+                    const servicoNome = agendamento.servicos?.nome || 'Serviço';
+                    const profissionalNome = agendamento.profissionais?.nome || '---';
+                    
+                    agendamentosDetalhesHtml += `
+                        <div class="appointment-details" data-id="${agendamento.id}" title="Agendado por: ${clienteNome}. ${servicoNome} | Prof: ${profissionalNome}">
+                            <span class="appointment-client">${clienteNome}</span>
+                            <span class="appointment-service">${servicoNome}</span>
+                            <span class="appointment-prof"> | Prof: ${profissionalNome}</span>
+                            <button class="cancel-appointment-btn" data-id="${agendamento.id}" onclick="${onSlotClickForCancelamento(agendamento.id)}">Cancelar</button>
+                        </div>
+                    `;
+                });
+                nomeExibido = "AGENDADO"; // Título geral para o slot
+                servicoExibido = "Ver detalhes abaixo";
+                profExibido = "";
+                tooltipText = slot.canBeBooked ? "Este horário está parcialmente agendado. Há outros horários/profissionais." : "Este horário está totalmente ocupado.";
+                // Ação para agendar em slot parcialmente ocupado (se houver vaga) ou apenas visualizar
+                acaoClique = slot.canBeBooked ? `onclick="${onSlotClickForAgendamento(slot.data, slot.hora)}"` : "";
+
             } else { // Se for público (visitante), exibe informações genéricas
                 nomeExibido = "AGENDADO";
-                servicoExibido = "Toque para agendar"; // Para visitantes, se o slot tem disponibilidade restante, permite agendar
-                profExibido = ""; // Não exibe o nome do profissional para visitantes
+                servicoExibido = slot.canBeBooked ? "Toque para agendar" : "Ocupado";
+                profExibido = "";
                 tooltipText = slot.canBeBooked ? "Este horário está parcialmente agendado. Toque para agendar." : "Este horário está ocupado.";
-                // Para visitantes, se o slot está agendado mas ainda pode ser agendado, a ação deve ser de agendamento.
-                // Se totalmente ocupado, sem ação.
-                if (slot.canBeBooked) {
-                    acaoClique = `onclick="${onSlotClickForAgendamento(slot.data, slot.hora)}"`;
-                } else {
-                    acaoClique = "";
-                }
+                acaoClique = slot.canBeBooked ? `onclick="${onSlotClickForAgendamento(slot.data, slot.hora)}"` : "";
             }
         } else if (slot.canBeBooked) {
             // Se está livre e pode ser agendado
@@ -445,23 +447,31 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             tooltipText = "Todos os profissionais estão ocupados ou não atendem neste horário.";
         }
 
-        // Para usuários públicos, slots totalmente indisponíveis ou passados não são exibidos (ou podem ser exibidos de forma diferente).
-        // Manter a exibição para todos, mas com as cores e ações corretas.
-        // Se a política é não mostrar slots INDISPONÍVEIS (cinza) para clientes, podemos adicionar um 'if' aqui.
-        // Por enquanto, vamos mostrar tudo com o status correto.
-        // if (!exibirPrivado && (slot.isPast || (!slot.canBeBooked && !slot.isBooked))) return; // Descomente para esconder slots totalmente indisponíveis de clientes.
-
         htmlAgenda += `
             <div class="agenda-item" ${acaoClique} title="${tooltipText}" style="border-left: 4px solid ${corStatus}; cursor: ${acaoClique ? 'pointer' : 'default'};">
                 <div class="agenda-time">${slot.hora}</div>
                 <div class="agenda-details">
                     <h4 style="color: ${corStatus === "#e74c3c" ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
                     <span style="font-size: 0.85em; opacity: 0.7;">${servicoExibido}${profExibido}</span>
+                    ${agendamentosDetalhesHtml} <!-- Adiciona os detalhes dos agendamentos aqui -->
                 </div>
             </div>`;
     });
     body.innerHTML = htmlFiltros + htmlAgenda + '</div>';
+    
+    // Anexar event listeners para os botões de cancelar APÓS o HTML ser inserido no DOM
+    if (exibirPrivado) {
+        document.querySelectorAll('.cancel-appointment-btn').forEach(button => {
+            button.onclick = (event) => {
+                event.stopPropagation(); // Impede que o clique no botão ative o clique do slot pai
+                const agendamentoId = button.getAttribute('data-id');
+                // Chama a função de callback de cancelamento do app.js
+                if (onSlotClickForCancelamento) onSlotClickForCancelamento(agendamentoId);
+            };
+        });
+    }
 }
+
 
 /**
  * Renderiza o conteúdo da aba "Serviços".

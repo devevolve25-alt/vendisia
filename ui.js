@@ -361,10 +361,13 @@ function setupTabsUI(abasPermitidas, onTabClickCallback) {
  * @param {Function} onSlotClickForAgendamento - Callback para clique em slot disponível.
  * @param {Function} onSlotClickForCancelamento - Callback para clique em agendamento existente (cancelamento).
  */
-function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriodoAgenda, onSlotClickForAgendamento, onSlotClickForCancelamento) {
+renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriodoAgenda, onSlotClickForAgendamento, onSlotClickForCancelamento) {
     const body = document.getElementById('view-body');
     const title = document.getElementById('view-title');
     title.innerText = "AGENDA";
+
+    // ALTERAÇÃO: Mover a definição de exibirPrivado para o início da função
+    const exibirPrivado = (verifiedUserType === 'dono' || verifiedUserType === 'funcionario'); 
 
     let htmlFiltros = `
         <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
@@ -384,7 +387,7 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             ultimaData = slot.data;
         }
 
-        const exibirPrivado = (verifiedUserType === 'dono' || verifiedUserType === 'funcionario');
+        // REMOVIDO DAQUI: const exibirPrivado = (verifiedUserType === 'dono' || verifiedUserType === 'funcionario');
         
         let nomeExibido, servicoExibido, profExibido, corStatus, acaoClique, tooltipText = '';
         let agendamentosDetalhesHtml = ''; // Para acumular detalhes de múltiplos agendamentos
@@ -471,7 +474,6 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
         });
     }
 }
-
 
 /**
  * Renderiza o conteúdo da aba "Serviços".

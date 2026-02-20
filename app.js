@@ -93,10 +93,6 @@ window.confirmarAgendamento = async () => {
             servico_id: servicoId,
             profissional_id: profissionalId,
             cliente_id: cliente.id, // Usa o ID do cliente da tabela 'clientes'
-            // cliente_nome e cliente_whatsapp podem ser mantidos para compatibilidade ou exibição rápida,
-            // mas o vínculo primário é agora cliente_id.
-            cliente_nome: cliente.nome, // Usa o nome retornado/criado pelo findOrCreateClient
-            cliente_whatsapp: cliente.whatsapp, // Usa o whatsapp retornado/criado pelo findOrCreateClient
             data_hora_inicio: dataHoraInicioUTC,
             status: 'agendado'
         };

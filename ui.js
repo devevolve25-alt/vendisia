@@ -370,7 +370,7 @@ function setupTabsUI(abasPermitidas, onTabClickCallback) {
  * @param {Function} onSlotClickForAgendamento - Callback para clique em slot disponível.
  * @param {Function} onSlotClickForCancelamento - Callback para clique em agendamento existente (cancelamento).
  */
-function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriodoAgenda, onSlotClickForAgendamento, onSlotClickForCancelamento) {
+unction renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriodoAgenda, onSlotClickForAgendamento, onSlotClickForCancelamento) {
     const body = document.getElementById('view-body');
     const title = document.getElementById('view-title');
     title.innerText = "AGENDA";
@@ -406,15 +406,27 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
             tooltipText = "Este horário já passou.";
         } else if (slot.isBooked) {
             // Se já está agendado por um cliente
-            // ALTERAÇÃO AQUI: Tentar usar cliente_nome, fallback para cliente_id, ou "Cliente"
-            nomeExibido = slot.existingAppointment.cliente_nome || `Cliente (ID: ${slot.existingAppointment.cliente_id || 'Desconhecido'})`;
-            servicoExibido = slot.existingAppointment.servicos?.nome || 'Serviço';
-            profExibido = ` | Prof: ${slot.existingAppointment.profissionais?.nome || '---'}`;
             corStatus = slot.canBeBooked ? "#d4af37" : "#e74c3c"; // Ouro se ainda puder ser agendado, Vermelho se totalmente ocupado
-            tooltipText = slot.canBeBooked ? "Agendado, mas há outros profissionais disponíveis para este horário." : "Agendado e sem mais profissionais disponíveis.";
-            // Ação de clique: para cancelamento (se privado), ou nada (se público)
-            // acaoClique = exibirPrivado ? `onclick="${onSlotClickForCancelamento(slot.existingAppointment.id)}"` : ""; // Desativado o cancelamento por clique no slot
-            acaoClique = ""; // Define explicitamente que não há ação de clique para este tipo de slot
+            acaoClique = ""; // Mantém o cancelamento por clique desativado
+
+            if (exibirPrivado) { // Se for dono ou funcionário, exibe detalhes completos
+                nomeExibido = slot.existingAppointment.cliente_nome || `Cliente (ID: ${slot.existingAppointment.cliente_id || 'Desconhecido'})`;
+                servicoExibido = slot.existingAppointment.servicos?.nome || 'Serviço';
+                profExibido = ` | Prof: ${slot.existingAppointment.profissionais?.nome || '---'}`;
+                tooltipText = slot.canBeBooked ? `Agendado por: ${nomeExibido}. ${servicoExibido} ${profExibido}. Há outros horários/profissionais.` : `Agendado por: ${nomeExibido}. ${servicoExibido} ${profExibido}.`;
+            } else { // Se for público (visitante), exibe informações genéricas
+                nomeExibido = "AGENDADO";
+                servicoExibido = "Toque para agendar"; // Para visitantes, se o slot tem disponibilidade restante, permite agendar
+                profExibido = ""; // Não exibe o nome do profissional para visitantes
+                tooltipText = slot.canBeBooked ? "Este horário está parcialmente agendado. Toque para agendar." : "Este horário está ocupado.";
+                // Para visitantes, se o slot está agendado mas ainda pode ser agendado, a ação deve ser de agendamento.
+                // Se totalmente ocupado, sem ação.
+                if (slot.canBeBooked) {
+                    acaoClique = `onclick="${onSlotClickForAgendamento(slot.data, slot.hora)}"`;
+                } else {
+                    acaoClique = "";
+                }
+            }
         } else if (slot.canBeBooked) {
             // Se está livre e pode ser agendado
             nomeExibido = "DISPONÍVEL";

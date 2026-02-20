@@ -1,4 +1,4 @@
-// agendaService.js - 8
+// agendaService.js - 9
 // Lógica de negócios e acesso a dados para a funcionalidade de agenda.
 
 import { supabaseClient } from './config.js';

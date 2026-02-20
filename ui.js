@@ -361,6 +361,15 @@ function setupTabsUI(abasPermitidas, onTabClickCallback) {
  * @param {Function} onSlotClickForAgendamento - Callback para clique em slot disponível.
  * @param {Function} onSlotClickForCancelamento - Callback para clique em agendamento existente (cancelamento).
  */
+/**
+ * Renderiza o conteúdo da aba "Agenda".
+ * @param {Array<Object>} grade - Grade de horários a ser exibida.
+ * @param {string} periodoAgenda - Período da agenda ('dia' ou 'semana').
+ * @param {string} verifiedUserType - Tipo de usuário verificado.
+ * @param {Function} onSetPeriodoAgenda - Callback para mudar o período da agenda.
+ * @param {Function} onSlotClickForAgendamento - Callback para clique em slot disponível.
+ * @param {Function} onSlotClickForCancelamento - Callback para clique em agendamento existente (cancelamento).
+ */
 function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriodoAgenda, onSlotClickForAgendamento, onSlotClickForCancelamento) {
     const body = document.getElementById('view-body');
     const title = document.getElementById('view-title');
@@ -385,41 +394,55 @@ function renderAgendaContent(grade, periodoAgenda, verifiedUserType, onSetPeriod
         }
 
         const exibirPrivado = (verifiedUserType === 'dono' || verifiedUserType === 'funcionario');
-        // Identifica os estados do slot
-        const isActualAppointment = slot.dados && slot.dados.id; // Verifica se é um agendamento real
-        const isGloballyUnavailable = slot.dados && slot.dados.status === 'indisponível'; // Verifica se é o status customizado de indisponível
+        
+        let nomeExibido, servicoExibido, profExibido, corStatus, acaoClique, tooltipText = '';
 
-        // Para usuários públicos, slots com agendamento real ou globalmente indisponíveis não são exibidos.
-        if (!exibirPrivado && (isActualAppointment || isGloballyUnavailable)) return;
-
-        let nomeExibido, servicoExibido, profExibido, corStatus, acaoClique;
-
-        if (isActualAppointment) {
-            nomeExibido = slot.dados.cliente_nome;
-            servicoExibido = slot.dados.servicos?.nome || 'Serviço';
-            profExibido = ` | Prof: ${slot.dados.profissionais?.nome || '---'}`;
-            corStatus = "#e74c3c"; // Vermelho para ocupado
-            // Ação de clique para cancelamento, visível apenas para usuários privados
-            acaoClique = exibirPrivado ? `onclick="${onSlotClickForCancelamento(slot.dados.id)}"` : "";
-        } else if (isGloballyUnavailable) {
-            nomeExibido = "INDISPONÍVEL";
-            servicoExibido = "Nenhum profissional disponível";
+        if (slot.isPast) {
+            nomeExibido = "PASSADO";
+            servicoExibido = "Não disponível para agendamento";
             profExibido = "";
-            corStatus = "#7f8c8d"; // Cinza para globalmente indisponível
-            acaoClique = ""; // Sem ação de clique
-        } else { // Slot está realmente disponível
+            corStatus = "#555"; // Cinza escuro para slots passados
+            acaoClique = ""; // Nenhuma ação para slots passados
+            tooltipText = "Este horário já passou.";
+        } else if (slot.isBooked) {
+            // Se já está agendado por um cliente
+            nomeExibido = slot.existingAppointment.cliente_nome;
+            servicoExibido = slot.existingAppointment.servicos?.nome || 'Serviço';
+            profExibido = ` | Prof: ${slot.existingAppointment.profissionais?.nome || '---'}`;
+            corStatus = slot.canBeBooked ? "#d4af37" : "#e74c3c"; // Ouro se ainda puder ser agendado, Vermelho se totalmente ocupado
+            tooltipText = slot.canBeBooked ? "Agendado, mas há outros profissionais disponíveis para este horário." : "Agendado e sem mais profissionais disponíveis.";
+
+            // Ação de clique: para cancelamento (se privado), ou nada (se público)
+            acaoClique = exibirPrivado ? `onclick="${onSlotClickForCancelamento(slot.existingAppointment.id)}"` : "";
+        } else if (slot.canBeBooked) {
+            // Se está livre e pode ser agendado
             nomeExibido = "DISPONÍVEL";
             servicoExibido = "Toque para agendar";
             profExibido = "";
             corStatus = "#2ecc71"; // Verde para disponível
             acaoClique = `onclick="${onSlotClickForAgendamento(slot.data, slot.hora)}"`;
+            tooltipText = "Este horário está aberto para agendamento.";
+        } else {
+            // Se não está agendado, não está no passado e não pode ser agendado (totalmente indisponível)
+            nomeExibido = "INDISPONÍVEL";
+            servicoExibido = "Nenhum profissional disponível";
+            profExibido = "";
+            corStatus = "#7f8c8d"; // Cinza para globalmente indisponível
+            acaoClique = ""; // Sem ação de clique
+            tooltipText = "Todos os profissionais estão ocupados ou não atendem neste horário.";
         }
 
+        // Para usuários públicos, slots totalmente indisponíveis ou passados não são exibidos (ou podem ser exibidos de forma diferente).
+        // Manter a exibição para todos, mas com as cores e ações corretas.
+        // Se a política é não mostrar slots INDISPONÍVEIS (cinza) para clientes, podemos adicionar um 'if' aqui.
+        // Por enquanto, vamos mostrar tudo com o status correto.
+        // if (!exibirPrivado && (slot.isPast || (!slot.canBeBooked && !slot.isBooked))) return; // Descomente para esconder slots totalmente indisponíveis de clientes.
+
         htmlAgenda += `
-            <div class="agenda-item" ${acaoClique} style="border-left: 4px solid ${corStatus}; cursor: ${acaoClique ? 'pointer' : 'default'};">
+            <div class="agenda-item" ${acaoClique} title="${tooltipText}" style="border-left: 4px solid ${corStatus}; cursor: ${acaoClique ? 'pointer' : 'default'};">
                 <div class="agenda-time">${slot.hora}</div>
                 <div class="agenda-details">
-                    <h4 style="color: ${isActualAppointment ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
+                    <h4 style="color: ${corStatus === "#e74c3c" ? '#fff' : corStatus}; margin:0;">${nomeExibido}</h4>
                     <span style="font-size: 0.85em; opacity: 0.7;">${servicoExibido}${profExibido}</span>
                 </div>
             </div>`;

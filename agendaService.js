@@ -242,7 +242,7 @@ function gerarGradeHorarios(abertura, fechamento, agendados, periodoAgenda, allS
  */
 async function getAgendamentosPorPeriodo(estabelecimentoId, dataInicioISO, dataFimISO) {
     const { data: agendamentos, error } = await supabaseClient.from('agendamentos')
-        .select('id, cliente_nome, data_hora_inicio, servico_id, profissional_id, profissionais(id, nome), servicos(id, nome, duracao_minutos)')
+        .select('id, data_hora_inicio, servico_id, profissional_id, profissionais(id, nome), servicos(id, nome, duracao_minutos)')
         .eq('estabelecimento_id', estabelecimentoId)
         // CORREÇÃO: Adicionar 'Z' para garantir que os filtros sejam interpretados como UTC
         .gte('data_hora_inicio', dataInicioISO + 'T00:00:00Z')

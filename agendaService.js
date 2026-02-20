@@ -1,4 +1,4 @@
-// agendaService.js - 5
+// agendaService.js - 6
 // Lógica de negócios e acesso a dados para a funcionalidade de agenda.
 
 import { supabaseClient } from './config.js';
@@ -108,16 +108,6 @@ function _checkProfissionalAvailabilityAtTime(prof, slotStart, slotEnd, profAgen
 }
 
 
-/**
- * Gera uma grade de horários para um período específico, considerando a disponibilidade combinada de profissionais e serviços.
- * @param {string} abertura - Hora de abertura do estabelecimento (ex: "08:00" - hora local).
- * @param {string} fechamento - Hora de fechamento do estabelecimento (ex: "18:00" - hora local).
- * @param {Array<Object>} agendados - Lista de agendamentos existentes no período (já em UTC).
- * @param {'dia'|'semana'} periodoAgenda - O período a ser gerado ('dia' ou 'semana').
- * @param {Array<Object>} allServices - Todos os serviços oferecidos pelo estabelecimento.
- * @param {Array<Object>} allProfessionals - Todos os profissionais do estabelecimento.
- * @returns {Array<Object>} Uma grade de horários com slots e status de agendamento.
- */
 /**
  * Gera uma grade de horários para um período específico, considerando a disponibilidade combinada de profissionais e serviços.
  * @param {string} abertura - Hora de abertura do estabelecimento (ex: "08:00" - hora local).
@@ -384,22 +374,84 @@ async function getProfissionaisDisponiveisNoSlot(servicoId, data, hora, duracaoS
 }
 
 /**
- * Confirma um novo agendamento e registra a movimentação financeira.
- * @param {Object} payload - Os dados do agendamento a ser criado.
+ * Encontra um cliente existente pelo WhatsApp e estabelecimento, ou cria um novo se não existir.
+ * @param {string} estabelecimentoId - O ID do estabelecimento.
+ * @param {string} nome - O nome completo do cliente.
+ * @param {string} whatsapp - O número do WhatsApp do cliente.
+ * @param {string | null} email - O e-mail do cliente (opcional).
+ * @param {string | null} dataNascimento - A data de nascimento do cliente (YYYY-MM-DD, opcional).
+ * @returns {Promise<Object>} O objeto do cliente (com id, nome, whatsapp, email, etc.).
+ * @throws {Error} Se ocorrer um erro ao buscar ou criar o cliente.
+ */
+async function findOrCreateClient(estabelecimentoId, nome, whatsapp, email, dataNascimento) {
+    // 1. Tentar encontrar o cliente pelo WhatsApp e ID do estabelecimento
+    const { data: existingClients, error: searchError } = await supabaseClient
+        .from('clientes')
+        .select('id, nome, whatsapp, email, data_nascimento')
+        .eq('estabelecimento_id', estabelecimentoId)
+        .eq('whatsapp', whatsapp)
+        .limit(1);
+
+    if (searchError) {
+        console.error("Erro ao buscar cliente existente:", searchError.message);
+        throw new Error("Erro ao buscar cliente: " + searchError.message);
+    }
+
+    if (existingClients && existingClients.length > 0) {
+        // Cliente encontrado, retorna o primeiro (assumindo WhatsApp único por estabelecimento)
+        console.log("Cliente encontrado:", existingClients[0].id);
+        return existingClients[0];
+    } else {
+        // Cliente não encontrado, criar um novo
+        console.log("Cliente não encontrado, criando novo...");
+        const clientPayload = {
+            estabelecimento_id: estabelecimentoId,
+            nome: nome,
+            whatsapp: whatsapp,
+            email: email || null, // Garante que seja null se vazio
+            data_nascimento: dataNascimento || null // Garante que seja null se vazio
+        };
+
+        const { data: newClient, error: insertError } = await supabaseClient
+            .from('clientes')
+            .insert([clientPayload])
+            .select('id, nome, whatsapp, email, data_nascimento') // Seleciona os campos para retornar
+            .single();
+
+        if (insertError) {
+            console.error("Erro ao criar novo cliente:", insertError.message);
+            throw new Error("Erro ao criar cliente: " + insertError.message);
+        }
+        console.log("Novo cliente criado:", newClient.id);
+        return newClient;
+    }
+}
+
+
+/**
+ * Confirma um novo agendamento e registra a movimentação financeira,
+ * agora associando ao ID do cliente e usando o nome para descrição.
+ * @param {Object} payload - Os dados do agendamento a ser criado (incluindo cliente_id).
  * @param {string} servicoId - O ID do serviço agendado.
  * @param {string} profId - O ID do profissional agendado.
- * @param {string} clienteNome - O nome do cliente.
+ * @param {string} clienteNomeParaDescricao - O nome do cliente para uso na descrição financeira.
  * @param {string} estabelecimentoId - O ID do estabelecimento.
  * @returns {Promise<Object>} O novo agendamento criado.
  * @throws {Error} Se ocorrer um erro ao agendar ou registrar a movimentação financeira.
  */
-async function confirmarAgendamento(payload, servicoId, profId, clienteNome, estabelecimentoId) {
+async function confirmarAgendamento(payload, servicoId, profId, clienteNomeParaDescricao, estabelecimentoId) {
     // Basic payload validation
     if (!payload || !payload.data_hora_inicio || isNaN(new Date(payload.data_hora_inicio).getTime())) {
         console.error("[agendaService.js] Invalid 'data_hora_inicio' in payload for confirmarAgendamento:", payload?.data_hora_inicio);
         throw new Error("Data e hora de início do agendamento inválidas.");
     }
+    // Adicionar validação para cliente_id
+    if (!payload.cliente_id) {
+        console.error("[agendaService.js] Missing 'cliente_id' in payload for confirmarAgendamento.");
+        throw new Error("ID do cliente não fornecido para o agendamento.");
+    }
     
+    // Inserir agendamento
     const { data: novoAgendamento, error: errorAg } = await supabaseClient
         .from('agendamentos')
         .insert([payload])
@@ -411,6 +463,7 @@ async function confirmarAgendamento(payload, servicoId, profId, clienteNome, est
         throw new Error("Erro ao agendar: " + errorAg.message);
     }
 
+    // Buscar informações do serviço para a movimentação financeira
     const { data: servicoInfo, error: servInfoError } = await supabaseClient
         .from('servicos')
         .select('preco, nome')
@@ -420,6 +473,7 @@ async function confirmarAgendamento(payload, servicoId, profId, clienteNome, est
     if (servInfoError) {
         console.error("Erro ao buscar info do serviço para financeiro:", servInfoError.message);
         // Não é crítico, mas pode causar inconsistência financeira, talvez lançar um erro mais brando?
+        // Por agora, apenas logar.
     }
 
     if (novoAgendamento && servicoInfo) {
@@ -429,7 +483,7 @@ async function confirmarAgendamento(payload, servicoId, profId, clienteNome, est
             profissional_id: profId,
             tipo: 'receita',
             valor: servicoInfo.preco,
-            descricao: `Agendamento: ${servicoInfo.nome} - Cliente: ${clienteNome}`,
+            descricao: `Agendamento: ${servicoInfo.nome} - Cliente: ${clienteNomeParaDescricao}`, // Usar o nome do cliente passado
             data_movimentacao: new Date().toISOString() // Data da movimentação em UTC
         }]);
         if (movFinError) {
@@ -471,5 +525,6 @@ export {
     getProfissionaisDisponiveisNoSlot,
     confirmarAgendamento,
     cancelarAgendamento,
-    createUTCDateFromLocalDateAndTime // Exportar para uso em app.js para consistência
+    createUTCDateFromLocalDateAndTime, // Exportar para uso em app.js para consistência
+    findOrCreateClient // Exportar a nova função
 };

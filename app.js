@@ -320,12 +320,20 @@ async function loadAndRenderGestao() {
     // pois o conteúdo da gestão já está no HTML e será preenchido.
     try {
         const dadosEstabelecimento = await ManagementService.getEstabelecimentoBySlug(localStorage.getItem('slug'));
+        if (!dadosEstabelecimento) {
+            throw new Error("Dados do estabelecimento não encontrados para gestão.");
+        }
+
         await UI.popularCamposGestao(dadosEstabelecimento, _donoId);
         // CORREÇÃO: Usar o nome correto da função popularServicosDropdownParaEdicao
         await UI.popularServicosDropdownParaEdicao(_estabelecimentoId);
         // NOVO: Chamar a função para popular os checkboxes de serviços para o novo profissional
         await UI.popularServicosCheckboxesParaNovoProfissional(_estabelecimentoId);
         await UI.popularDropdownProfissionaisParaEdicao(_estabelecimentoId);
+
+        // NOVO: Exibir o logo existente ao carregar a gestão
+        // Passe o nome do estabelecimento para o atributo alt
+        UI.updateEstablishmentLogoUI(dadosEstabelecimento.logo_url, dadosEstabelecimento.nome_fantasia);
 
         // Vincula os eventos da UI de gestão
         UI.vincularEventosGestao({
@@ -408,10 +416,10 @@ async function loadAndRenderGestao() {
                 const horaFim = document.getElementById('new-prof-hora-fim').value;
                 const diasTrabalho = Array.from(document.querySelectorAll('.new-prof-dia-checkbox:checked')).map(cb => cb.value);
 
-                // --- NOVA LÓGICA PARA SERVIÇOS ESPECIALIZADOS (CADASTRO) ---
+                // --- NOVA LÓGICA PARA SERVIÇOS ESPECIALIZADOS (CADASTRO) ---\n
                 // Coleta os IDs dos serviços selecionados nos checkboxes
-                const servicosEspecializados = Array.from(document.querySelectorAll('#new-prof-servicos-especializados input[type="checkbox"]:checked')).map(checkbox => checkbox.value);
-                // --- FIM DA NOVA LÓGICA ---
+                const servicosEspecializados = Array.from(document.querySelectorAll('#new-prof-servicos-especializados input[type=\"checkbox\"]:checked')).map(checkbox => checkbox.value);
+                // --- FIM DA NOVA LÓGICA ---\n
 
                 if (!nome || !whatsapp || !tipoRemuneracao || isNaN(comissao) || !horaInicio || !horaFim || diasTrabalho.length === 0) {
                     alert("Preencha todos os campos do novo profissional e selecione os dias de trabalho.");
@@ -435,7 +443,7 @@ async function loadAndRenderGestao() {
                     document.getElementById('new-prof-nome').value = '';
                     document.getElementById('new-prof-whatsapp').value = '';
                     // Limpar outros campos do formulário se necessário (incluindo desmarcar checkboxes)
-                    document.querySelectorAll('#new-prof-servicos-especializados input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+                    document.querySelectorAll('#new-prof-servicos-especializados input[type=\"checkbox\"]').forEach(checkbox => checkbox.checked = false);
                     loadAndRenderGestao();
                 } catch (error) {
                     alert(error.message || "Erro ao cadastrar profissional.");
@@ -467,6 +475,45 @@ async function loadAndRenderGestao() {
             onProfissionalSelectedForEdit: async (profId) => {
                 // A lógica de preencher o modal já está em onEditProfissional, que é chamada pelo botão.
                 // Esta callback apenas habilita os botões.
+            },
+            // NOVO: Adicionar manipulador para o botão de upload de logo
+            onUploadLogo: async (file) => {
+                const uploadStatusElement = document.getElementById('upload-status');
+                if (!file) {
+                    uploadStatusElement.textContent = "Por favor, selecione um arquivo de imagem para o logo.";
+                    alert("Por favor, selecione um arquivo de imagem para o logo.");
+                    return;
+                }
+
+                uploadStatusElement.textContent = "Iniciando upload...";
+                try {
+                    // Verificação de tamanho do arquivo
+                    const MAX_FILE_SIZE_BYTES = 200 * 1024; // 200 KB
+                    if (file.size > MAX_FILE_SIZE_BYTES) {
+                        throw new Error("O arquivo excede o tamanho máximo de 200 KB. Por favor, otimize a imagem.");
+                    }
+
+                    // Crie um caminho único para o arquivo no Storage.
+                    // Usaremos o ID do estabelecimento para que cada estabelecimento tenha seu próprio logo,
+                    // e o `upsert: true` no upload irá sobrescrever se já existir.
+                    const filePathInStorage = `logos/${_estabelecimentoId}`; // Ex: 'logos/seu_id_do_estabelecimento'
+                    const publicUrl = await ManagementService.uploadLogoToStorage(
+                        file,
+                        'logos-estabelecimentos', // O nome do bucket que você criou
+                        filePathInStorage
+                    );
+
+                    await ManagementService.updateEstabelecimentoLogoUrl(_estabelecimentoId, publicUrl, _verifiedUserType);
+                    
+                    // Atualiza a UI com o novo logo
+                    UI.updateEstablishmentLogoUI(publicUrl, dadosEstabelecimento.nome_fantasia);
+                    uploadStatusElement.textContent = "Logo carregado e atualizado com sucesso!";
+                    alert("Logo carregado e atualizado com sucesso!");
+                } catch (error) {
+                    console.error("Erro ao carregar ou atualizar logo:", error);
+                    uploadStatusElement.textContent = `Erro: ${error.message}`;
+                    alert(error.message);
+                }
             }
         });
         // Remova o estado de loading depois que tudo for carregado
@@ -475,7 +522,7 @@ async function loadAndRenderGestao() {
         console.error("Erro ao carregar gestão:", error);
         alert("Erro ao carregar gestão: " + error.message);
         // Exibe o erro no view-body, já que 'aba-gestao' está visível, mas o erro pode ser global
-        // e o 'view-body' é onde as outras abas exibem seu conteúdo.
+        // e o 'view-body' é onde as outras abas exibem seu conteúdo.\n
         document.getElementById('view-body').style.display = 'block'; // Garante que view-body esteja visível
         document.getElementById('aba-gestao').style.display = 'none'; // Oculta aba-gestao em caso de erro
         document.getElementById('view-body').innerHTML = `<p style='text-align:center; opacity:0.5; color: #e74c3c;'>Erro ao carregar gestão.</p>`;
@@ -549,27 +596,21 @@ async function handleTabClick(viewId, clickedTabElement) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("App.js carregado. Iniciando verificação de usuário e carregamento de dados.");
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const slug = urlParams.get('s'); // Tenta obter o slug da URL o mais cedo possível
-
-    const user = await verifyUser(); // Verifica se há um usuário autenticado
-
-    // Se NÃO houver usuário autenticado E NÃO houver slug na URL, redireciona para o login.
-    // Caso contrário (há slug OU há usuário logado), permite que a página continue o carregamento.
-    if (!user && !slug) {
-        console.log("Usuário não autenticado e nenhum slug fornecido. Redirecionando para login.");
-        window.location.href = 'login.html';
+    const user = await verifyUser();
+    if (!user) {
+        console.log("Usuário não autenticado. Redirecionando para login.");
+        window.location.href = 'login.html'; // Redireciona para a página de login
         return;
     }
 
-    // Se houver um usuário logado, define o _donoId
-    if (user) {
-        _donoId = user.id;
-    }
+    _donoId = user.id;
 
-    // Se, após as verificações acima, ainda não houver um slug, é um erro.
+    // Tenta obter o slug da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const slug = urlParams.get('s');
+
     if (!slug) {
-        console.error("Slug do estabelecimento não encontrado na URL. Necessário para carregar informações.");
+        console.error("Slug do estabelecimento não encontrado na URL.");
         UI.renderSalonNotFound();
         return;
     }
@@ -584,16 +625,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);
+        // CORREÇÃO: Usar a função de validação ao salvar no localStorage
         // APLICADO O .substring(0, 5) AQUI!
         localStorage.setItem('hora_abertura', _validateTimeFormat(estabelecimento.hora_abertura.substring(0, 5), "08:00"));
         // APLICADO O .substring(0, 5) AQUI!
         localStorage.setItem('hora_fechamento', _validateTimeFormat(estabelecimento.hora_fechamento.substring(0, 5), "18:00"));
 
 
-        // Determina o tipo de usuário com base na autenticação e propriedade do estabelecimento
-        if (user && user.id === estabelecimento.dono_id) {
+        // Determina o tipo de usuário com base no ID do dono
+        if (user.id === estabelecimento.dono_id) {
             _verifiedUserType = 'dono';
-        } else if (user) { // Usuário logado, mas não é o dono deste estabelecimento
+        } else {
             // Lógica para verificar se é funcionário (assumindo que há uma tabela de 'funcionarios' ou 'perfis' com `cargo`)
             const { data: perfilDono, error: perfilError } = await supabaseClient.from('perfis').select('cargo').eq('id', user.id).single();
             if (perfilError) console.warn("Erro ao buscar perfil para determinar cargo:", perfilError.message);
@@ -601,22 +643,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (perfilDono?.cargo === 'funcionario') { // Exemplo de verificação de cargo
                 _verifiedUserType = 'funcionario';
             } else {
-                _verifiedUserType = 'publico'; // Logado, mas sem cargo específico para este estabelecimento (ou cliente comum)
+                _verifiedUserType = 'publico';
             }
-        } else {
-            _verifiedUserType = 'publico'; // Nenhuma autenticação, tratado como visitante público
         }
 
-        // Verifica o período de teste (usando 'trial_expires_at' conforme o schema)
-        const dataFimTrial = estabelecimento.trial_expires_at ? new Date(estabelecimento.trial_expires_at) : null;
+        // Verifica o período de teste
+        const dataFimTrial = estabelecimento.data_fim_trial ? new Date(estabelecimento.data_fim_trial) : null;
         if (dataFimTrial && new Date() > dataFimTrial) {
             UI.renderTrialExpired();
             return;
         }
 
         UI.updateSalonNameUI(estabelecimento.nome_fantasia);
-        // NOVO: Otimização Dinâmica do Título da Página
-        document.title = `Agenda Online | ${estabelecimento.nome_fantasia} | VENDISIA`;
+        // NOVO: Exibir o logo no cabeçalho ou em outros lugares que usam `UI.updateSalonNameUI` se necessário
+        // Se você tiver um local para o logo no cabeçalho global, chame aqui também:
+        // UI.updateEstablishmentLogoUI(estabelecimento.logo_url, estabelecimento.nome_fantasia);
         // CORREÇÃO: Passando _verifiedUserType e o plano_ativo do estabelecimento
         UI.toggleDashboardButton(_verifiedUserType, estabelecimento.plano_ativo);
 
@@ -626,7 +667,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             { id: 'servicos', label: 'Serviços' }
         ];
 
-        // Apenas adiciona a aba 'Gestão' se o usuário for dono ou funcionário
         if (_verifiedUserType === 'dono' || _verifiedUserType === 'funcionario') {
             abasPermitidas.push({ id: 'gestao', label: 'Gestão' });
             // Outras abas para dono/funcionário, se existirem

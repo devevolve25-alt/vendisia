@@ -592,7 +592,7 @@ async function handleTabClick(viewId, clickedTabElement) {
 }
 
 
-// --- Inicialização da Aplicação ---
+/ --- Inicialização da Aplicação ---
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("App.js carregado. Iniciando verificação de usuário e carregamento de dados.");
 
@@ -624,12 +624,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             UI.renderSalonNotFound();
             return;
         }
-        // ... (o restante do código para carregar o estabelecimento e renderizar a UI)
-    } catch (error) {
-        console.error("Erro ao carregar estabelecimento:", error);
-        UI.renderSalonNotFound(); // ou outra mensagem de erro
-    }
-});
 
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);
@@ -641,9 +635,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         // Determina o tipo de usuário com base no ID do dono
-        if (user.id === estabelecimento.dono_id) {
+        if (user && user.id === estabelecimento.dono_id) { // Adicionada verificação de 'user'
             _verifiedUserType = 'dono';
-        } else {
+        } else if (user) { // Se houver usuário, mas não for o dono
             // Lógica para verificar se é funcionário (assumindo que há uma tabela de 'funcionarios' ou 'perfis' com `cargo`)
             const { data: perfilDono, error: perfilError } = await supabaseClient.from('perfis').select('cargo').eq('id', user.id).single();
             if (perfilError) console.warn("Erro ao buscar perfil para determinar cargo:", perfilError.message);
@@ -653,6 +647,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 _verifiedUserType = 'publico';
             }
+        } else { // Se não houver usuário (visitante)
+            _verifiedUserType = 'publico';
         }
 
         // Verifica o período de teste
@@ -688,4 +684,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Erro na inicialização da aplicação:", error);
         UI.renderSalonNotFound(); // Pode ser qualquer erro, tratamos como não encontrado por simplicidade
     }
-});
+}); // Este é o único fechamento correto para o DOMContentLoaded

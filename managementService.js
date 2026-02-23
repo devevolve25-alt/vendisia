@@ -370,28 +370,18 @@ export async function updateEstabelecimentoLogoUrl(estabelecimentoId, logoUrl, v
 
 
 export {
-    generateChatContent,
-    vincularEventosGestao,
-    abrirModalAgendamento,
-    fecharModalAgendamento,
-    popularServicosDropdownParaEdicao, // Nome ajustado
-    popularServicosCheckboxesParaNovoProfissional, // Nova função exportada
-    popularDropdownProfissionaisParaEdicao,
-    popularCamposGestao,
-    abrirModalEdicaoServico,
-    fecharModalEdicaoServico,
-    abrirModalEdicaoProfissional,
-    fecharModalEdicaoProfissional,
-    setupTabsUI,
-    renderAgendaContent,
-    renderServicosContent,
-    renderModuleUnderDevelopment,
-    renderAccessDenied,
-    renderTrialExpired,
-    updateSalonNameUI,
-    toggleDashboardButton,
-    showLoadingState,
-    renderSalonNotFound,
-    handleProfissionalDropdownUpdate
-    // A função updateEstablishmentLogoUI já é exportada na sua declaração, não precisa ser aqui novamente.
+    getEstabelecimentoBySlug,
+    updateDadosGerais,
+    createServico,
+    getServicos,
+    getServicoById,
+    updateServico,
+    deleteServico,
+    createProfissional,
+    getProfissionais,
+    getProfissionalById,
+    updateProfissional,
+    deleteProfissional
+    // As funções 'uploadLogoToStorage' e 'updateEstabelecimentoLogoUrl' já são exportadas diretamente
+    // em suas declarações, então não precisam ser listadas novamente aqui.
 };

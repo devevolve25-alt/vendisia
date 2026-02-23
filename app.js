@@ -592,7 +592,7 @@ async function handleTabClick(viewId, clickedTabElement) {
 }
 
 
-/ --- Inicialização da Aplicação ---
+// --- Inicialização da Aplicação ---
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("App.js carregado. Iniciando verificação de usuário e carregamento de dados.");
 

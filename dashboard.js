@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes e edição de cadastros - 7 
+//atualizado lista de clientes 
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -98,7 +98,7 @@ async function atualizarDashboard(salaoId) {
         if (document.getElementById('ag-mes')) document.getElementById('ag-mes').innerText = totalGeral;
         if (document.getElementById('ag-semana')) document.getElementById('ag-semana').innerText = totalGeral; 
 
-        // --- DETALHAMENTO DE CLIENTES ---
+        // --- DETALHAMENTO DE CLIENTES (Card "Próximos Clientes") ---
         let listaClientesHTML = '';
         const agendamentosOrdenados = agsMes?.sort((a, b) => new Date(a.data_hora_inicio) - new Date(b.data_hora_inicio)) || [];
 
@@ -107,7 +107,7 @@ async function atualizarDashboard(salaoId) {
             // Acessar dados do cliente aninhados
             const clienteNome = a.clientes?.nome || 'Cliente s/ nome';
             const clienteWhatsapp = a.clientes?.whatsapp;
-            const whatsLink = clienteWhatsapp ? `https://wa.me/${clienteWhatsapp.replace(/\\D/g, '')}` : '#';
+            const whatsLink = clienteWhatsapp ? `https://wa.me/${clienteWhatsapp.replace(/\D/g, '')}` : '#';
             
             // Acessar nome do profissional aninhado
             const nomeProf = a.profissionais?.nome || `Prof. ID: ${a.profissional_id}`;
@@ -130,6 +130,9 @@ async function atualizarDashboard(salaoId) {
         if (containerClientes) {
             containerClientes.innerHTML = listaClientesHTML || '<div style="padding:10px; text-align: center; color: #888;">Nenhum cliente agendado.</div>';
         }
+
+        // --- NOVO: Carregar Lista Geral de Clientes ---
+        await carregarListaClientesGeral(salaoId);
 
         // --- PERFORMANCE EQUIPE E CÁLCULO DE COMISSÕES ---
         let totalComissoesGeral = 0;
@@ -207,6 +210,84 @@ async function atualizarDashboard(salaoId) {
         console.error("Erro Geral Dashboard:", err);
     }
 }
+
+// NOVO: Função para carregar e exibir a lista geral de clientes
+async function carregarListaClientesGeral(salaoId) {
+    const containerClientesGeral = document.getElementById('lista-clientes-geral');
+    if (!containerClientesGeral) return;
+
+    containerClientesGeral.innerHTML = '<div style="padding: 10px; text-align: center; color: #888;">Buscando clientes...</div>';
+
+    try {
+        // 1. Buscar todos os clientes do estabelecimento
+        const { data: clientes, error: clientesError } = await supabaseClient
+            .from('clientes')
+            .select('id, nome, whatsapp, email, data_nascimento, notas_preferencias')
+            .eq('estabelecimento_id', salaoId)
+            .order('nome', { ascending: true });
+
+        if (clientesError) throw clientesError;
+        if (!clientes || clientes.length === 0) {
+            containerClientesGeral.innerHTML = '<div style="padding: 10px; text-align: center; color: #888;">Nenhum cliente cadastrado.</div>';
+            return;
+        }
+
+        // 2. Buscar todos os agendamentos do estabelecimento com os detalhes necessários
+        const { data: agendamentos, error: agendamentosError } = await supabaseClient
+            .from('agendamentos')
+            .select('cliente_id, data_hora_inicio, servicos(nome), profissionais(nome)')
+            .eq('estabelecimento_id', salaoId)
+            .order('data_hora_inicio', { ascending: true });
+
+        if (agendamentosError) throw agendamentosError;
+
+        // 3. Mapear agendamentos por cliente_id para fácil acesso
+        const agendamentosPorCliente = new Map();
+        agendamentos?.forEach(ag => {
+            if (!agendamentosPorCliente.has(ag.cliente_id)) {
+                agendamentosPorCliente.set(ag.cliente_id, []);
+            }
+            agendamentosPorCliente.get(ag.cliente_id).push(ag);
+        });
+
+        let listaClientesHTML = '';
+        clientes.forEach(cliente => {
+            const dataNascimentoFmt = cliente.data_nascimento ? new Date(cliente.data_nascimento).toLocaleDateString('pt-BR') : 'Não informada';
+            const whatsLink = cliente.whatsapp ? `https://wa.me/${cliente.whatsapp.replace(/\D/g, '')}` : '#';
+
+            // Concatena notas e preferências a partir dos agendamentos
+            let agendamentosDetalhes = [];
+            const agsDoCliente = agendamentosPorCliente.get(cliente.id) || [];
+            agsDoCliente.forEach(ag => {
+                const dataHoraFmt = new Date(ag.data_hora_inicio).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                const servicoNome = ag.servicos?.nome || 'Serviço Desconhecido';
+                const profissionalNome = ag.profissionais?.nome || 'Profissional Desconhecido';
+                agendamentosDetalhes.push(`${servicoNome} com ${profissionalNome} em ${dataHoraFmt}`);
+            });
+            const notasPreferencias = agendamentosDetalhes.length > 0 
+                ? `Agendamentos: ${agendamentosDetalhes.join('; ')}` 
+                : (cliente.notas_preferencias || 'Nenhuma nota ou preferência registrada.');
+
+
+            listaClientesHTML += `
+                <div style="padding: 15px; border-bottom: 1px solid #333; display: flex; flex-direction: column; gap: 5px; font-size: 0.9rem;">
+                    <strong style="color: #2ecc71;">${cliente.nome || 'Nome não disponível'}</strong>
+                    ${cliente.whatsapp ? `<span>WhatsApp: <a href="${whatsLink}" target="_blank" style="color: #61afef; text-decoration: none;">${cliente.whatsapp}</a></span>` : ''}
+                    ${cliente.email ? `<span>Email: ${cliente.email}</span>` : ''}
+                    <span>Nascimento: ${dataNascimentoFmt}</span>
+                    <span style="font-style: italic; color: #888;">Notas/Prefs: ${notasPreferencias}</span>
+                </div>
+            `;
+        });
+
+        containerClientesGeral.innerHTML = listaClientesHTML;
+
+    } catch (error) {
+        console.error("Erro ao carregar lista de clientes geral:", error.message);
+        containerClientesGeral.innerHTML = '<div style="padding: 10px; text-align: center; color: #e74c3c;">Erro ao carregar clientes.</div>';
+    }
+}
+
 
 // --- FUNÇÕES DE EDIÇÃO (MODAIS) ---
 function abrirEdicaoProf(p) {

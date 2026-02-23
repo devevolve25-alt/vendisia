@@ -100,6 +100,30 @@
                                         </div>
                                     </div>
                                     <input type="number" id="edit-intervalo-slot" placeholder="Intervalo (minutos)" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                                    
+                                    <!-- Seção para upload e exibição do logo -->
+                                    <div class="card mt-4">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">Logo do Estabelecimento</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group mb-3 text-center">
+                                                <img id="estabelecimento-logo-preview" src="https://via.placeholder.com/150?text=Seu+Logo"
+                                                     alt="Logo do Estabelecimento" class="img-thumbnail mb-2"
+                                                     style="max-width: 150px; height: auto; border-radius: 8px;">
+                                                <p class="text-muted small">Tamanho recomendado: até 200KB, formato SVG ou WebP.</p>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="logo-upload">Selecionar Logo:</label>
+                                                <input type="file" class="form-control" id="logo-upload" accept="image/png, image/jpeg, image/webp, image/svg+xml">
+                                            </div>
+                                            <button type="button" class="btn btn-primary mt-3" id="upload-logo-btn">
+                                                <i class="fas fa-upload me-2"></i>Carregar Novo Logo
+                                            </button>
+                                            <div id="upload-status" class="mt-2 small text-muted"></div>
+                                        </div>
+                                    </div>
+                                    
                                     <button id="btn-atualizar-config" class="btn-generate" style="width: 100%; margin-top: 10px;">ATUALIZAR CONFIGURAÇÕES</button>
                                 </div>
                             </div>

@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 5 (formato HH:MM)
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 6 - acesso visitante
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -549,21 +549,27 @@ async function handleTabClick(viewId, clickedTabElement) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("App.js carregado. Iniciando verificação de usuário e carregamento de dados.");
 
-    const user = await verifyUser();
-    if (!user) {
-        console.log("Usuário não autenticado. Redirecionando para login.");
-        window.location.href = 'login.html'; // Redireciona para a página de login
+    const urlParams = new URLSearchParams(window.location.search);
+    const slug = urlParams.get('s'); // Tenta obter o slug da URL o mais cedo possível
+
+    const user = await verifyUser(); // Verifica se há um usuário autenticado
+
+    // Se NÃO houver usuário autenticado E NÃO houver slug na URL, redireciona para o login.
+    // Caso contrário (há slug OU há usuário logado), permite que a página continue o carregamento.
+    if (!user && !slug) {
+        console.log("Usuário não autenticado e nenhum slug fornecido. Redirecionando para login.");
+        window.location.href = 'login.html';
         return;
     }
 
-    _donoId = user.id;
+    // Se houver um usuário logado, define o _donoId
+    if (user) {
+        _donoId = user.id;
+    }
 
-    // Tenta obter o slug da URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const slug = urlParams.get('s');
-
+    // Se, após as verificações acima, ainda não houver um slug, é um erro.
     if (!slug) {
-        console.error("Slug do estabelecimento não encontrado na URL.");
+        console.error("Slug do estabelecimento não encontrado na URL. Necessário para carregar informações.");
         UI.renderSalonNotFound();
         return;
     }
@@ -578,17 +584,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);
-        // CORREÇÃO: Usar a função de validação ao salvar no localStorage
         // APLICADO O .substring(0, 5) AQUI!
         localStorage.setItem('hora_abertura', _validateTimeFormat(estabelecimento.hora_abertura.substring(0, 5), "08:00"));
         // APLICADO O .substring(0, 5) AQUI!
         localStorage.setItem('hora_fechamento', _validateTimeFormat(estabelecimento.hora_fechamento.substring(0, 5), "18:00"));
 
 
-        // Determina o tipo de usuário com base no ID do dono
-        if (user.id === estabelecimento.dono_id) {
+        // Determina o tipo de usuário com base na autenticação e propriedade do estabelecimento
+        if (user && user.id === estabelecimento.dono_id) {
             _verifiedUserType = 'dono';
-        } else {
+        } else if (user) { // Usuário logado, mas não é o dono deste estabelecimento
             // Lógica para verificar se é funcionário (assumindo que há uma tabela de 'funcionarios' ou 'perfis' com `cargo`)
             const { data: perfilDono, error: perfilError } = await supabaseClient.from('perfis').select('cargo').eq('id', user.id).single();
             if (perfilError) console.warn("Erro ao buscar perfil para determinar cargo:", perfilError.message);
@@ -596,12 +601,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (perfilDono?.cargo === 'funcionario') { // Exemplo de verificação de cargo
                 _verifiedUserType = 'funcionario';
             } else {
-                _verifiedUserType = 'publico';
+                _verifiedUserType = 'publico'; // Logado, mas sem cargo específico para este estabelecimento (ou cliente comum)
             }
+        } else {
+            _verifiedUserType = 'publico'; // Nenhuma autenticação, tratado como visitante público
         }
 
-        // Verifica o período de teste
-        const dataFimTrial = estabelecimento.data_fim_trial ? new Date(estabelecimento.data_fim_trial) : null;
+        // Verifica o período de teste (usando 'trial_expires_at' conforme o schema)
+        const dataFimTrial = estabelecimento.trial_expires_at ? new Date(estabelecimento.trial_expires_at) : null;
         if (dataFimTrial && new Date() > dataFimTrial) {
             UI.renderTrialExpired();
             return;
@@ -617,6 +624,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             { id: 'servicos', label: 'Serviços' }
         ];
 
+        // Apenas adiciona a aba 'Gestão' se o usuário for dono ou funcionário
         if (_verifiedUserType === 'dono' || _verifiedUserType === 'funcionario') {
             abasPermitidas.push({ id: 'gestao', label: 'Gestão' });
             // Outras abas para dono/funcionário, se existirem

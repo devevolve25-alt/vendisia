@@ -499,7 +499,7 @@ async function loadAndRenderGestao() {
                     const filePathInStorage = `logos/${_estabelecimentoId}`; // Ex: 'logos/seu_id_do_estabelecimento'
                     const publicUrl = await ManagementService.uploadLogoToStorage(
                         file,
-                        'logos-estabelecimentos', // O nome do bucket que você criou
+                        'logos_estab', // O nome do bucket que você criou
                         filePathInStorage
                     );
 

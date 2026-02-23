@@ -672,6 +672,5 @@ export {
     toggleDashboardButton,
     showLoadingState,
     renderSalonNotFound,
-    handleProfissionalDropdownUpdate,
-    updateEstablishmentLogoUI // NOVO: Exportar a função de atualização do logo
+    handleProfissionalDropdownUpdate
 };

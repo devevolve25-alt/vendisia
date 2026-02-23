@@ -1,4 +1,4 @@
-// managementService.js - corr 3 (formato HH:MM profissionais)
+// managementService.js - corr 4
 // Lógica de negócios e acesso a dados para gestão de estabelecimento, serviços e profissionais.
 
 import { supabaseClient } from './config.js';
@@ -135,7 +135,7 @@ async function getServicoById(servicoId, verifiedUserType) {
  * @param {string} servicoId - O ID do serviço a ser atualizado.
  * @param {Object} dadosServico - Objeto com os dados atualizados do serviço.
  * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode atualizar).
- * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao salvar.
+ * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao salvar.\n
  */
 async function updateServico(servicoId, dadosServico, verifiedUserType) {
     if (verifiedUserType !== 'dono') {
@@ -154,15 +154,15 @@ async function updateServico(servicoId, dadosServico, verifiedUserType) {
 /**
  * Exclui um serviço e suas dependências (agendamentos e movimentações financeiras).
  * @param {string} servicoId - O ID do serviço a ser excluído.
- * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode excluir).
- * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao excluir.
+ * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode excluir).\n
+ * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao excluir.\n
  */
 async function deleteServico(servicoId, verifiedUserType) {
     if (verifiedUserType !== 'dono') {
         throw new Error("Você não tem permissão para excluir serviços.");
     }
     // As exclusões em cascata no banco de dados seriam ideais aqui,
-    // mas se não houver, precisamos excluir manualmente as dependências.
+    // mas se não houver, precisamos excluir manualmente as dependências.\n
     await supabaseClient.from('agendamentos').delete().eq('servico_id', servicoId);
     await supabaseClient.from('movimentacoes_financeiras').delete().eq('servico_id', servicoId);
 
@@ -177,10 +177,10 @@ async function deleteServico(servicoId, verifiedUserType) {
 
 /**
  * Cadastra um novo profissional.
- * @param {string} estabelecimentoId - O ID do estabelecimento.
+ * @param {string} estabelecimentoId - O ID do estabelecimento.\n
  * @param {Object} dadosProfissional - Objeto com os dados do novo profissional.
- * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode cadastrar).
- * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao cadastrar.
+ * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode cadastrar).\n
+ * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao cadastrar.\n
  */
 async function createProfissional(estabelecimentoId, dadosProfissional, verifiedUserType) {
     if (verifiedUserType !== 'dono') {
@@ -228,9 +228,9 @@ async function getProfissionais(estabelecimentoId) {
 /**
  * Busca um profissional pelo seu ID.
  * @param {string} profId - O ID do profissional.
- * @param {string} verifiedUserType - O tipo de usuário verificado.
- * @returns {Promise<Object>} Os dados do profissional.
- * @throws {Error} Se o usuário não tiver permissão ou o profissional não for encontrado.
+ * @param {string} verifiedUserType - O tipo de usuário verificado.\n
+ * @returns {Promise<Object>} Os dados do profissional.\n
+ * @throws {Error} Se o usuário não tiver permissão ou o profissional não for encontrado.\n
  */
 async function getProfissionalById(profId, verifiedUserType) {
     if (verifiedUserType !== 'dono' || !profId) {
@@ -258,8 +258,8 @@ async function getProfissionalById(profId, verifiedUserType) {
  * Atualiza um profissional existente.
  * @param {string} profId - O ID do profissional a ser atualizado.
  * @param {Object} dadosProfissional - Objeto com os dados atualizados do profissional.
- * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode atualizar).
- * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao salvar.
+ * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode atualizar).\n
+ * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao salvar.\n
  */
 async function updateProfissional(profId, dadosProfissional, verifiedUserType) {
     if (verifiedUserType !== 'dono') {
@@ -286,17 +286,17 @@ async function updateProfissional(profId, dadosProfissional, verifiedUserType) {
 }
 
 /**
- * Exclui um profissional e suas dependências (agendamentos e movimentações financeiras).
+ * Exclui um profissional e suas dependências (agendamentos e movimentações financeiras).\n
  * @param {string} profId - O ID do profissional a ser excluído.
- * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode excluir).
- * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao excluir.
+ * @param {string} verifiedUserType - O tipo de usuário verificado (apenas 'dono' pode excluir).\n
+ * @throws {Error} Se o usuário não tiver permissão ou ocorrer um erro ao excluir.\n
  */
 async function deleteProfissional(profId, verifiedUserType) {
     if (verifiedUserType !== 'dono') {
         throw new Error("Você não tem permissão para excluir profissionais.");
     }
     // As exclusões em cascata no banco de dados seriam ideais aqui,
-    // mas se não houver, precisamos excluir manualmente as dependências.
+    // mas se não houver, precisamos excluir manualmente as dependências.\n
     await supabaseClient.from('agendamentos').delete().eq('profissional_id', profId);
     await supabaseClient.from('movimentacoes_financeiras').delete().eq('profissional_id', profId);
 
@@ -306,6 +306,68 @@ async function deleteProfissional(profId, verifiedUserType) {
         throw new Error("Erro ao excluir profissional: " + error.message);
     }
 }
+
+/**
+ * Faz upload de um arquivo para o Supabase Storage.
+ * @param {File} file - O arquivo de imagem a ser enviado.
+ * @param {string} bucketName - O nome do bucket no Storage (ex: 'logos-estabelecimentos').
+ * @param {string} filePath - O caminho do arquivo no bucket (ex: 'estabelecimento_id/logo.png').
+ * @returns {Promise<string>} A URL pública do arquivo enviado.
+ */
+export async function uploadLogoToStorage(file, bucketName, filePath) {
+    if (!file) {
+        throw new Error("Nenhum arquivo selecionado para upload.");
+    }
+
+    const fileExtension = file.name.split('.').pop();
+    const fileNameInStorage = `${filePath}.${fileExtension}`; // Ex: 'logos/seu_id.png'
+
+    const { data, error } = await supabaseClient.storage
+        .from(bucketName)
+        .upload(fileNameInStorage, file, {
+            cacheControl: '3600', // Cache por 1 hora
+            upsert: true         // Se o arquivo já existe, sobrescreve
+        });
+
+    if (error) {
+        console.error("Erro no upload para o Storage:", error);
+        throw new Error(`Erro ao fazer upload do logo: ${error.message}`);
+    }
+
+    // Obter a URL pública do arquivo
+    const { data: publicUrlData } = supabaseClient.storage
+        .from(bucketName)
+        .getPublicUrl(fileNameInStorage);
+
+    if (!publicUrlData || !publicUrlData.publicUrl) {
+        throw new Error("Não foi possível obter a URL pública do logo após o upload.");
+    }
+
+    return publicUrlData.publicUrl;
+}
+
+/**
+ * Atualiza a URL do logo no registro do estabelecimento.
+ * @param {string} estabelecimentoId - O ID do estabelecimento.
+ * @param {string} logoUrl - A nova URL do logo.
+ * @param {string} verifiedUserType - O tipo de usuário logado (para verificação de permissão).
+ */
+export async function updateEstabelecimentoLogoUrl(estabelecimentoId, logoUrl, verifiedUserType) {
+    if (verifiedUserType !== 'dono') {
+        throw new Error("Permissão negada. Somente o dono pode atualizar o logo.");
+    }
+
+    const { error } = await supabaseClient
+        .from('estabelecimentos')
+        .update({ logo_url: logoUrl })
+        .eq('id', estabelecimentoId);
+
+    if (error) {
+        console.error("Erro ao atualizar logo_url no DB:", error);
+        throw new Error(`Erro ao salvar URL do logo no banco de dados: ${error.message}`);
+    }
+}
+
 
 export {
     getEstabelecimentoBySlug,
@@ -319,5 +381,7 @@ export {
     getProfissionais,
     getProfissionalById,
     updateProfissional,
-    deleteProfissional
+    deleteProfissional,
+    uploadLogoToStorage, // NOVO: Exportar função de upload
+    updateEstabelecimentoLogoUrl // NOVO: Exportar função de atualização de URL
 };

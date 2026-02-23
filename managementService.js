@@ -1,4 +1,4 @@
-// managementService.js - corr 4
+// managementService.js - corr 5
 // Lógica de negócios e acesso a dados para gestão de estabelecimento, serviços e profissionais.
 
 import { supabaseClient } from './config.js';
@@ -370,18 +370,28 @@ export async function updateEstabelecimentoLogoUrl(estabelecimentoId, logoUrl, v
 
 
 export {
-    getEstabelecimentoBySlug,
-    updateDadosGerais,
-    createServico,
-    getServicos,
-    getServicoById,
-    updateServico,
-    deleteServico,
-    createProfissional,
-    getProfissionais,
-    getProfissionalById,
-    updateProfissional,
-    deleteProfissional,
-    uploadLogoToStorage, // NOVO: Exportar função de upload
-    updateEstabelecimentoLogoUrl // NOVO: Exportar função de atualização de URL
+    generateChatContent,
+    vincularEventosGestao,
+    abrirModalAgendamento,
+    fecharModalAgendamento,
+    popularServicosDropdownParaEdicao, // Nome ajustado
+    popularServicosCheckboxesParaNovoProfissional, // Nova função exportada
+    popularDropdownProfissionaisParaEdicao,
+    popularCamposGestao,
+    abrirModalEdicaoServico,
+    fecharModalEdicaoServico,
+    abrirModalEdicaoProfissional,
+    fecharModalEdicaoProfissional,
+    setupTabsUI,
+    renderAgendaContent,
+    renderServicosContent,
+    renderModuleUnderDevelopment,
+    renderAccessDenied,
+    renderTrialExpired,
+    updateSalonNameUI,
+    toggleDashboardButton,
+    showLoadingState,
+    renderSalonNotFound,
+    handleProfissionalDropdownUpdate
+    // A função updateEstablishmentLogoUI já é exportada na sua declaração, não precisa ser aqui novamente.
 };

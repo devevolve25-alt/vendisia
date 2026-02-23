@@ -1,4 +1,4 @@
-// ui.js - 15
+// ui.js - 16
 // Funções para manipulação da interface do usuário (DOM), modais e renderização de elementos.
 
 import * as ManagementService from './managementService.js';
@@ -56,7 +56,7 @@ async function generateChatContent(input, chatElement, inputElement, dadosEstabe
  * @param {string} estabelecimentoNome - O nome do estabelecimento para o atributo alt.
  */
 export function updateEstablishmentLogoUI(logoUrl, estabelecimentoNome) {
-    const logoPreview = document.getElementById('estabelecimento-logo-preview');
+    const logoPreview = document.getElementById('salon-logo-display');
     if (logoPreview) {
         logoPreview.src = logoUrl || "https://via.placeholder.com/150?text=Seu+Logo"; // Fallback se não houver URL
         logoPreview.alt = `Logo de ${estabelecimentoNome || 'Estabelecimento'}`; // Atributo alt semântico

@@ -597,13 +597,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("App.js carregado. Iniciando verificação de usuário e carregamento de dados.");
 
     const user = await verifyUser();
-    if (!user) {
-        console.log("Usuário não autenticado. Redirecionando para login.");
-        window.location.href = 'login.html'; // Redireciona para a página de login
-        return;
-    }
+    let _donoId = null; // Inicializa _donoId como null para visitantes
 
-    _donoId = user.id;
+    if (user) {
+        console.log("Usuário autenticado.");
+        _donoId = user.id; // Define _donoId apenas se o usuário estiver autenticado
+    } else {
+        console.log("Usuário não autenticado. Acesso permitido como visitante.");
+        // Removido o redirecionamento e o 'return' para permitir o fluxo do visitante
+    }
 
     // Tenta obter o slug da URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -622,6 +624,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             UI.renderSalonNotFound();
             return;
         }
+        // ... (o restante do código para carregar o estabelecimento e renderizar a UI)
+    } catch (error) {
+        console.error("Erro ao carregar estabelecimento:", error);
+        UI.renderSalonNotFound(); // ou outra mensagem de erro
+    }
+});
 
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);

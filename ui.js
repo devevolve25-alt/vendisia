@@ -1,4 +1,4 @@
-// ui.js - 13
+// ui.js - 14
 // Funções para manipulação da interface do usuário (DOM), modais e renderização de elementos.
 
 import * as ManagementService from './managementService.js';
@@ -51,23 +51,39 @@ async function generateChatContent(input, chatElement, inputElement, dadosEstabe
 }
 
 /**
+ * Atualiza a imagem do logo na UI e seu atributo alt semântico.
+ * @param {string} logoUrl - A URL da imagem do logo.
+ * @param {string} estabelecimentoNome - O nome do estabelecimento para o atributo alt.
+ */
+export function updateEstablishmentLogoUI(logoUrl, estabelecimentoNome) {
+    const logoPreview = document.getElementById('estabelecimento-logo-preview');
+    if (logoPreview) {
+        logoPreview.src = logoUrl || "https://via.placeholder.com/150?text=Seu+Logo"; // Fallback se não houver URL
+        logoPreview.alt = `Logo de ${estabelecimentoNome || 'Estabelecimento'}`; // Atributo alt semântico
+    }
+}
+
+
+/**
  * Vincula eventos a botões e elementos de gestão.
  * Recebe callbacks para as ações que devem ser executadas.
- * @param {Object} callbacks - Objeto contendo funções de callback para os eventos.
- * @param {Function} callbacks.onUpdateConfig - Callback para atualização de configurações.
- * @param {Function} callbacks.onAddServico - Callback para adicionar serviço.
- * @param {Function} callbacks.onEditServico - Callback para editar serviço.
- * @param {Function} callbacks.onDeleteServico - Callback para excluir serviço.
- * @param {Function} callbacks.onAddProfissional - Callback para adicionar profissional.
- * @param {Function} callbacks.onEditProfissional - Callback para editar profissional.
- * @param {Function} callbacks.onDeleteProfissional - Callback para excluir profissional.
- * @param {Function} callbacks.onServicoSelectedForEdit - Callback quando um serviço é selecionado para edição.
- * @param {Function} callbacks.onProfissionalSelectedForEdit - Callback quando um profissional é selecionado para edição.
+ * @param {object} callbacks - Objeto contendo as funções de callback para os eventos.
+ * @param {function} callbacks.onUpdateConfig - Callback para atualização de configurações gerais.
+ * @param {function} callbacks.onAddServico - Callback para adicionar novo serviço.
+ * @param {function} callbacks.onEditServico - Callback para edição de serviço.
+ * @param {function} callbacks.onDeleteServico - Callback para exclusão de serviço.
+ * @param {function} callbacks.onAddProfissional - Callback para adicionar novo profissional.
+ * @param {function} callbacks.onEditProfissional - Callback para edição de profissional.
+ * @param {function} callbacks.onDeleteProfissional - Callback para exclusão de profissional.
+ * @param {function} callbacks.onServicoSelectedForEdit - Callback quando um serviço é selecionado para edição.
+ * @param {function} callbacks.onProfissionalSelectedForEdit - Callback quando um profissional é selecionado para edição.
+ * @param {function} callbacks.onUploadLogo - Callback para upload de logo. // NOVO
  */
 function vincularEventosGestao({
     onUpdateConfig, onAddServico, onEditServico, onDeleteServico,
     onAddProfissional, onEditProfissional, onDeleteProfissional,
-    onServicoSelectedForEdit, onProfissionalSelectedForEdit
+    onServicoSelectedForEdit, onProfissionalSelectedForEdit,
+    onUploadLogo // NOVO
 }) {
     const btnUpdateConfig = document.getElementById('btn-atualizar-config');
     if(btnUpdateConfig) btnUpdateConfig.onclick = onUpdateConfig;
@@ -107,6 +123,17 @@ function vincularEventosGestao({
         btnExcluirProf.onclick = () => onDeleteProfissional(selectProfEdicao.value);
         btnEditarProf.disabled = true;
     }
+
+    // Event listener para o botão de upload de logo // NOVO
+    const uploadLogoBtn = document.getElementById('upload-logo-btn');
+    const logoUploadInput = document.getElementById('logo-upload');
+
+    if (uploadLogoBtn && logoUploadInput && onUploadLogo) {
+        uploadLogoBtn.onclick = () => {
+            const file = logoUploadInput.files[0];
+            onUploadLogo(file);
+        };
+    }
 }
 
 
@@ -142,6 +169,8 @@ function fecharModalAgendamento() {
     document.getElementById('modal-agendamento').style.display = 'none';
     document.getElementById('agend-nome').value = "";
     document.getElementById('agend-whatsapp').value = "";
+    document.getElementById('agend-email').value = ""; // Limpa o novo campo de e-mail
+    document.getElementById('agend-data-nascimento').value = ""; // Limpa o novo campo de data de nascimento
     document.getElementById('agend-servico').value = "";
     document.getElementById('agend-profissional').value = "";
     document.getElementById('agend-profissional').disabled = true;
@@ -302,7 +331,7 @@ async function abrirModalEdicaoProfissional(profissional, estabelecimentoId) {
         checkbox.checked = diasTrabalho.includes(checkbox.value);
     });
 
-    // --- MODIFICAÇÃO PARA MÚLTIPLAS ESPECIALIDADES (select multiple) ---
+    // --- MODIFICAÇÃO PARA MÚLTIPLAS ESPECIALIDADES (select multiple) ---\n
     const servicosProfissional = profissional.servicos_especializados || []; // O campo JSONB
     const todosServicos = await ManagementService.getServicos(estabelecimentoId); // Busca todos os serviços
     const selectMultiServicos = document.getElementById('edit-prof-servicos-especializados'); // ID do select múltiplo
@@ -319,7 +348,7 @@ async function abrirModalEdicaoProfissional(profissional, estabelecimentoId) {
             selectMultiServicos.appendChild(option);
         });
     }
-    // --- FIM DA MODIFICAÇÃO ---
+    // --- FIM DA MODIFICAÇÃO ---\n
 
     document.getElementById('modal-edicao-profissional').style.display = 'flex';
 }
@@ -643,5 +672,6 @@ export {
     toggleDashboardButton,
     showLoadingState,
     renderSalonNotFound,
-    handleProfissionalDropdownUpdate
+    handleProfissionalDropdownUpdate,
+    updateEstablishmentLogoUI // NOVO: Exportar a função de atualização do logo
 };

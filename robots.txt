@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /acesso.html
+Disallow: /dashboard.html

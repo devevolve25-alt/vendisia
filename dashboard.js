@@ -1,4 +1,4 @@
-//atualizado para calculo de comissoes e edição de cadastros - 6 (Versão Final)
+//atualizado para calculo de comissoes e edição de cadastros - 7 
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -63,7 +63,8 @@ async function atualizarDashboard(salaoId) {
         // 3. BUSCA AGENDAMENTOS
         const { data: agsMes } = await supabaseClient
             .from('agendamentos')
-            .select('id, data_hora_inicio, cliente_nome, cliente_whatsapp, servico_id, profissional_id') 
+            // CORREÇÃO: Usar a sintaxe de join para obter nome do cliente, serviço e profissional
+            .select('id, data_hora_inicio, clientes(nome, whatsapp), servicos(nome), profissionais(nome)') 
             .eq('estabelecimento_id', salaoId);
 
         // 4. BUSCA PROFISSIONAIS
@@ -101,24 +102,27 @@ async function atualizarDashboard(salaoId) {
         let listaClientesHTML = '';
         const agendamentosOrdenados = agsMes?.sort((a, b) => new Date(a.data_hora_inicio) - new Date(b.data_hora_inicio)) || [];
 
-        agendamentosOrdenados.forEach(a => {
+         agendamentosOrdenados.forEach(a => {
             const dataFmt = a.data_hora_inicio ? new Date(a.data_hora_inicio).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--/--';
-            const whatsLink = `https://wa.me/${a.cliente_whatsapp?.replace(/\D/g, '')}`;
+            // Acessar dados do cliente aninhados
+            const clienteNome = a.clientes?.nome || 'Cliente s/ nome';
+            const clienteWhatsapp = a.clientes?.whatsapp;
+            const whatsLink = clienteWhatsapp ? `https://wa.me/${clienteWhatsapp.replace(/\\D/g, '')}` : '#';
             
-            const profEncontrado = profs?.find(p => p.id === a.profissional_id);
-            const nomeProf = profEncontrado ? profEncontrado.nome : `Prof. ID: ${a.profissional_id}`;
+            // Acessar nome do profissional aninhado
+            const nomeProf = a.profissionais?.nome || `Prof. ID: ${a.profissional_id}`;
 
-            const servEncontrado = servicos?.find(s => s.id === a.servico_id);
-            const nomeServico = servEncontrado ? servEncontrado.nome : `Serviço ID: ${a.servico_id}`;
+            // Acessar nome do serviço aninhado
+            const nomeServico = a.servicos?.nome || `Serviço ID: ${a.servico_id}`;
 
             listaClientesHTML += `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; font-size: 0.85rem;">
                     <div>
-                        <strong style="display:block; color:#2ecc71;">${a.cliente_nome || 'Cliente s/ nome'}</strong>
+                        <strong style="display:block; color:#2ecc71;">${clienteNome}</strong>
                         <span style="color:#ddd; display:block;">Profissional: ${nomeProf}</span>
                         <span style="color:#888;">${nomeServico} | ${dataFmt}</span>
                     </div>
-                    <a href="${whatsLink}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:0.75rem;">WhatsApp</a>
+                    ${clienteWhatsapp ? `<a href="${whatsLink}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:0.75rem;">WhatsApp</a>` : ''}
                 </div>`;
         });
 

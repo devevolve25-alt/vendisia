@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 6 - acesso visitante
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 7
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -615,6 +615,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         UI.updateSalonNameUI(estabelecimento.nome_fantasia);
+        // NOVO: Otimização Dinâmica do Título da Página
+        document.title = `Agenda Online | ${estabelecimento.nome_fantasia} | VENDISIA`;
         // CORREÇÃO: Passando _verifiedUserType e o plano_ativo do estabelecimento
         UI.toggleDashboardButton(_verifiedUserType, estabelecimento.plano_ativo);
 

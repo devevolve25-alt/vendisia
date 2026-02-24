@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 11
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 12
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         UI.updateSalonNameUI(estabelecimento.nome_fantasia);
         // NOVO: Exibir o logo no cabeçalho ou em outros lugares que usam `UI.updateSalonNameUI` se necessário
         // Se você tiver um local para o logo no cabeçalho global, chame aqui também:
-        // UI.updateEstablishmentLogoUI(estabelecimento.logo_url, estabelecimento.nome_fantasia);
+        UI.updateEstablishmentLogoUI(estabelecimento.logo_url, estabelecimento.nome_fantasia);
         // CORREÇÃO: Passando _verifiedUserType e o plano_ativo do estabelecimento
         UI.toggleDashboardButton(_verifiedUserType, estabelecimento.plano_ativo);
 

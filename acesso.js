@@ -8,7 +8,7 @@ let userLogado = null;
 const urlParams = new URLSearchParams(window.location.search);
 let planoEscolhido = urlParams.get('plano') || localStorage.getItem('plano_mercuria');
 
-// --- Funções de UX para Mensagens e Botões ---
+// --- corr Funções de UX para Mensagens e Botões ---
 const systemMessageElement = document.getElementById('system-message');
 
 function showMessage(text, isError = false) {

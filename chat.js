@@ -1,10 +1,11 @@
-// 1. Configuração Supabase - corrigido iao - extração
+// 1. Configuração Supabase - corrigido iao - fev
 const SUPABASE_URL = 'https://zplqlcvcpeohtxodvfkq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YwQnRSNbTfXKnzTAbVWXGw_x8Zs2oK4';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 2. Configuração n8n
 const N8N_WEBHOOK_URL = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt';
+const N8N_API_KEY = 'sua_chave_secreta_aqui'; // <-- ATENÇÃO: Substitua 'sua_chave_secreta_aqui' pela chave real do seu webhook n8n.
 
 // ALTERAÇÃO: Referência atualizada para o novo container das mensagens
 const chatMessagesContainer = document.getElementById('chat-messages');
@@ -88,7 +89,7 @@ async function sendMessage() {
 
     try {
         // ===============================================
-        // ALTERAÇÃO: Incluindo os parâmetros da URL no corpo da requisição POST
+        // ALTERAÇÃO: Incluindo os parâmetros da URL no corpo da requisição POST e a API Key no cabeçalho
         // ===============================================
         const payload = {
             message: text,
@@ -99,7 +100,10 @@ async function sendMessage() {
 
         const response = await fetch(N8N_WEBHOOK_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': N8N_API_KEY // <-- ADICIONADO: Chave de API para autenticação no n8n
+            },
             body: JSON.stringify(payload) // Envia o payload completo
         });
         // ===============================================

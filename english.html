@@ -82,6 +82,7 @@
             </div>
             <div id="feedback" class="tab-content">
                 <div id="feedback-area" class="content-body">Your feedback will appear here.</div>
+                <button id="btn-request-feedback" class="btn-primary" onclick="requestManualFeedback()">REQUEST FEEDBACK FROM AI</button>
             </div>
         </main>
     </div>
@@ -124,11 +125,11 @@
 
         function renderLesson(lesson) {
             document.getElementById('lesson').innerHTML = `<div class="content-body">${lesson.conteudo}</div>`;
-            if (lesson.feedback) document.getElementById('feedback-area').innerText = lesson.feedback;
+            if (lesson.feedback) document.getElementById('feedback-area').innerHTML = `<div class="content-body">${lesson.feedback}</div>`;
             
             const exContainer = document.getElementById('exercise-list');
             exContainer.innerHTML = '';
-            for (let i = 1; i <= 10; i++) {
+            for (let i = 1; i <= 10; i++) { // Alterado para 10 campos
                 if (lesson[`statm${i}`]) {
                     exContainer.innerHTML += `
                         <div class="exercise-card">
@@ -207,6 +208,28 @@
                 // Aguarda 3 segundos e recarrega para mostrar o feedback que a IA gravou
                 setTimeout(loadLatestLesson, 3000);
             } catch (e) { console.error(e); }
+        }
+
+        async function requestManualFeedback() {
+            if (!lastRecordId) {
+                alert("No lesson ID found. Please generate or load a lesson first.");
+                return;
+            }
+            openTab(null, 'feedback');
+            document.getElementById('feedback-area').innerText = "Requesting AI feedback...";
+            
+            try {
+                await fetch(WEBHOOK_IA, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'request_lesson_feedback', id: lastRecordId }) // Novo comando para o n8n
+                });
+                // Aguarda 3 segundos e recarrega para exibir o feedback que a IA registrou
+                setTimeout(loadLatestLesson, 3000);
+            } catch (e) {
+                console.error("Error requesting manual feedback from AI:", e);
+                document.getElementById('feedback-area').innerText = "Error requesting feedback. Check console.";
+            }
         }
 
         async function generateContent() {

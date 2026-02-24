@@ -13,7 +13,7 @@
         h1 { font-family: 'Bebas Neue'; color: var(--gold); font-size: 2.5rem; margin-bottom: 10px; }
         p { opacity: 0.7; font-size: 0.9rem; margin-bottom: 25px; min-height: 40px; }
         
-        #step-login, #step-cadastro, #step-loading, #step-planos { display: none; }
+        #step-login, #step-cadastro, #step-loading, #step-planos, #step-info-confirmacao-email { display: none; }
         .active { display: block !important; }
 
         input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; box-sizing: border-box; outline: none; }
@@ -25,6 +25,18 @@
 
         .card-plano { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: left; transition: 0.3s; cursor: pointer; text-decoration: none; display: block; }
         .card-plano:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
+
+        #system-message { 
+            min-height: 20px; 
+            margin-top: -10px; /* Ajuste para espaçamento */
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #d4af37; /* Cor padrão para mensagens */
+        }
+        #system-message.error {
+            color: #ff4a4a; /* Cor para mensagens de erro */
+        }
     </style>
 </head>
 <body>
@@ -32,41 +44,50 @@
     <div class="acesso-box">
         <h1>VENDISIA</h1>
 
+        <!-- Campo para exibir mensagens do sistema -->
+        <p id="system-message"></p>
+
         <div id="step-loading" class="active">
             <p>Verificando autenticação...</p>
         </div>
 
         <div id="step-login">
             <p>Para continuar, acesse sua conta ou crie uma nova.</p>
-            <button class="btn-acao" onclick="loginGoogle()" style="margin-bottom: 15px;">ENTRAR COM GOOGLE</button>
+            <button class="btn-acao" id="btn-google-login" onclick="loginGoogle()" style="margin-bottom: 15px;">ENTRAR COM GOOGLE</button>
             <div style="margin: 15px 0; opacity: 0.5; font-size: 0.8rem;">— OU VIA E-MAIL E SENHA —</div>
             <input type="email" id="email-acesso" placeholder="Seu melhor e-mail">
             <input type="password" id="senha-acesso" placeholder="Crie ou insira sua senha">
-            <button class="btn-acao" onclick="authSenha('login')" style="margin-bottom: 10px;">ENTRAR</button>
-            <button class="btn-acao" onclick="authSenha('signup')" style="background: transparent; color: var(--gold); border: 1px solid var(--gold);">CADASTRAR NOVA CONTA</button>
+            <button class="btn-acao" id="btn-entrar" onclick="authSenha('login')" style="margin-bottom: 10px;">ENTRAR</button>
+            <button class="btn-acao" id="btn-cadastrar" onclick="authSenha('signup')" style="background: transparent; color: var(--gold); border: 1px solid var(--gold);">CADASTRAR NOVA CONTA</button>
         </div>
 
         <div id="step-cadastro">
             <p>Defina o nome do seu negócio para gerar seu link exclusivo.</p>
             <input type="text" id="nome-salao" placeholder="Nome do seu Salão/Barbearia" oninput="updateSlug()">
             <div class="slug-preview">Link: .../agenda.html?s=<span id="slug-text">...</span></div>
-            <button class="btn-acao" onclick="finalizarCadastro()">CRIAR MEU SISTEMA</button>
+            <button class="btn-acao" id="btn-criar-sistema" onclick="finalizarCadastro()">CRIAR MEU SISTEMA</button>
         </div>
 
        <div id="step-planos">
-    <p style="color: var(--gold); font-weight: 600;">SISTEMA NÃO ENCONTRADO</p>
-    <p>Escolha um plano para configurar sua IA agora:</p>
-    
-    <div class="card-plano" onclick="selecionarPlano('agenda-pro')" style="cursor:pointer; border: 1px solid var(--gold); padding: 15px; margin-bottom: 10px; border-radius: 8px;">
-        <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO B - AGENDA PRO</div>
-        <div style="font-size: 0.7rem;">Clique para selecionar este plano</div>
-    </div>
-    
-    <div class="card-plano" onclick="selecionarPlano('gestao-total')" style="cursor:pointer; border: 1px solid var(--gold); padding: 15px; margin-bottom: 10px; border-radius: 8px;">
-        <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO C - GESTÃO TOTAL</div>
-        <div style="font-size: 0.7rem;">Clique para selecionar este plano</div>
-    </div>
-</div>
+            <p style="color: var(--gold); font-weight: 600;">SISTEMA NÃO ENCONTRADO</p>
+            <p>Escolha um plano para configurar sua IA agora:</p>
+            
+            <div class="card-plano" id="card-plano-agenda-pro" onclick="selecionarPlano('agenda-pro')" style="cursor:pointer; border: 1px solid var(--gold); padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+                <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO B - AGENDA PRO</div>
+                <div style="font-size: 0.7rem;">Clique para selecionar este plano</div>
+            </div>
+            
+            <div class="card-plano" id="card-plano-gestao-total" onclick="selecionarPlano('gestao-total')" style="cursor:pointer; border: 1px solid var(--gold); padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+                <div style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 1.2rem;">PLANO C - GESTÃO TOTAL</div>
+                <div style="font-size: 0.7rem;">Clique para selecionar este plano</div>
+            </div>
+        </div>
+
+        <div id="step-info-confirmacao-email" style="text-align: center;">
+            <p id="mensagem-confirmacao-email" style="color: var(--gold);"></p>
+            <p>Por favor, verifique sua caixa de entrada (e spam) para um e-mail de ativação. Você pode fechar esta janela após a confirmação.</p>
+        </div>
+
 
     <script src="acesso.js"></script>
 </body>

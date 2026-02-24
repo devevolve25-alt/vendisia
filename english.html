@@ -143,7 +143,7 @@
             if (!lastRecordId) return alert("No lesson ID found.");
             
             const updateData = {};
-            for (let i = 1; i <= 10; i++) {
+            for (let i = 1; i <= 10; i++) { // Alterado para 10 campos
                 const val = document.getElementById(`field-answr${i}`)?.value;
                 if (val !== undefined) updateData[`answr${i}`] = val;
             }
@@ -161,9 +161,28 @@
                 });
 
                 if (res.ok) {
-                    alert("Answers saved! Analyzing...");
-                    // LIMPA OS CAMPOS
-                    for (let i = 1; i <= 5; i++) {
+                    alert("Answers saved! Notifying AI and analyzing...");
+
+                    // NOVO: Envia um comando explícito para o agente de IA sobre a submissão das respostas
+                    try {
+                        await fetch(WEBHOOK_IA, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                action: 'answers_submitted', // Novo comando para o n8n
+                                id: lastRecordId,
+                                // Opcional: Você pode enviar as respostas também se a IA precisar delas imediatamente
+                                // answers: updateData 
+                            })
+                        });
+                        console.log("AI notified about answers submission.");
+                    } catch (aiNotifyError) {
+                        console.error("Error notifying AI about submission:", aiNotifyError);
+                        // Não impede o fluxo principal, mas registra o erro
+                    }
+                    
+                    // LIMPA OS CAMPOS (alterado para 10 campos)
+                    for (let i = 1; i <= 10; i++) {
                         const input = document.getElementById(`field-answr${i}`);
                         if(input) input.value = "";
                     }

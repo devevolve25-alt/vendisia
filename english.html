@@ -90,7 +90,7 @@
             </div>
             <div id="feedback" class="tab-content">
                 <div id="feedback-area" class="content-body">Your feedback will appear here.</div>
-                <button id="btn-request-feedback" class="btn-primary" onclick="requestAiFeedback()">REQUEST FEEDBACK FROM AI</button>
+                <button id="btn-request-feedback" class="btn-primary" onclick="requestManualFeedback()">REQUEST FEEDBACK FROM AI</button>
             </div>
         </main>
     </div>
@@ -160,7 +160,7 @@
             const exContainer = document.getElementById('exercise-list');
             exContainer.innerHTML = '';
             for (let i = 1; i <= 10; i++) {
-                if (lesson[`statm${i}`]) {
+                if (lesson[`statm${i}`]) { // Assumindo que statmX ainda vem de modulo_treinamento
                     exContainer.innerHTML += `
                         <div class="exercise-card">
                             <strong>Question ${i}:</strong> ${lesson[`statm${i}`]}
@@ -236,9 +236,8 @@
                         console.error("Error notifying AI about submission:", aiNotifyError);
                     }
                     
-                    // Não limpamos os campos para que o usuário veja as respostas salvas
-                    // Podemos recarregar a lição para garantir que os dados estejam frescos
-                    // setTimeout(loadLatestLesson, 500); // Pequeno atraso para o Supabase processar
+                    // Recarrega a lição para garantir que os dados estejam frescos
+                    setTimeout(loadLatestLesson, 500); 
 
                     // CHAMA A IA PARA O FEEDBACK APÓS SALVAR
                     requestFeedback(); 
@@ -299,8 +298,6 @@
 
                 if (res.ok) {
                     alert("Writing saved! Notifying AI for analysis...");
-                    // A IA também pode ser notificada para analisar o writing separadamente, se desejar.
-                    // Ou o feedback geral já incluirá o writing.
                     try {
                         await fetch(WEBHOOK_IA, {
                             method: 'POST',
@@ -316,6 +313,7 @@
                     } catch (aiNotifyError) {
                         console.error("Error notifying AI about writing submission:", aiNotifyError);
                     }
+                    setTimeout(loadLatestLesson, 500); // Recarrega para o campo de writing ter o valor atualizado
                     requestFeedback(); // Pede feedback após salvar o writing também
 
                 } else {
@@ -356,7 +354,7 @@
             }
         }
 
-        async function requestAiFeedback() { // Renomeada de requestManualFeedback
+        async function requestManualFeedback() {
             if (!lastRecordId || !lastAnswersId) {
                 alert("No lesson or answers ID found to request feedback. Please save your answers first.");
                 return;

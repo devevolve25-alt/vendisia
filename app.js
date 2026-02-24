@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 10
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 11
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -597,14 +597,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("App.js carregado. Iniciando verificação de usuário e carregamento de dados.");
 
     const user = await verifyUser();
-    let _donoId = null; // Inicializa _donoId como null para visitantes
+    _donoId = null; // Inicializa _donoId como null para visitantes ou não donos
 
     if (user) {
         console.log("Usuário autenticado.");
         _donoId = user.id; // Define _donoId apenas se o usuário estiver autenticado
     } else {
         console.log("Usuário não autenticado. Acesso permitido como visitante.");
-        // Removido o redirecionamento e o 'return' para permitir o fluxo do visitante
     }
 
     // Tenta obter o slug da URL
@@ -651,6 +650,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             _verifiedUserType = 'publico';
         }
 
+        // NOVO: Esconder botão SAIR para visitantes
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout && _verifiedUserType === 'publico') {
+            btnLogout.style.display = 'none';
+        } else if (btnLogout) {
+            btnLogout.style.display = 'block'; // Garante que seja visível para outros tipos de usuário
+        }
+
+
         // Verifica o período de teste
         const dataFimTrial = estabelecimento.data_fim_trial ? new Date(estabelecimento.data_fim_trial) : null;
         if (dataFimTrial && new Date() > dataFimTrial) {
@@ -684,4 +692,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Erro na inicialização da aplicação:", error);
         UI.renderSalonNotFound(); // Pode ser qualquer erro, tratamos como não encontrado por simplicidade
     }
-}); // Este é o único fechamento correto para o DOMContentLoaded
+});

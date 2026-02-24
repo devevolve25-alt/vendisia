@@ -8,18 +8,54 @@ let userLogado = null;
 const urlParams = new URLSearchParams(window.location.search);
 let planoEscolhido = urlParams.get('plano') || localStorage.getItem('plano_mercuria');
 
+// --- Funções de UX para Mensagens e Botões ---
+const systemMessageElement = document.getElementById('system-message');
+
+function showMessage(text, isError = false) {
+    if (systemMessageElement) {
+        systemMessageElement.innerText = text;
+        systemMessageElement.classList.toggle('error', isError);
+        // Limpar a mensagem após alguns segundos se não for um erro persistente
+        if (!isError) {
+            setTimeout(() => {
+                systemMessageElement.innerText = '';
+                systemMessageElement.classList.remove('error');
+            }, 5000); // Mensagem some após 5 segundos
+        }
+    }
+}
+
+function toggleButtonState(buttonId, isLoading) {
+    const button = document.getElementById(buttonId);
+    if (button) {
+        button.disabled = isLoading;
+        button.style.opacity = isLoading ? '0.7' : '1';
+        if (isLoading) {
+            button.setAttribute('data-original-text', button.innerText);
+            button.innerText = 'Carregando...'; // Pode adicionar um spinner aqui se preferir
+        } else {
+            button.innerText = button.getAttribute('data-original-text') || button.innerText; // Fallback caso não tenha original-text
+            button.removeAttribute('data-original-text');
+        }
+    }
+}
+// --- Fim das Funções de UX ---
+
+
 function showStep(stepId) {
     document.getElementById('step-loading').classList.remove('active');
     document.getElementById('step-login').classList.remove('active');
     document.getElementById('step-cadastro').classList.remove('active');
     document.getElementById('step-planos').classList.remove('active');
+    document.getElementById('step-info-confirmacao-email').classList.remove('active'); // Garante que a etapa de confirmação também seja desativada
     document.getElementById(stepId).classList.add('active');
+    showMessage(''); // Limpa a mensagem ao mudar de etapa
 }
 
 // --- Seleção de Plano ---
 function selecionarPlano(idPlano) {
     if (!LISTA_PLANOS.includes(idPlano)) {
-        alert("Plano inválido selecionado.");
+        showMessage("Plano inválido selecionado.", true);
         showStep('step-planos');
         return;
     }
@@ -36,12 +72,13 @@ function selecionarPlano(idPlano) {
         // A lógica dentro de verificarEstabelecimento determinará se ele vai para cadastro ou já possui um.
         verificarEstabelecimento(); 
     } else {
-        alert("Plano selecionado! Agora finalize sua conta.");
+        showMessage("Plano selecionado! Agora finalize sua conta.");
         showStep('step-login');
     }
 }
 
 async function init() {
+    showStep('step-loading'); // Inicia com a etapa de loading
     try {
         const params = new URLSearchParams(window.location.search);
         const planoNaUrl = params.get('plano');
@@ -54,9 +91,6 @@ async function init() {
 
         if (session) {
             userLogado = session.user;
-            // CORREÇÃO: Removida a barreira de plano inicial para usuários já logados via sessão.
-            // A verificação de estabelecimento será feita, e a necessidade de plano
-            // será avaliada *somente se* ele precisar criar um novo estabelecimento.
             verificarEstabelecimento();
         } else {
             showStep('step-login');
@@ -65,99 +99,117 @@ async function init() {
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 userLogado = session.user;
-                // CORREÇÃO: Removida a barreira de plano para o evento de SIGNED_IN.
-                // A lógica de plano agora é gerenciada por verificarEstabelecimento()
-                // apenas se um novo estabelecimento precisar ser criado.
                 verificarEstabelecimento();
+            } else if (event === 'SIGNED_OUT') { // Lida com o logout
+                userLogado = null;
+                planoEscolhido = null;
+                localStorage.removeItem('plano_mercuria');
+                showStep('step-login');
+                showMessage('Você foi desconectado.', false);
             }
         });
     } catch (err) {
         console.error("Erro ao iniciar:", err);
+        showMessage("Ocorreu um erro ao carregar o sistema. Tente novamente.", true);
         showStep('step-login');
     }
 }
 
 async function loginGoogle() {
-    // CORREÇÃO IAO: Removida a validação de plano aqui.
-    // A necessidade de um plano para a criação de um novo estabelecimento
-    // é gerenciada de forma mais eficaz e no momento correto pela função
-    // verificarEstabelecimento(), após o login bem-sucedido.
-    await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: { 
-            redirectTo: window.location.origin + window.location.pathname + (planoEscolhido ? "?plano=" + planoEscolhido : "") 
-        }
-    });
+    toggleButtonState('btn-google-login', true); // Desabilita o botão Google
+    try {
+        await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: { 
+                redirectTo: window.location.origin + window.location.pathname + (planoEscolhido ? "?plano=" + planoEscolhido : "") 
+            }
+        });
+    } catch (err) {
+        console.error("Erro ao autenticar com Google:", err);
+        showMessage("Erro ao tentar entrar com Google. Tente novamente.", true);
+        toggleButtonState('btn-google-login', false); // Habilita o botão
+    }
 }
 
 async function authSenha(tipo) {
     // BARREIRA PARA CADASTRO (signup) permanece:
     // Um NOVO cadastro SEMPRE exige um plano pré-selecionado para criação do sistema.
     if (tipo === 'signup' && !LISTA_PLANOS.includes(planoEscolhido)) {
-        alert("Ação necessária: Selecione um plano antes de criar sua conta.");
+        showMessage("Ação necessária: Selecione um plano antes de criar sua conta.", true);
         showStep('step-planos');
         return;
     }
-    // Para 'login', esta barreira é ignorada, permitindo o acesso direto para verificarEstabelecimento().
-
+    
     const email = document.getElementById('email-acesso').value;
     const password = document.getElementById('senha-acesso').value;
 
-    if (!email || !password) return alert("Preencha e-mail e senha.");
+    if (!email || !password) {
+        showMessage("Preencha e-mail e senha.", true);
+        return;
+    }
     
+    // Desabilitar botões
+    if (tipo === 'signup') {
+        toggleButtonState('btn-cadastrar', true);
+        toggleButtonState('btn-entrar', true); // Desabilita o outro botão de login também
+    } else {
+        toggleButtonState('btn-entrar', true);
+        toggleButtonState('btn-cadastrar', true); // Desabilita o outro botão de cadastro também
+    }
+
     showStep('step-loading');
     
-    const { data, error } = (tipo === 'signup') 
-        ? await supabaseClient.auth.signUp({ email, password }) 
-        : await supabaseClient.auth.signInWithPassword({ email, password });
+    try {
+        const { data, error } = (tipo === 'signup') 
+            ? await supabaseClient.auth.signUp({ email, password }) 
+            : await supabaseClient.auth.signInWithPassword({ email, password });
 
-    if (error) {
-        alert("Erro: " + error.message);
+        if (error) {
+            console.error("Erro de autenticação:", error);
+            showMessage("Erro: " + error.message, true);
+            showStep('step-login');
+        } else if (data.user) {
+            userLogado = data.user;
+            showMessage('Login/Cadastro realizado com sucesso!', false);
+            verificarEstabelecimento(); // Usuário logado ou cadastrado, prossegue para verificar o estabelecimento.
+        }
+    } catch (err) {
+        console.error("Erro inesperado em authSenha:", err);
+        showMessage("Ocorreu um erro inesperado. Tente novamente.", true);
         showStep('step-login');
-    } else if (data.user) {
-        userLogado = data.user;
-        verificarEstabelecimento(); // Usuário logado ou cadastrado, prossegue para verificar o estabelecimento.
+    } finally {
+        // Habilitar botões
+        toggleButtonState('btn-cadastrar', false);
+        toggleButtonState('btn-entrar', false);
     }
 }
 
 async function verificarEstabelecimento() {
     try {
-        // CORREÇÃO: Removida a barreira de plano incondicional do início desta função.
-        // A necessidade de um plano é agora avaliada APENAS se o usuário *não* tiver
-        // um estabelecimento existente e precisar criar um novo.
-
-        // 1. Sempre registra/atualiza o perfil do usuário logado.
         await supabaseClient.from('perfis').upsert([{ 
             id: userLogado.id, 
             email_contato: userLogado.email 
         }], { onConflict: 'id' });
 
-        // 2. Verifica se o usuário já possui um estabelecimento associado.
         const { data } = await supabaseClient.from('estabelecimentos')
             .select('slug')
             .eq('dono_id', userLogado.id)
             .maybeSingle();
 
         if (data) {
-            // SE JÁ TEM ESTABELECIMENTO: Redireciona diretamente para o sistema existente.
+            showMessage('Redirecionando para o seu sistema...', false);
             window.location.href = `agenda.html?s=${data.slug}&u=dono`;
         } else {
-            // SE NÃO TEM ESTABELECIMENTO: O usuário precisa criar um novo.
-            // *Neste ponto*, e somente aqui, verificamos se um plano foi selecionado
-            // para que o novo negócio possa ser criado.
             if (!LISTA_PLANOS.includes(planoEscolhido)) {
-                // Se o usuário não tem estabelecimento E ainda não selecionou um plano válido,
-                // então ele é direcionado para a seleção de planos.
                 showStep('step-planos');
             } else {
-                // Se não tem estabelecimento, mas um plano válido está selecionado,
-                // permite que o usuário prossiga para o formulário de cadastro do novo negócio.
                 showStep('step-cadastro');
             }
         }
     } catch (err) {
         console.error("Erro na verificação de estabelecimento:", err);
-        showStep('step-login'); // Em caso de erro grave, volta para o login.
+        showMessage("Ocorreu um erro ao verificar seu negócio. Tente novamente.", true);
+        showStep('step-login');
     }
 }
 
@@ -169,33 +221,53 @@ function updateSlug() {
 }
 
 async function finalizarCadastro() {
-    // REVALIDAÇÃO FINAL: Esta barreira é vital aqui, pois é o ponto onde o estabelecimento é realmente criado.
-    // É a última chance de garantir que um plano válido seja associado à criação de um novo negócio.
+    toggleButtonState('btn-criar-sistema', true); // Desabilita o botão
+
     if (!LISTA_PLANOS.includes(planoEscolhido)) {
-        alert("Selecione um plano válido antes de criar seu sistema.");
+        showMessage("Selecione um plano válido antes de criar seu sistema.", true);
         showStep('step-planos');
+        toggleButtonState('btn-criar-sistema', false); // Habilita o botão
         return;
     }
 
     const nomeFantasia = document.getElementById('nome-salao').value;
-    const slug = updateSlug();
+    if (!nomeFantasia) {
+        showMessage('Por favor, digite o nome do seu negócio.', true);
+        toggleButtonState('btn-criar-sistema', false); // Habilita o botão
+        return;
+    }
 
-    if (!nomeFantasia || !slug) return alert('Por favor, digite o nome do seu negócio.');
+    showStep('step-loading'); // Mostrar loading enquanto aguarda o servidor
 
     try {
-        const { error } = await supabaseClient.from('estabelecimentos').insert([{
-            dono_id: userLogado.id,
-            nome_fantasia: nomeFantasia,
-            slug: slug,
-            plano_ativo: planoEscolhido,
-            status_pagamento: 'trial'
-        }]);
+        // TODO: Chamar Edge Function ou Backend para gerar/validar o slug
+        // Por enquanto, usaremos a geração client-side para o slug, mas a recomendação é server-side
+        const slug = updateSlug(); // Geração client-side provisória
+
+        // Verificação de unicidade do slug (básica, o servidor deve ter uma mais robusta)
+        const { data: existingSlug, error: checkError } = await supabaseClient
+            .from('estabelecimentos')
+            .select('slug')
+            .eq('slug', slug)
+            .maybeSingle();
+
+        if (existingSlug) {
+            throw new Error('Este nome de negócio já existe. Por favor, escolha outro.');
+        }
+        if (checkError) throw checkError;
+
+        const { error } = await supabaseClient.from('estabelecimentos').insert([{\n            dono_id: userLogado.id,\n            nome_fantasia: nomeFantasia,\n            slug: slug,\n            plano_ativo: planoEscolhido,\n            status_pagamento: 'trial'\n        }]);
 
         if (error) throw error;
         localStorage.removeItem('plano_mercuria');
+        showMessage('Sistema criado com sucesso! Redirecionando...', false);
         window.location.href = `agenda.html?s=${slug}&u=dono`;
     } catch (err) {
-        alert('Erro ao criar sistema: ' + err.message);
+        console.error("Erro ao criar sistema:", err);
+        showMessage('Erro ao criar sistema: ' + err.message, true);
+        showStep('step-cadastro'); // Volta para o formulário de cadastro
+    } finally {
+        toggleButtonState('btn-criar-sistema', false); // Habilita o botão
     }
 }
 

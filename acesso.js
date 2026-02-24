@@ -78,19 +78,14 @@ async function init() {
 }
 
 async function loginGoogle() {
-    // A barreira de plano para Google Login permanece, pois um novo cadastro via Google
-    // requer um plano pré-selecionado para iniciar o fluxo corretamente e popular a URL,
-    // garantindo que, se ele precisar criar um estabelecimento, já tenha um plano.
-    if (!LISTA_PLANOS.includes(planoEscolhido)) {
-        alert("Por favor, selecione um plano antes de continuar com o Google.");
-        showStep('step-planos');
-        return;
-    }
-
+    // CORREÇÃO IAO: Removida a validação de plano aqui.
+    // A necessidade de um plano para a criação de um novo estabelecimento
+    // é gerenciada de forma mais eficaz e no momento correto pela função
+    // verificarEstabelecimento(), após o login bem-sucedido.
     await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: { 
-            redirectTo: window.location.origin + window.location.pathname + "?plano=" + planoEscolhido 
+            redirectTo: window.location.origin + window.location.pathname + (planoEscolhido ? "?plano=" + planoEscolhido : "") 
         }
     });
 }

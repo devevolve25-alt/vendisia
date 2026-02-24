@@ -5,7 +5,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 2. Configuração n8n
 const N8N_WEBHOOK_URL = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/mercuria.sls-agnt';
-const N8N_API_KEY = 'sua_chave_secreta_aqui'; // <-- ATENÇÃO: Substitua 'sua_chave_secreta_aqui' pela chave real do seu webhook n8n.
+const N8N_API_KEY = 'Merc_1029-$v3nd1S14_mercur14-cHaT'; // <-- ATENÇÃO: Substitua 'sua_chave_secreta_aqui' pela chave real do seu webhook n8n.
 
 // ALTERAÇÃO: Referência atualizada para o novo container das mensagens
 const chatMessagesContainer = document.getElementById('chat-messages');

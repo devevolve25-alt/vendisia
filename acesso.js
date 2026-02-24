@@ -256,7 +256,14 @@ async function finalizarCadastro() {
         }
         if (checkError) throw checkError;
 
-        const { error } = await supabaseClient.from('estabelecimentos').insert([{\n            dono_id: userLogado.id,\n            nome_fantasia: nomeFantasia,\n            slug: slug,\n            plano_ativo: planoEscolhido,\n            status_pagamento: 'trial'\n        }]);
+        // LINHA CORRIGIDA AQUI:
+        const { error } = await supabaseClient.from('estabelecimentos').insert([{
+            dono_id: userLogado.id,
+            nome_fantasia: nomeFantasia,
+            slug: slug,
+            plano_ativo: planoEscolhido,
+            status_pagamento: 'trial'
+        }]);
 
         if (error) throw error;
         localStorage.removeItem('plano_mercuria');

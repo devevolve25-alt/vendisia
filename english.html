@@ -100,12 +100,19 @@
         const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
         const WEBHOOK_IA = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/english_page';
 
-        let lastRecordName = null; // Agora armazena o 'nome' da lição (TEXT)
-        let lastAnswersId = null; // ID do registro de respostas em mod_treinamento_answers (assumindo que 'id' ainda é a PK dessa tabela)
+        let lastRecordName = null; // Armazena o 'nome' da lição (TEXT) da tabela modulo_treinamento
+        let currentStudentName = null; // **NOVO:** Armazena o nome do aluno atual (TEXT)
 
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('admin') === 'true') document.getElementById('admin-sidebar').classList.remove('hidden');
+            
+            // **IMPORTANTE:** Para um sistema real, currentStudentName viria de um sistema de autenticação,
+            // um parâmetro de URL ou um input. Aqui, vamos assumir que ele pode ser predefinido para testes
+            // ou virá da resposta do webhook da IA ao gerar a lição.
+            // Por exemplo, para testes:
+            // currentStudentName = "AlunoDeTeste"; 
+
             loadLatestLesson();
         });
 
@@ -121,7 +128,6 @@
         async function loadLatestLesson() {
             try {
                 // 1. Carregar a lição principal de modulo_treinamento
-                // Selecionando 'nome' explicitamente, embora já seja a PK.
                 const resLesson = await fetch(`${SUPABASE_URL}/rest/v1/modulo_treinamento?select=*,nome&order=created_at.desc&limit=1`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
@@ -130,19 +136,28 @@
                 if (dataLesson.length > 0) {
                     const lesson = dataLesson[0];
                     lastRecordName = lesson.nome; // Guarda o 'nome' da lição
+
+                    // **IMPORTANTE:** Se currentStudentName não estiver definido aqui, não podemos carregar as respostas específicas do aluno.
+                    // Para fins de demonstração, se ele ainda não foi definido (ex: via geração de lesson), ele precisa de um valor.
+                    // Em um cenário real, um aluno autenticado teria seu nome disponível.
+                    if (!currentStudentName) {
+                        console.warn("currentStudentName não definido. Não será possível carregar respostas específicas do aluno.");
+                        // Pode-se definir um valor padrão ou exigir que o aluno se identifique.
+                        // Exemplo para um comportamento mais robusto:
+                        // alert("Por favor, identifique-se ou gere uma lição para continuar.");
+                        // return; // Interrompe se o nome do aluno for essencial
+                    }
                     
-                    // 2. Carregar as respostas da tabela mod_treinamento_answers para esta lição
-                    // Usando lesson_title para filtrar.
-                    const resAnswers = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=*&lesson_title=eq.${lastRecordName}&order=updated_at.desc&limit=1`, {
-                        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-                    });
-                    const dataAnswers = await resAnswers.json();
+                    // 2. Carregar as respostas da tabela mod_treinamento_answers para esta lição e este aluno
                     let answers = {};
-                    if (dataAnswers.length > 0) {
-                        answers = dataAnswers[0];
-                        lastAnswersId = answers.id; // Guarda o ID do registro de respostas (assumindo PK 'id')
-                    } else {
-                        lastAnswersId = null; // Nenhuma resposta encontrada para esta lição
+                    if (currentStudentName) { // Apenas tenta carregar se o nome do aluno estiver disponível
+                        const resAnswers = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=*&lesson_title=eq.${lastRecordName}&nome_aluno=eq.${currentStudentName}`, {
+                            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                        });
+                        const dataAnswers = await resAnswers.json();
+                        if (dataAnswers.length > 0) {
+                            answers = dataAnswers[0];
+                        }
                     }
                     
                     renderLesson(lesson, answers);
@@ -177,9 +192,11 @@
 
         async function saveAnswers() {
             if (!lastRecordName) return alert("No lesson title found. Please generate or load a lesson first.");
+            if (!currentStudentName) return alert("Student name not identified. Cannot save answers.");
             
             const updateData = {
-                lesson_title: lastRecordName // Vincula as respostas à lição pelo 'nome'
+                lesson_title: lastRecordName, // Vincula as respostas à lição pelo 'nome'
+                nome_aluno: currentStudentName // **NOVO:** Identifica o aluno
             };
             for (let i = 1; i <= 10; i++) {
                 const val = document.getElementById(`field-answr${i}`)?.value;
@@ -187,10 +204,17 @@
             }
 
             try {
+                // Tenta buscar o registro existente para saber se deve atualizar (PATCH) ou criar (POST)
+                const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=nome_aluno&lesson_title=eq.${lastRecordName}&nome_aluno=eq.${currentStudentName}`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                const checkData = await checkRes.json();
+                const recordExists = checkData.length > 0;
+
                 let res;
-                if (lastAnswersId) {
-                    // Se já existem respostas para esta lição, atualize
-                    res = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?id=eq.${lastAnswersId}`, {
+                if (recordExists) {
+                    // Se já existem respostas para esta lição e este aluno, atualize
+                    res = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?nome_aluno=eq.${currentStudentName}`, { // Filtra pela PK
                         method: 'PATCH',
                         headers: { 
                             'apikey': SUPABASE_KEY, 
@@ -208,16 +232,10 @@
                             'apikey': SUPABASE_KEY, 
                             'Authorization': `Bearer ${SUPABASE_KEY}`, 
                             'Content-Type': 'application/json',
-                            'Prefer': 'return=representation' // Para obter o ID do novo registro
+                            'Prefer': 'return=representation' 
                         },
                         body: JSON.stringify(updateData)
                     });
-                    if (res.ok) {
-                        const newRecord = await res.json();
-                        if (newRecord && newRecord.length > 0) {
-                            lastAnswersId = newRecord[0].id; // Guarda o ID do novo registro de respostas
-                        }
-                    }
                 }
 
                 if (res.ok) {
@@ -235,8 +253,8 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
                                 action: 'answers_submitted',
-                                lessonTitle: lastRecordName, // Agora passando o 'nome' da lição
-                                answersRecordId: lastAnswersId // ID do registro de respostas
+                                lessonTitle: lastRecordName,
+                                studentName: currentStudentName // **NOVO:** Passa o nome do aluno
                             })
                         });
                         console.log("AI notified about answers submission.");
@@ -244,10 +262,7 @@
                         console.error("Error notifying AI about submission:", aiNotifyError);
                     }
                     
-                    // Recarrega a lição para garantir que os dados estejam frescos
                     setTimeout(loadLatestLesson, 500); 
-
-                    // CHAMA A IA PARA O FEEDBACK APÓS SALVAR
                     requestFeedback(); 
 
                 } else {
@@ -263,18 +278,27 @@
 
         async function saveWriting() {
             if (!lastRecordName) return alert("No lesson title found. Please generate or load a lesson first.");
+            if (!currentStudentName) return alert("Student name not identified. Cannot save writing.");
 
             const writingText = document.getElementById('field-writing').value;
             const updateData = {
-                lesson_title: lastRecordName, // Vincula o writing à lição pelo 'nome'
+                lesson_title: lastRecordName, 
+                nome_aluno: currentStudentName, // **NOVO:** Identifica o aluno
                 writing: writingText
             };
 
             try {
+                // Tenta buscar o registro existente para saber se deve atualizar (PATCH) ou criar (POST)
+                const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=nome_aluno&lesson_title=eq.${lastRecordName}&nome_aluno=eq.${currentStudentName}`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                const checkData = await checkRes.json();
+                const recordExists = checkData.length > 0;
+
                 let res;
-                if (lastAnswersId) {
-                    // Se já existem respostas para esta lição, atualize o campo 'writing'
-                    res = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?id=eq.${lastAnswersId}`, {
+                if (recordExists) {
+                    // Se já existem respostas para esta lição e este aluno, atualize o campo 'writing'
+                    res = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?nome_aluno=eq.${currentStudentName}`, { // Filtra pela PK
                         method: 'PATCH',
                         headers: { 
                             'apikey': SUPABASE_KEY, 
@@ -292,16 +316,10 @@
                             'apikey': SUPABASE_KEY, 
                             'Authorization': `Bearer ${SUPABASE_KEY}`, 
                             'Content-Type': 'application/json',
-                            'Prefer': 'return=representation' // Para obter o ID do novo registro
+                            'Prefer': 'return=representation'
                         },
                         body: JSON.stringify(updateData)
                     });
-                     if (res.ok) {
-                        const newRecord = await res.json();
-                        if (newRecord && newRecord.length > 0) {
-                            lastAnswersId = newRecord[0].id; // Guarda o ID do novo registro de respostas
-                        }
-                    }
                 }
 
                 if (res.ok) {
@@ -316,8 +334,8 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
                                 action: 'writing_submitted',
-                                lessonTitle: lastRecordName, // Agora passando o 'nome' da lição
-                                answersRecordId: lastAnswersId, // ID do registro de respostas
+                                lessonTitle: lastRecordName,
+                                studentName: currentStudentName, // **NOVO:** Passa o nome do aluno
                                 writingContent: writingText
                             })
                         });
@@ -325,8 +343,8 @@
                     } catch (aiNotifyError) {
                         console.error("Error notifying AI about writing submission:", aiNotifyError);
                     }
-                    setTimeout(loadLatestLesson, 500); // Recarrega para o campo de writing ter o valor atualizado
-                    requestFeedback(); // Pede feedback após salvar o writing também
+                    setTimeout(loadLatestLesson, 500); 
+                    requestFeedback(); 
 
                 } else {
                     const errorText = await res.text();
@@ -341,8 +359,12 @@
 
 
         async function requestFeedback() {
-            if (!lastRecordName || !lastAnswersId) {
-                alert("No lesson title or answers ID found to request feedback. Please save your answers first.");
+            if (!lastRecordName) {
+                alert("No lesson title found to request feedback. Please save your answers first.");
+                return;
+            }
+            if (!currentStudentName) {
+                alert("Student name not identified. Cannot request feedback.");
                 return;
             }
             openTab(null, 'feedback');
@@ -354,11 +376,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         action: 'analyze_feedback', 
-                        lessonTitle: lastRecordName, // Passa o 'nome' da lição
-                        answersRecordId: lastAnswersId // Passa o ID do registro de respostas
+                        lessonTitle: lastRecordName,
+                        studentName: currentStudentName // **NOVO:** Passa o nome do aluno
                     })
                 });
-                // Aguarda 3 segundos e recarrega para mostrar o feedback que a IA gravou
                 setTimeout(loadLatestLesson, 3000);
             } catch (e) { 
                 console.error("Error requesting feedback:", e); 
@@ -367,8 +388,12 @@
         }
 
         async function requestManualFeedback() {
-            if (!lastRecordName || !lastAnswersId) {
-                alert("No lesson title or answers ID found to request feedback. Please save your answers first.");
+            if (!lastRecordName) {
+                alert("No lesson title found to request feedback. Please save your answers first.");
+                return;
+            }
+            if (!currentStudentName) {
+                alert("Student name not identified. Cannot request manual feedback.");
                 return;
             }
             openTab(null, 'feedback');
@@ -380,11 +405,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         action: 'request_lesson_feedback', 
-                        lessonTitle: lastRecordName, // Passa o 'nome' da lição
-                        answersRecordId: lastAnswersId // Passa o ID do registro de respostas
+                        lessonTitle: lastRecordName,
+                        studentName: currentStudentName // **NOVO:** Passa o nome do aluno
                     }) 
                 });
-                // Aguarda 3 segundos e recarrega para exibir o feedback que a IA registrou
                 setTimeout(loadLatestLesson, 3000);
             } catch (e) {
                 console.error("Error requesting manual feedback from AI:", e);
@@ -418,7 +442,6 @@
                     body: JSON.stringify({ instruction: cmd })
                 });
 
-                // Tentar ler como texto primeiro se houver um erro, para depuração.
                 let data;
                 let responseText = await response.text();
                 try {
@@ -427,11 +450,17 @@
                     console.error("JSON parsing error from AI webhook:", jsonError);
                     console.error("Raw AI webhook response:", responseText);
                     bMsg.innerText = `Error: AI webhook returned invalid JSON. Raw response: ${responseText.substring(0, 100)}...`;
-                    return; // Interrompe para evitar mais erros
+                    return; 
                 }
 
                 if (response.ok) {
                     bMsg.innerText = data.output || "Lesson created! Refreshing dashboard...";
+                    if (data.studentName) { // **NOVO:** Captura o nome do aluno da resposta da IA
+                        currentStudentName = data.studentName;
+                        console.log("Current student name set to:", currentStudentName);
+                    } else {
+                        console.warn("AI webhook response did not contain 'studentName'. It will not be possible to save answers for a specific student.");
+                    }
                     setTimeout(loadLatestLesson, 3000);
                 } else {
                     bMsg.innerText = `Error: AI could not process the request. ${data.error || responseText || ''}`;

@@ -78,11 +78,10 @@
 
             <div id="lesson" class="tab-content active"></div>
             <div id="exercises" class="tab-content">
-                <div id="exercises" class="tab-content">
-                
-                <div id="exercise-list"></div>
-                <button id="btn-save-answers" class="btn-primary" onclick="saveAnswers()">SUBMIT MY ANSWERS</button>
-            </div>
+                <div class="exercise-card">
+                    <strong>Your Name:</strong>
+                    <input type="text" class="ans-input" id="field-student-name" placeholder="Enter your name here">
+                </div>
                 <div id="exercise-list"></div>
                 <button id="btn-save-answers" class="btn-primary" onclick="saveAnswers()">SUBMIT MY ANSWERS</button>
             </div>
@@ -96,7 +95,7 @@
             <div id="feedback" class="tab-content">
                 <div id="feedback-area" class="content-body">Your feedback will appear here.</div>
                 <button id="btn-request-feedback" class="btn-primary" onclick="requestManualFeedback()">REQUEST FEEDBACK FROM AI</button>
-            </nav>
+            </div>
         </main>
     </div>
 
@@ -106,18 +105,12 @@
         const WEBHOOK_IA = 'https://powerfulkiwi-n8n.cloudfy.live/webhook/english_page';
 
         let lastRecordName = null; // Armazena o 'nome' da lição (TEXT) da tabela modulo_treinamento
-        let currentStudentName = null; // **NOVO:** Armazena o nome do aluno atual (TEXT)
+        let currentStudentName = null; // Armazena o nome do aluno atual (TEXT)
 
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('admin') === 'true') document.getElementById('admin-sidebar').classList.remove('hidden');
             
-            // **IMPORTANTE:** Para um sistema real, currentStudentName viria de um sistema de autenticação,
-            // um parâmetro de URL ou um input. Aqui, vamos assumir que ele pode ser predefinido para testes
-            // ou virá da resposta do webhook da IA ao gerar a lição.
-            // Por exemplo, para testes:
-            // currentStudentName = "AlunoDeTeste"; 
-
             loadLatestLesson();
         });
 
@@ -142,26 +135,20 @@
                     const lesson = dataLesson[0];
                     lastRecordName = lesson.nome; // Guarda o 'nome' da lição
 
-                    // **IMPORTANTE:** Se currentStudentName não estiver definido aqui, não podemos carregar as respostas específicas do aluno.
-                    // Para fins de demonstração, se ele ainda não foi definido (ex: via geração de lesson), ele precisa de um valor.
-                    // Em um cenário real, um aluno autenticado teria seu nome disponível.
-                    if (!currentStudentName) {
-                        console.warn("currentStudentName não definido. Não será possível carregar respostas específicas do aluno.");
-                        // Pode-se definir um valor padrão ou exigir que o aluno se identifique.
-                        // Exemplo para um comportamento mais robusto:
-                        // alert("Por favor, identifique-se ou gere uma lição para continuar.");
-                        // return; // Interrompe se o nome do aluno for essencial
-                    }
-                    
-                    // 2. Carregar as respostas da tabela mod_treinamento_answers para esta lição e este aluno
+                    // 2. Carregar as respostas da tabela mod_treinamento_answers para esta lição (usando lesson_title como PK)
                     let answers = {};
-                    if (currentStudentName) { // Apenas tenta carregar se o nome do aluno estiver disponível
-                        const resAnswers = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=*&lesson_title=eq.${lastRecordName}&nome_aluno=eq.${currentStudentName}`, {
+                    if (lastRecordName) { // Apenas tenta carregar se o nome da lição estiver disponível
+                        // Agora o filtro é APENAS por lesson_title, que é a PK
+                        const resAnswers = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=*&lesson_title=eq.${encodeURIComponent(lastRecordName)}`, {
                             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                         });
                         const dataAnswers = await resAnswers.json();
                         if (dataAnswers.length > 0) {
                             answers = dataAnswers[0];
+                            // Atualiza a variável global currentStudentName se houver respostas e um nome de aluno salvo
+                            if (answers.nome_aluno) {
+                                currentStudentName = answers.nome_aluno;
+                            }
                         }
                     }
                     
@@ -177,6 +164,13 @@
             // Renderiza o feedback (ainda da tabela modulo_treinamento)
             if (lesson.feedback) document.getElementById('feedback-area').innerHTML = `<div class="content-body">${lesson.feedback}</div>`;
             else document.getElementById('feedback-area').innerText = "Your feedback will appear here.";
+
+            // NOVO: Preenche o campo de nome do aluno
+            const studentNameInput = document.getElementById('field-student-name');
+            if (studentNameInput) {
+                // Preenche com o nome do aluno encontrado nas respostas, ou o currentStudentName global (se definido pela IA), ou em branco
+                studentNameInput.value = answers.nome_aluno || currentStudentName || '';
+            }
 
             // Renderiza os campos de exercício com respostas pré-preenchidas
             const exContainer = document.getElementById('exercise-list');
@@ -196,12 +190,19 @@
         }
 
         async function saveAnswers() {
+            // NOVO: Obtém o nome do aluno diretamente do input antes de qualquer validação
+            const studentNameFromInput = document.getElementById('field-student-name')?.value;
+            if (studentNameFromInput) {
+                currentStudentName = studentNameFromInput.trim(); // Atualiza a variável global e remove espaços extras
+            } else {
+                return alert("Please enter your name in the 'Your Name' field to save answers.");
+            }
+
             if (!lastRecordName) return alert("No lesson title found. Please generate or load a lesson first.");
-            if (!currentStudentName) return alert("Student name not identified. Cannot save answers.");
             
             const updateData = {
-                lesson_title: lastRecordName, // Vincula as respostas à lição pelo 'nome'
-                nome_aluno: currentStudentName // **NOVO:** Identifica o aluno
+                lesson_title: lastRecordName, // Vincula as respostas à lição pelo 'nome' (que agora é a PK)
+                nome_aluno: currentStudentName // Coluna que armazena o nome do aluno
             };
             for (let i = 1; i <= 10; i++) {
                 const val = document.getElementById(`field-answr${i}`)?.value;
@@ -210,7 +211,8 @@
 
             try {
                 // Tenta buscar o registro existente para saber se deve atualizar (PATCH) ou criar (POST)
-                const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=nome_aluno&lesson_title=eq.${lastRecordName}&nome_aluno=eq.${currentStudentName}`, {
+                // O filtro é APENAS por lesson_title, que é a PK
+                const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=lesson_title&lesson_title=eq.${encodeURIComponent(lastRecordName)}`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 const checkData = await checkRes.json();
@@ -218,8 +220,9 @@
 
                 let res;
                 if (recordExists) {
-                    // Se já existem respostas para esta lição e este aluno, atualize
-                    res = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?nome_aluno=eq.${currentStudentName}`, { // Filtra pela PK
+                    // Se já existem respostas para esta lição, atualize
+                    // O filtro na URL para PATCH é APENAS pela PK lesson_title
+                    res = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?lesson_title=eq.${encodeURIComponent(lastRecordName)}`, { 
                         method: 'PATCH',
                         headers: { 
                             'apikey': SUPABASE_KEY, 
@@ -246,11 +249,13 @@
                 if (res.ok) {
                     alert("Answers saved! Notifying AI and analyzing...");
 
-                    // Limpa os campos após o salvamento
-                    for (let i = 1; i <= 10; i++) {
-                        const input = document.getElementById(`field-answr${i}`);
-                        if(input) input.value = "";
-                    }
+                    // Não limpa os campos de resposta aqui, pois a intenção é que um único aluno
+                    // tenha suas respostas para uma lição específica. O reload da lição
+                    // irá recarregar as respostas salvas para aquela lição.
+                    // for (let i = 1; i <= 10; i++) {
+                    //     const input = document.getElementById(`field-answr${i}`);
+                    //     if(input) input.value = "";
+                    // }
 
                     try {
                         await fetch(WEBHOOK_IA, {
@@ -259,7 +264,7 @@
                             body: JSON.stringify({ 
                                 action: 'answers_submitted',
                                 lessonTitle: lastRecordName,
-                                studentName: currentStudentName // **NOVO:** Passa o nome do aluno
+                                studentName: currentStudentName 
                             })
                         });
                         console.log("AI notified about answers submission.");
@@ -282,19 +287,27 @@
         }
 
         async function saveWriting() {
+            // NOVO: Obtém o nome do aluno diretamente do input antes de qualquer validação
+            const studentNameFromInput = document.getElementById('field-student-name')?.value;
+            if (studentNameFromInput) {
+                currentStudentName = studentNameFromInput.trim(); // Atualiza a variável global e remove espaços extras
+            } else {
+                return alert("Please enter your name in the 'Your Name' field to save writing.");
+            }
+
             if (!lastRecordName) return alert("No lesson title found. Please generate or load a lesson first.");
-            if (!currentStudentName) return alert("Student name not identified. Cannot save writing.");
 
             const writingText = document.getElementById('field-writing').value;
             const updateData = {
                 lesson_title: lastRecordName, 
-                nome_aluno: currentStudentName, // **NOVO:** Identifica o aluno
+                nome_aluno: currentStudentName, // Coluna que armazena o nome do aluno
                 writing: writingText
             };
 
             try {
                 // Tenta buscar o registro existente para saber se deve atualizar (PATCH) ou criar (POST)
-                const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=nome_aluno&lesson_title=eq.${lastRecordName}&nome_aluno=eq.${currentStudentName}`, {
+                // O filtro é APENAS por lesson_title, que é a PK
+                const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?select=lesson_title&lesson_title=eq.${encodeURIComponent(lastRecordName)}`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 const checkData = await checkRes.json();
@@ -302,8 +315,9 @@
 
                 let res;
                 if (recordExists) {
-                    // Se já existem respostas para esta lição e este aluno, atualize o campo 'writing'
-                    res = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?nome_aluno=eq.${currentStudentName}`, { // Filtra pela PK
+                    // Se já existem respostas para esta lição, atualize o campo 'writing'
+                    // O filtro na URL para PATCH é APENAS pela PK lesson_title
+                    res = await fetch(`${SUPABASE_URL}/rest/v1/mod_treinamento_answers?lesson_title=eq.${encodeURIComponent(lastRecordName)}`, { 
                         method: 'PATCH',
                         headers: { 
                             'apikey': SUPABASE_KEY, 
@@ -330,8 +344,8 @@
                 if (res.ok) {
                     alert("Writing saved! Notifying AI for analysis...");
 
-                    // Limpa o campo de writing após o salvamento
-                    document.getElementById('field-writing').value = "";
+                    // Não limpa o campo de writing, o reload recarregará o texto salvo.
+                    // document.getElementById('field-writing').value = "";
 
                     try {
                         await fetch(WEBHOOK_IA, {
@@ -340,7 +354,7 @@
                             body: JSON.stringify({ 
                                 action: 'writing_submitted',
                                 lessonTitle: lastRecordName,
-                                studentName: currentStudentName, // **NOVO:** Passa o nome do aluno
+                                studentName: currentStudentName, 
                                 writingContent: writingText
                             })
                         });
@@ -362,16 +376,22 @@
             }
         }
 
-
         async function requestFeedback() {
+            // NOVO: Obtém o nome do aluno do input para garantir que é o valor mais recente
+            const studentNameFromInput = document.getElementById('field-student-name')?.value;
+            if (studentNameFromInput) {
+                currentStudentName = studentNameFromInput.trim();
+            } else {
+                alert("Please enter your name in the 'Your Name' field to request feedback.");
+                return;
+            }
+
             if (!lastRecordName) {
                 alert("No lesson title found to request feedback. Please save your answers first.");
                 return;
             }
-            if (!currentStudentName) {
-                alert("Student name not identified. Cannot request feedback.");
-                return;
-            }
+            // A validação de currentStudentName já foi feita acima e a variável foi atualizada
+            
             openTab(null, 'feedback');
             document.getElementById('feedback-area').innerText = "Answers and writing under analysis...";
             
@@ -382,7 +402,7 @@
                     body: JSON.stringify({ 
                         action: 'analyze_feedback', 
                         lessonTitle: lastRecordName,
-                        studentName: currentStudentName // **NOVO:** Passa o nome do aluno
+                        studentName: currentStudentName 
                     })
                 });
                 setTimeout(loadLatestLesson, 3000);
@@ -393,14 +413,21 @@
         }
 
         async function requestManualFeedback() {
+            // NOVO: Obtém o nome do aluno do input para garantir que é o valor mais recente
+            const studentNameFromInput = document.getElementById('field-student-name')?.value;
+            if (studentNameFromInput) {
+                currentStudentName = studentNameFromInput.trim();
+            } else {
+                alert("Please enter your name in the 'Your Name' field to request manual feedback.");
+                return;
+            }
+            
             if (!lastRecordName) {
                 alert("No lesson title found to request feedback. Please save your answers first.");
                 return;
             }
-            if (!currentStudentName) {
-                alert("Student name not identified. Cannot request manual feedback.");
-                return;
-            }
+            // A validação de currentStudentName já foi feita acima e a variável foi atualizada
+            
             openTab(null, 'feedback');
             document.getElementById('feedback-area').innerText = "Requesting AI feedback...";
             
@@ -411,7 +438,7 @@
                     body: JSON.stringify({ 
                         action: 'request_lesson_feedback', 
                         lessonTitle: lastRecordName,
-                        studentName: currentStudentName // **NOVO:** Passa o nome do aluno
+                        studentName: currentStudentName 
                     }) 
                 });
                 setTimeout(loadLatestLesson, 3000);
@@ -460,11 +487,11 @@
 
                 if (response.ok) {
                     bMsg.innerText = data.output || "Lesson created! Refreshing dashboard...";
-                    if (data.studentName) { // **NOVO:** Captura o nome do aluno da resposta da IA
+                    if (data.studentName) { // Captura o nome do aluno da resposta da IA
                         currentStudentName = data.studentName;
                         console.log("Current student name set to:", currentStudentName);
                     } else {
-                        console.warn("AI webhook response did not contain 'studentName'. It will not be possible to save answers for a specific student.");
+                        console.warn("AI webhook response did not contain 'studentName'. The 'Your Name' field should be manually filled.");
                     }
                     setTimeout(loadLatestLesson, 3000);
                 } else {

@@ -204,7 +204,7 @@
                 lesson_title: lastRecordName, // Vincula as respostas à lição pelo 'nome' (que agora é a PK)
                 nome_aluno: currentStudentName // Coluna que armazena o nome do aluno
             };
-            for (let i = 1; i <= 10; i++) {
+            for (let i = 1; i <= 11; i++) {
                 const val = document.getElementById(`field-answr${i}`)?.value;
                 if (val !== undefined) updateData[`answr${i}`] = val;
             }

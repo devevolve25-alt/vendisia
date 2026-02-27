@@ -44,6 +44,17 @@
 
         <section class="preview-column">
             <div class="preview-tabs" id="dynamic-tabs"></div>
+
+            <!-- NOVO: Container para o botão de Agendamento Manual (Inicialmente oculto para usuários logados) -->
+            <div id="manual-agenda-trigger-wrapper" style="text-align: center; margin-top: 15px; display: none;">
+                <button id="btn-activate-manual-agenda" 
+                        style="padding: 12px 25px; background: var(--creative-color); color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; letter-spacing: 0.5px; transition: background 0.3s ease;">
+                    ACESSAR AGENDAMENTO MANUAL
+                </button>
+                <p style="font-size: 0.75rem; color: #888; margin-top: 8px;">(Disponível quando a MercurIA não pode agendar)</p>
+            </div>
+            <!-- FIM DO NOVO CONTAINER -->
+
             <div class="display-area" id="display-content">
                 <div class="proposal-paper" id="text-view">
                     <h1 id="view-title" style="text-align: center; margin-bottom: 20px; font-family: 'Bebas Neue'; color: var(--creative-color);"></h1>

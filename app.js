@@ -597,7 +597,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("App.js carregado. Iniciando verificação de usuário e carregamento de dados.");
 
     const user = await verifyUser();
-    // _donoId já está declarado globalmente, então apenas atribua.
+    _donoId = null; // Inicializa _donoId como null para visitantes ou não donos
+
     if (user) {
         console.log("Usuário autenticado.");
         _donoId = user.id; // Define _donoId apenas se o usuário estiver autenticado
@@ -625,7 +626,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);
-        // Usar a função de validação ao salvar no localStorage
+        // CORREÇÃO: Usar a função de validação ao salvar no localStorage
         // APLICADO O .substring(0, 5) AQUI!
         localStorage.setItem('hora_abertura', _validateTimeFormat(estabelecimento.hora_abertura.substring(0, 5), "08:00"));
         // APLICADO O .substring(0, 5) AQUI!
@@ -650,13 +651,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // NOVO: Esconder botão SAIR para visitantes
-        const btnLogout = document.querySelector('header .brand-block + .brand-text-wrapper + div button'); // Localiza o botão SAIR
-        if (btnLogout) {
-            if (_verifiedUserType === 'publico') {
-                btnLogout.style.display = 'none';
-            } else {
-                btnLogout.style.display = 'block'; // Garante que seja visível para outros tipos de usuário
-            }
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout && _verifiedUserType === 'publico') {
+            btnLogout.style.display = 'none';
+        } else if (btnLogout) {
+            btnLogout.style.display = 'block'; // Garante que seja visível para outros tipos de usuário
         }
 
 
@@ -687,10 +686,58 @@ document.addEventListener('DOMContentLoaded', async () => {
             // abasPermitidas.push({ id: 'dashboard', label: 'Dashboard' });
         }
 
+        // --- INÍCIO DAS NOVAS ALTERAÇÕES ---
+        const agendaTabElement = document.querySelector('[data-view-id="agenda"]');
+        const manualAgendaTriggerWrapper = document.getElementById('manual-agenda-trigger-wrapper');
+        const btnActivateManualAgenda = document.getElementById('btn-activate-manual-agenda');
+
+        if (_verifiedUserType === 'publico') {
+            // Se for usuário público, a aba 'agenda' é removida das abas permitidas
+            // e ocultada diretamente (o setupTabsUI irá ignorá-la)
+            abasPermitidas = abasPermitidas.filter(aba => aba.id !== 'agenda');
+            if (agendaTabElement) {
+                agendaTabElement.style.display = 'none'; 
+            }
+            // E mostra o botão para agendamento manual
+            if (manualAgendaTriggerWrapper) {
+                manualAgendaTriggerWrapper.style.display = 'block';
+            }
+
+            // Adiciona listener ao botão de ativar agendamento manual
+            if (btnActivateManualAgenda && agendaTabElement) {
+                btnActivateManualAgenda.onclick = async () => {
+                    // Exibe a aba "agenda" temporariamente para esta sessão
+                    if (agendaTabElement) {
+                        agendaTabElement.style.display = 'flex'; // ou 'block' dependendo do seu CSS
+                    }
+                    // Oculta o botão "ACESSAR AGENDAMENTO MANUAL"
+                    if (manualAgendaTriggerWrapper) {
+                        manualAgendaTriggerWrapper.style.display = 'none';
+                    }
+                    // Recria as abas incluindo a "agenda" e a ativa
+                    const tempAbas = [
+                        { id: 'agenda', label: 'Agenda' }, // Inclui a agenda
+                        { id: 'servicos', label: 'Serviços' }
+                    ];
+                    UI.setupTabsUI(tempAbas, handleTabClick);
+                    await handleTabClick('agenda', document.querySelector('[data-view-id="agenda"]')); // Ativa a aba agenda
+                };
+            }
+        } else {
+            // Para usuários logados, a aba 'agenda' deve estar visível e o botão manual oculto
+            if (agendaTabElement) {
+                agendaTabElement.style.display = 'flex'; // ou 'block', garante visibilidade
+            }
+            if (manualAgendaTriggerWrapper) {
+                manualAgendaTriggerWrapper.style.display = 'none';
+            }
+        }
+        // --- FIM DAS NOVAS ALTERAÇÕES ---
+
         UI.setupTabsUI(abasPermitidas, handleTabClick);
 
     } catch (error) {
         console.error("Erro na inicialização da aplicação:", error);
         UI.renderSalonNotFound(); // Pode ser qualquer erro, tratamos como não encontrado por simplicidade
     }
-}); // Este é o fechamento correto para o DOMContentLoaded
+});

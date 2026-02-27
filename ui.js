@@ -368,17 +368,15 @@ function fecharModalEdicaoProfissional() {
 function setupTabsUI(abasPermitidas, onTabClickCallback) {
     const tabsContainer = document.getElementById('dynamic-tabs');
     tabsContainer.innerHTML = '';
-    abasPermitidas.forEach((aba, index) => {
+    abasPermitidas.forEach((aba) => { // Removido 'index' pois não é mais necessário para ativar a primeira aba
         const tabElement = document.createElement('div');
-        tabElement.className = `tab ${index === 0 ? 'active' : ''}`;
+        tabElement.className = `tab`; // Removido 'active' por padrão
         tabElement.innerText = aba.label;
-        tabElement.setAttribute('data-view-id', aba.id); // Adiciona um atributo para identificar a aba
+        tabElement.setAttribute('data-view-id', aba.id);
         tabElement.onclick = () => onTabClickCallback(aba.id, tabElement);
         tabsContainer.appendChild(tabElement);
     });
-    if(abasPermitidas.length > 0 && tabsContainer.firstChild) {
-        onTabClickCallback(abasPermitidas[0].id, tabsContainer.firstChild); // Ativa a primeira aba
-    }
+    // Removida a linha que ativava a primeira aba por padrão
 }
 
 /**

@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 12
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 13
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';
@@ -9,7 +9,7 @@ import { verifyUser, logout } from './auth.js';
 
 // Variáveis globais para armazenar o estado da aplicação
 let _estabelecimentoId = null;
-let _donoId = null;
+let _donoId = null; // Variável global para o ID do dono
 let _verifiedUserType = 'publico'; // 'publico', 'funcionario', 'dono'
 let _currentPeriodoAgenda = 'dia'; // 'dia' ou 'semana'
 let _currentDataAgenda = null;
@@ -85,6 +85,7 @@ window.confirmarAgendamento = async () => {
         }
 
         // A string de data/hora é formatada aqui com 'Z' para ser explicitamente UTC.
+        // Já está utilizando corretamente AgendaService.createUTCDateFromLocalDateAndTime
         const dataHoraInicioUTC = AgendaService.createUTCDateFromLocalDateAndTime(_currentDataAgenda, _currentHoraAgenda).toISOString();
 
         // 2. Criar o payload para o agendamento, usando o ID do cliente
@@ -193,17 +194,16 @@ window.salvarEdicaoProfissional = async () => {
 async function loadAndRenderAgenda() {
     UI.showLoadingState();
     try {
-        // CORREÇÃO: Usar a data atual em UTC para consistência
+        // Usar a data atual em UTC para consistência
         const hojeUTC = new Date(new Date().toISOString());
         let dataInicio = new Date(hojeUTC); // Isso é um objeto Date em UTC
         let dataFim = new Date(hojeUTC); // Isso é um objeto Date em UTC
 
         if (_currentPeriodoAgenda === 'semana') {
-            // CORREÇÃO: Usar setUTCDate para manipular a data em UTC
             dataFim.setUTCDate(hojeUTC.getUTCDate() + 6); // Próximos 7 dias
         }
 
-        // CORREÇÃO: Usar toISOString().split('T')[0] para obter YYYY-MM-DD em UTC
+        // Usar toISOString().split('T')[0] para obter YYYY-MM-DD em UTC
         const dataInicioISO = dataInicio.toISOString().split('T')[0];
         const dataFimISO = dataFim.toISOString().split('T')[0];
 
@@ -220,7 +220,7 @@ async function loadAndRenderAgenda() {
             _currentPeriodoAgenda,
             allServices, // Novo argumento
             allProfessionals, // Novo argumento
-            dataInicio // NOVO: Passa a data de início (UTC) para consistência
+            dataInicio // Passa a data de início (UTC) para consistência
         );
 
         UI.renderAgendaContent(
@@ -325,13 +325,13 @@ async function loadAndRenderGestao() {
         }
 
         await UI.popularCamposGestao(dadosEstabelecimento, _donoId);
-        // CORREÇÃO: Usar o nome correto da função popularServicosDropdownParaEdicao
+        // Usar o nome correto da função popularServicosDropdownParaEdicao
         await UI.popularServicosDropdownParaEdicao(_estabelecimentoId);
         // NOVO: Chamar a função para popular os checkboxes de serviços para o novo profissional
         await UI.popularServicosCheckboxesParaNovoProfissional(_estabelecimentoId);
         await UI.popularDropdownProfissionaisParaEdicao(_estabelecimentoId);
 
-        // NOVO: Exibir o logo existente ao carregar a gestão
+        // Exibir o logo existente ao carregar a gestão
         // Passe o nome do estabelecimento para o atributo alt
         UI.updateEstablishmentLogoUI(dadosEstabelecimento.logo_url, dadosEstabelecimento.nome_fantasia);
 
@@ -416,10 +416,10 @@ async function loadAndRenderGestao() {
                 const horaFim = document.getElementById('new-prof-hora-fim').value;
                 const diasTrabalho = Array.from(document.querySelectorAll('.new-prof-dia-checkbox:checked')).map(cb => cb.value);
 
-                // --- NOVA LÓGICA PARA SERVIÇOS ESPECIALIZADOS (CADASTRO) ---\n
+                // --- NOVA LÓGICA PARA SERVIÇOS ESPECIALIZADOS (CADASTRO) ---
                 // Coleta os IDs dos serviços selecionados nos checkboxes
                 const servicosEspecializados = Array.from(document.querySelectorAll('#new-prof-servicos-especializados input[type=\"checkbox\"]:checked')).map(checkbox => checkbox.value);
-                // --- FIM DA NOVA LÓGICA ---\n
+                // --- FIM DA NOVA LÓGICA ---
 
                 if (!nome || !whatsapp || !tipoRemuneracao || isNaN(comissao) || !horaInicio || !horaFim || diasTrabalho.length === 0) {
                     alert("Preencha todos os campos do novo profissional e selecione os dias de trabalho.");
@@ -522,7 +522,7 @@ async function loadAndRenderGestao() {
         console.error("Erro ao carregar gestão:", error);
         alert("Erro ao carregar gestão: " + error.message);
         // Exibe o erro no view-body, já que 'aba-gestao' está visível, mas o erro pode ser global
-        // e o 'view-body' é onde as outras abas exibem seu conteúdo.\n
+        // e o 'view-body' é onde as outras abas exibem seu conteúdo.
         document.getElementById('view-body').style.display = 'block'; // Garante que view-body esteja visível
         document.getElementById('aba-gestao').style.display = 'none'; // Oculta aba-gestao em caso de erro
         document.getElementById('view-body').innerHTML = `<p style='text-align:center; opacity:0.5; color: #e74c3c;'>Erro ao carregar gestão.</p>`;
@@ -597,8 +597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("App.js carregado. Iniciando verificação de usuário e carregamento de dados.");
 
     const user = await verifyUser();
-    _donoId = null; // Inicializa _donoId como null para visitantes ou não donos
-
+    // _donoId já está declarado globalmente, então apenas atribua.
     if (user) {
         console.log("Usuário autenticado.");
         _donoId = user.id; // Define _donoId apenas se o usuário estiver autenticado
@@ -626,7 +625,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);
-        // CORREÇÃO: Usar a função de validação ao salvar no localStorage
+        // Usar a função de validação ao salvar no localStorage
         // APLICADO O .substring(0, 5) AQUI!
         localStorage.setItem('hora_abertura', _validateTimeFormat(estabelecimento.hora_abertura.substring(0, 5), "08:00"));
         // APLICADO O .substring(0, 5) AQUI!
@@ -651,11 +650,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // NOVO: Esconder botão SAIR para visitantes
-        const btnLogout = document.getElementById('btn-logout');
-        if (btnLogout && _verifiedUserType === 'publico') {
-            btnLogout.style.display = 'none';
-        } else if (btnLogout) {
-            btnLogout.style.display = 'block'; // Garante que seja visível para outros tipos de usuário
+        const btnLogout = document.querySelector('header .brand-block + .brand-text-wrapper + div button'); // Localiza o botão SAIR
+        if (btnLogout) {
+            if (_verifiedUserType === 'publico') {
+                btnLogout.style.display = 'none';
+            } else {
+                btnLogout.style.display = 'block'; // Garante que seja visível para outros tipos de usuário
+            }
         }
 
 
@@ -692,4 +693,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Erro na inicialização da aplicação:", error);
         UI.renderSalonNotFound(); // Pode ser qualquer erro, tratamos como não encontrado por simplicidade
     }
-});
+}); // Este é o fechamento correto para o DOMContentLoaded

@@ -1,4 +1,4 @@
-// app.js - Ponto de entrada e orquestrador da aplicação - corr 13
+// app.js - Ponto de entrada e orquestrador da aplicação - corr 14
 
 // Importa todos os módulos necessários
 import * as UI from './ui.js';

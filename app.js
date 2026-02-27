@@ -626,27 +626,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         _estabelecimentoId = estabelecimento.id;
         localStorage.setItem('estabelecimentoId', estabelecimento.id);
-        // CORREÇÃO: Usar a função de validação ao salvar no localStorage
-        // APLICADO O .substring(0, 5) AQUI!
         localStorage.setItem('hora_abertura', _validateTimeFormat(estabelecimento.hora_abertura.substring(0, 5), "08:00"));
-        // APLICADO O .substring(0, 5) AQUI!
         localStorage.setItem('hora_fechamento', _validateTimeFormat(estabelecimento.hora_fechamento.substring(0, 5), "18:00"));
 
 
         // Determina o tipo de usuário com base no ID do dono
-        if (user && user.id === estabelecimento.dono_id) { // Adicionada verificação de 'user'
+        if (user && user.id === estabelecimento.dono_id) {
             _verifiedUserType = 'dono';
-        } else if (user) { // Se houver usuário, mas não for o dono
-            // Lógica para verificar se é funcionário (assumindo que há uma tabela de 'funcionarios' ou 'perfis' com `cargo`)
+        } else if (user) { 
             const { data: perfilDono, error: perfilError } = await supabaseClient.from('perfis').select('cargo').eq('id', user.id).single();
             if (perfilError) console.warn("Erro ao buscar perfil para determinar cargo:", perfilError.message);
 
-            if (perfilDono?.cargo === 'funcionario') { // Exemplo de verificação de cargo
+            if (perfilDono?.cargo === 'funcionario') { 
                 _verifiedUserType = 'funcionario';
             } else {
                 _verifiedUserType = 'publico';
             }
-        } else { // Se não houver usuário (visitante)
+        } else { 
             _verifiedUserType = 'publico';
         }
 
@@ -655,9 +651,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (btnLogout && _verifiedUserType === 'publico') {
             btnLogout.style.display = 'none';
         } else if (btnLogout) {
-            btnLogout.style.display = 'block'; // Garante que seja visível para outros tipos de usuário
+            btnLogout.style.display = 'block'; 
         }
-
 
         // Verifica o período de teste
         const dataFimTrial = estabelecimento.data_fim_trial ? new Date(estabelecimento.data_fim_trial) : null;
@@ -667,77 +662,74 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         UI.updateSalonNameUI(estabelecimento.nome_fantasia);
-        // NOVO: Exibir o logo no cabeçalho ou em outros lugares que usam `UI.updateSalonNameUI` se necessário
-        // Se você tiver um local para o logo no cabeçalho global, chame aqui também:
         UI.updateEstablishmentLogoUI(estabelecimento.logo_url, estabelecimento.nome_fantasia);
-        // CORREÇÃO: Passando _verifiedUserType e o plano_ativo do estabelecimento
         UI.toggleDashboardButton(_verifiedUserType, estabelecimento.plano_ativo);
 
-        // Define as abas permitidas com base no tipo de usuário
-        let abasPermitidas = [
+        // Define TODAS as abas que podem ser exibidas para este tipo de usuário
+        let abasDisponiveis = [
             { id: 'agenda', label: 'Agenda' },
             { id: 'servicos', label: 'Serviços' }
         ];
 
         if (_verifiedUserType === 'dono' || _verifiedUserType === 'funcionario') {
-            abasPermitidas.push({ id: 'gestao', label: 'Gestão' });
+            abasDisponiveis.push({ id: 'gestao', label: 'Gestão' });
             // Outras abas para dono/funcionário, se existirem
-            // abasPermitidas.push({ id: 'financeiro', label: 'Financeiro' });
-            // abasPermitidas.push({ id: 'dashboard', label: 'Dashboard' });
+            // abasDisponiveis.push({ id: 'financeiro', label: 'Financeiro' });
+            // abasDisponiveis.push({ id: 'dashboard', label: 'Dashboard' });
         }
+        
+        // PRIMEIRO: A UI cria os elementos de todas as abas.
+        // A função setupTabsUI em ui.js deve apenas criar, sem ativar nenhuma aba inicialmente.
+        UI.setupTabsUI(abasDisponiveis, handleTabClick);
 
-        // --- INÍCIO DAS NOVAS ALTERAÇÕES ---
+        // SEGUNDO: AGORA, obtém as referências CORRETAS para os elementos das abas
+        // Isso é crucial porque setupTabsUI pode ter recriado esses elementos.
         const agendaTabElement = document.querySelector('[data-view-id="agenda"]');
+        const servicosTabElement = document.querySelector('[data-view-id="servicos"]');
         const manualAgendaTriggerWrapper = document.getElementById('manual-agenda-trigger-wrapper');
         const btnActivateManualAgenda = document.getElementById('btn-activate-manual-agenda');
 
         if (_verifiedUserType === 'publico') {
-            // Se for usuário público, a aba 'agenda' é removida das abas permitidas
-            // e ocultada diretamente (o setupTabsUI irá ignorá-la)
-            abasPermitidas = abasPermitidas.filter(aba => aba.id !== 'agenda');
+            // Para usuários públicos:
+            // 1. Oculta a aba 'agenda' (ela já foi criada pelo setupTabsUI)
             if (agendaTabElement) {
-                agendaTabElement.style.display = 'none'; 
+                agendaTabElement.style.display = 'none';
             }
-            // E mostra o botão para agendamento manual
+            // 2. Mostra o botão para agendamento manual
             if (manualAgendaTriggerWrapper) {
                 manualAgendaTriggerWrapper.style.display = 'block';
             }
+            // 3. Ativa a aba "Serviços" como padrão
+            if (servicosTabElement) {
+                await handleTabClick('servicos', servicosTabElement);
+            }
 
-            // Adiciona listener ao botão de ativar agendamento manual
-            if (btnActivateManualAgenda && agendaTabElement) {
+            // 4. Adiciona listener ao botão de ativar agendamento manual
+            if (btnActivateManualAgenda && agendaTabElement && manualAgendaTriggerWrapper) {
                 btnActivateManualAgenda.onclick = async () => {
-                    // Exibe a aba "agenda" temporariamente para esta sessão
-                    if (agendaTabElement) {
-                        agendaTabElement.style.display = 'flex'; // ou 'block' dependendo do seu CSS
-                    }
-                    // Oculta o botão "ACESSAR AGENDAMENTO MANUAL"
-                    if (manualAgendaTriggerWrapper) {
-                        manualAgendaTriggerWrapper.style.display = 'none';
-                    }
-                    // Recria as abas incluindo a "agenda" e a ativa
-                    const tempAbas = [
-                        { id: 'agenda', label: 'Agenda' }, // Inclui a agenda
-                        { id: 'servicos', label: 'Serviços' }
-                    ];
-                    UI.setupTabsUI(tempAbas, handleTabClick);
-                    await handleTabClick('agenda', document.querySelector('[data-view-id="agenda"]')); // Ativa a aba agenda
+                    agendaTabElement.style.display = 'flex'; // Exibe a aba "agenda"
+                    manualAgendaTriggerWrapper.style.display = 'none'; // Oculta o botão
+                    await handleTabClick('agenda', agendaTabElement); // Ativa a aba 'agenda' programaticamente
                 };
             }
         } else {
-            // Para usuários logados, a aba 'agenda' deve estar visível e o botão manual oculto
+            // Para usuários logados (dono/funcionario):
+            // 1. Garante que a aba 'agenda' esteja visível (ela já foi criada pelo setupTabsUI)
             if (agendaTabElement) {
-                agendaTabElement.style.display = 'flex'; // ou 'block', garante visibilidade
+                agendaTabElement.style.display = 'flex'; 
             }
+            // 2. Oculta o botão de agendamento manual (não relevante para logados)
             if (manualAgendaTriggerWrapper) {
                 manualAgendaTriggerWrapper.style.display = 'none';
             }
+            // 3. Ativa a aba 'agenda' por padrão
+            if (agendaTabElement) {
+                await handleTabClick('agenda', agendaTabElement);
+            }
         }
-        // --- FIM DAS NOVAS ALTERAÇÕES ---
-
-        UI.setupTabsUI(abasPermitidas, handleTabClick);
 
     } catch (error) {
         console.error("Erro na inicialização da aplicação:", error);
-        UI.renderSalonNotFound(); // Pode ser qualquer erro, tratamos como não encontrado por simplicidade
+        UI.renderSalonNotFound();
     }
 });

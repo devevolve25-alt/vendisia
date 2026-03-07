@@ -204,38 +204,7 @@
             height: 100%;
             display: none; /* Hidden by default */
             flex-direction: column;
-            background: #1a1a1a; /* Background for the viewer itself */
-        }
-
-        .url-input-bar {
-            display: flex;
-            padding: 10px;
-            gap: 10px;
-            background: rgba(0,0,0,0.2);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0; /* Prevent it from shrinking */
-        }
-
-        .url-input-bar input {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(165, 94, 234, 0.2);
-            border-radius: 4px;
-            padding: 8px;
-            color: white;
-            font-family: 'Montserrat';
-            outline: none;
-        }
-
-        .url-input-bar button {
-            background: var(--creative-color);
-            color: #000;
-            border: none;
-            padding: 8px 15px;
-            font-family: 'Bebas Neue';
-            font-size: 1rem;
-            cursor: pointer;
-            border-radius: 4px;
+            background: #ffffff; /* Default background for iframe content */
         }
 
         #html-iframe {
@@ -275,7 +244,7 @@
                 display: flex; /* Ensure it's flex on mobile when active */
             }
             #html-iframe {
-                height: calc(100% - 50px); /* Adjust iframe height for mobile */
+                height: 100%; /* Iframe takes full height of its parent */
             }
         }
     </style>
@@ -324,11 +293,7 @@
                 </div>
                 <!-- NEW HTML VIEWER -->
                 <div class="html-viewer" id="html-viewer" style="display: none;">
-                    <div class="url-input-bar">
-                        <input type="text" id="html-url-input" placeholder="Insira a URL para visualizar..." value="https://www.google.com" />
-                        <button onclick="loadHtmlContent()">CARREGAR</button>
-                    </div>
-                    <iframe id="html-iframe" src="about:blank" frameborder="0"></iframe>
+                    <iframe id="html-iframe" srcdoc="<!-- O HTML gerado pela IA será exibido aqui -->" frameborder="0"></iframe>
                 </div>
             </div>
         </section>
@@ -342,7 +307,7 @@
 
         const textView = document.getElementById('text-view');
         const imageView = document.getElementById('image-view');
-        const htmlViewer = document.getElementById('html-viewer'); // Get the new HTML viewer element
+        const htmlViewer = document.getElementById('html-viewer');
 
         // Hide all content areas first
         textView.style.display = 'none';
@@ -354,34 +319,8 @@
             textView.style.display = 'block';
         } else if(type === 'image') {
             imageView.style.display = 'flex';
-        } else if(type === 'html') { // Handle the new 'html' tab
-            htmlViewer.style.display = 'flex'; // Use flex to manage its internal layout (input bar + iframe)
-        }
-    }
-
-    // NEW FUNCTION: Load HTML content into the iframe
-    function loadHtmlContent() {
-        const urlInput = document.getElementById('html-url-input');
-        const iframe = document.getElementById('html-iframe');
-        let url = urlInput.value.trim();
-
-        if (url) {
-            // Prepend 'https://' if no protocol is specified for convenience
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                url = 'https://' + url;
-                urlInput.value = url; // Update input field with corrected URL
-            }
-
-            try {
-                new URL(url); // Validate if it's a well-formed URL
-                iframe.src = url;
-            } catch (e) {
-                alert("Por favor, insira uma URL válida. Ex: https://www.exemplo.com");
-                iframe.src = "about:blank"; // Clear iframe on invalid URL
-            }
-        } else {
-            alert("Por favor, insira uma URL para carregar.");
-            iframe.src = "about:blank"; // Clear iframe if input is empty
+        } else if(type === 'html') {
+            htmlViewer.style.display = 'flex';
         }
     }
 
@@ -389,6 +328,7 @@
         const input = document.getElementById('cmd-input').value;
         const chat = document.getElementById('chat-criar');
         const textView = document.getElementById('text-view');
+        const htmlIframe = document.getElementById('html-iframe'); // Get the iframe
 
         if(!input) return;
 
@@ -430,10 +370,28 @@
             botDivSuccess.innerText = "[CriarIA]: Materialização concluída. Veja o resultado no Dossiê.";
             chat.appendChild(botDivSuccess);
 
-            // 4. Injeta o conteúdo gerado (texto/proposta) no painel de visualização
-            // Assume que o n8n retorna { "output": "HTML ou Texto da proposta" }
+            // 4. Injeta o conteúdo gerado (texto/proposta ou HTML) no painel de visualização
             if (data.output) {
-                textView.innerHTML = data.output;
+                // Heurística para verificar se o output é HTML
+                const isHtml = data.output.trim().startsWith('<') && 
+                               (data.output.includes('<html') || data.output.includes('<body') || data.output.includes('<div') || data.output.includes('<p'));
+
+                if (isHtml) {
+                    htmlIframe.srcdoc = data.output; // Injeta o HTML diretamente no iframe
+                    // Ativa a aba do visualizador HTML
+                    const htmlTabElement = document.querySelector('.tab[onclick*="html"]');
+                    if (htmlTabElement) {
+                        switchTab('html', htmlTabElement);
+                    }
+                } else {
+                    // Assume que é texto para a visualização de documento
+                    textView.innerHTML = data.output;
+                    // Ativa a aba de documentos
+                    const textTabElement = document.querySelector('.tab[onclick*="text"]');
+                    if (textTabElement) {
+                        switchTab('text', textTabElement);
+                    }
+                }
             }
 
         } catch (error) {

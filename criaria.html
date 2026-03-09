@@ -175,6 +175,7 @@
             display: block; /* Default active tab */
         }
 
+        /* Alterado para exibir imagem e botão download */
         .image-preview {
             width: 100%;
             max-width: 500px;
@@ -182,17 +183,37 @@
             background: #1a1a1a;
             border: 1px solid var(--creative-color);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             padding: 20px;
-
             position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            height: 100%; /* Take full height */
-            display: none; /* Hidden by default */
+            height: 100%;
+            display: none;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn-download {
+            background: var(--creative-color);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Bebas Neue';
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
         }
 
         /* NEW: HTML Viewer Styles */
@@ -289,7 +310,8 @@
                     <p>Aguardando comandos para gerar o detalhamento técnico...</p>
                 </div>
                 <div class="image-preview" id="image-view" style="display: none;">
-                    <span style="color: #444; font-family: 'Bebas Neue';">PREVIEW DA CRIAÇÃO VISUAL</span>
+                    <img id="image-display" src="" alt="Preview da imagem gerada" />
+                    <a id="download-link" href="#" download="imagem_criada.png" class="btn-download" style="display:none;">Download da Imagem</a>
                 </div>
                 <!-- NEW HTML VIEWER -->
                 <div class="html-viewer" id="html-viewer" style="display: none;">
@@ -328,7 +350,10 @@
         const input = document.getElementById('cmd-input').value;
         const chat = document.getElementById('chat-criar');
         const textView = document.getElementById('text-view');
-        const htmlIframe = document.getElementById('html-iframe'); // Get the iframe
+        const htmlIframe = document.getElementById('html-iframe');
+        const imageView = document.getElementById('image-view');
+        const imageDisplay = document.getElementById('image-display');
+        const downloadLink = document.getElementById('download-link');
 
         if(!input) return;
 
@@ -370,23 +395,38 @@
             botDivSuccess.innerText = "[CriarIA]: Materialização concluída. Veja o resultado no Dossiê.";
             chat.appendChild(botDivSuccess);
 
-            // 4. Injeta o conteúdo gerado (texto/proposta ou HTML) no painel de visualização
+            // Reset displays
+            textView.style.display = 'none';
+            imageView.style.display = 'none';
+            htmlIframe.parentElement.style.display = 'none';
+
             if (data.output) {
                 // Heurística para verificar se o output é HTML
                 const isHtml = data.output.trim().startsWith('<') && 
                                (data.output.includes('<html') || data.output.includes('<body') || data.output.includes('<div') || data.output.includes('<p'));
 
-                if (isHtml) {
-                    htmlIframe.srcdoc = data.output; // Injeta o HTML diretamente no iframe
-                    // Ativa a aba do visualizador HTML
+                // Heurística para detectar imagem base64 (exemplo: data:image/png;base64,...)
+                const isBase64Image = typeof data.output === 'string' && data.output.startsWith('data:image');
+
+                if (isBase64Image) {
+                    // Exibe a imagem e habilita o botão de download
+                    imageDisplay.src = data.output;
+                    downloadLink.href = data.output;
+                    downloadLink.style.display = 'inline-block';
+
+                    // Ativa a aba de imagens
+                    const imageTabElement = document.querySelector('.tab[onclick*="image"]');
+                    if (imageTabElement) {
+                        switchTab('image', imageTabElement);
+                    }
+                } else if (isHtml) {
+                    htmlIframe.srcdoc = data.output;
                     const htmlTabElement = document.querySelector('.tab[onclick*="html"]');
                     if (htmlTabElement) {
                         switchTab('html', htmlTabElement);
                     }
                 } else {
-                    // Assume que é texto para a visualização de documento
                     textView.innerHTML = data.output;
-                    // Ativa a aba de documentos
                     const textTabElement = document.querySelector('.tab[onclick*="text"]');
                     if (textTabElement) {
                         switchTab('text', textTabElement);

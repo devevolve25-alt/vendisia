@@ -1,6 +1,6 @@
 const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const studentNameInput = document.getElementById('student-name');
 const btnSubmitName = document.getElementById('btn-submit-name');

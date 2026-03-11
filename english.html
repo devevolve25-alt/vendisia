@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ENGLISH TRAINING PLATFORM</title>
     <style>
+        /* (Seu CSS permanece igual, omitido aqui para brevidade) */
         html, body {
             height: 100%;
             margin: 0;
@@ -35,7 +36,6 @@
             width: 100vw;
             height: 100%;
         }
-        /* Tabs navigation */
         nav.tabs-main {
             display: flex;
             background: #2c3e50;
@@ -56,17 +56,15 @@
             background: #357ABD;
             color: white;
         }
-        /* Content sections */
         section.tab-content {
             padding: 30px;
             flex: 1;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 160px); /* Adjust height for header, tabs and input */
+            height: calc(100vh - 160px);
             box-sizing: border-box;
         }
-        /* Header texts */
         #content-classplan h2 {
             font-weight: 700;
             color: #2c3e50;
@@ -77,14 +75,12 @@
             color: #5d6d7e;
             margin-bottom: 25px;
         }
-        /* Layout for main content */
         #content-classplan {
             display: flex;
             gap: 30px;
             flex-direction: row;
             height: 100%;
         }
-        /* Lesson list */
         #content-classplan > div.lesson-list {
             flex: 1;
             max-width: 250px;
@@ -114,7 +110,6 @@
         #content-classplan > div.lesson-list ul li:hover {
             background-color: #d6e4ff;
         }
-        /* Lesson content */
         #content-classplan > div.lesson-content {
             flex: 2;
             background: #fefefe;
@@ -153,7 +148,6 @@
             flex: 1;
             overflow-y: auto;
         }
-        /* Chat container */
         .chat-container {
             background: #357ABD;
             color: white;
@@ -184,7 +178,6 @@
             font-size: 16px;
             outline: none;
         }
-        /* Student input area */
         #student-input-area {
             padding: 0 30px 20px 30px;
             background: #ffffff;
@@ -215,7 +208,6 @@
         #btn-submit-name:hover {
             background-color: #285a8f;
         }
-        /* Exercises inputs */
         .exercise-question {
             margin-bottom: 15px;
         }
@@ -259,12 +251,10 @@
 
     <div class="container">
 
-        <!-- Single main tab -->
         <nav class="tabs-main" role="tablist" aria-label="Main Tab">
             <button id="tab-classplan" class="active" role="tab" aria-selected="true" aria-controls="content-classplan" tabindex="0">Class Plan</button>
         </nav>
 
-        <!-- Class Plan tab content -->
         <section id="content-classplan" class="tab-content" role="tabpanel" aria-labelledby="tab-classplan" tabindex="0">
 
             <div>
@@ -298,7 +288,7 @@
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js" defer></script>
-<script src="app.js" defer></script>
+    <script src="app.js" defer></script>
+
 </body>
 </html>

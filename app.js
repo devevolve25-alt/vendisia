@@ -1,266 +1,287 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  const studentNameInput = document.getElementById('student-name');
-  const btnSubmitName = document.getElementById('btn-submit-name');
-  const studentDisplayName = document.getElementById('student-display-name');
-  const classplanDescription = document.getElementById('classplan-description');
-  const lessonListEl = document.getElementById('lesson-list');
-  const tabButtons = document.querySelectorAll('.lesson-content nav.sub-tabs button');
-  const tabContentArea = document.getElementById('tab-content-area');
-
-  let currentStudent = null;
-  let currentClassPlan = null;
-  let lessons = [];
-  let currentLesson = null;
-  let exercises = [];
-
-  btnSubmitName.addEventListener('click', async () => {
-      const name = studentNameInput.value.trim();
-      if (!name) {
-          alert('Please enter your name.');
-          return;
-      }
-      await loadStudentData(name);
+function loadSupabaseSdk() {
+  return new Promise((resolve, reject) => {
+    if (window.supabase) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Supabase SDK'));
+    document.head.appendChild(script);
   });
+}
 
-  async function loadStudentData(name) {
-      try {
-          const { data: students, error: studentError } = await supabaseClient
-              .from('STUDENT')
-              .select('*')
-              .ilike('nome', name)
-              .limit(1);
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await loadSupabaseSdk();
 
-          if (studentError) throw studentError;
-          if (!students || students.length === 0) {
-              alert('Student not found.');
-              return;
-          }
+    const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-          currentStudent = students[0];
-          studentDisplayName.textContent = currentStudent.nome;
+    const studentNameInput = document.getElementById('student-name');
+    const btnSubmitName = document.getElementById('btn-submit-name');
+    const studentDisplayName = document.getElementById('student-display-name');
+    const classplanDescription = document.getElementById('classplan-description');
+    const lessonListEl = document.getElementById('lesson-list');
+    const tabButtons = document.querySelectorAll('.lesson-content nav.sub-tabs button');
+    const tabContentArea = document.getElementById('tab-content-area');
 
-          const { data: classPlans, error: cpError } = await supabaseClient
-              .from('CLASS_PLAN')
-              .select('*')
-              .eq('id_student', currentStudent.id);
+    let currentStudent = null;
+    let currentClassPlan = null;
+    let lessons = [];
+    let currentLesson = null;
+    let exercises = [];
 
-          if (cpError) throw cpError;
-          if (!classPlans || classPlans.length === 0) {
-              alert('No class plans found for this student.');
-              return;
-          }
+    btnSubmitName.addEventListener('click', async () => {
+        const name = studentNameInput.value.trim();
+        if (!name) {
+            alert('Please enter your name.');
+            return;
+        }
+        await loadStudentData(name);
+    });
 
-          currentClassPlan = classPlans[0];
-          classplanDescription.textContent = currentClassPlan.description || 'Class Plan';
+    async function loadStudentData(name) {
+        try {
+            const { data: students, error: studentError } = await supabaseClient
+                .from('STUDENT')
+                .select('*')
+                .ilike('nome', name)
+                .limit(1);
 
-          const { data: classesData, error: classesError } = await supabaseClient
-              .from('CLASSES')
-              .select('*')
-              .eq('id_class_plan', currentClassPlan.id)
-              .order('title', { ascending: true });
+            if (studentError) throw studentError;
+            if (!students || students.length === 0) {
+                alert('Student not found.');
+                return;
+            }
 
-          if (classesError) throw classesError;
-          lessons = classesData || [];
+            currentStudent = students[0];
+            studentDisplayName.textContent = currentStudent.nome;
 
-          if (lessons.length === 0) {
-              alert('No lessons found for this class plan.');
-              return;
-          }
+            const { data: classPlans, error: cpError } = await supabaseClient
+                .from('CLASS_PLAN')
+                .select('*')
+                .eq('id_student', currentStudent.id);
 
-          renderLessonList();
-          selectLesson(lessons[0].id);
+            if (cpError) throw cpError;
+            if (!classPlans || classPlans.length === 0) {
+                alert('No class plans found for this student.');
+                return;
+            }
 
-      } catch (error) {
-          console.error('Error loading student data:', error);
-          alert('Error loading data. See console for details.');
-      }
-  }
+            currentClassPlan = classPlans[0];
+            classplanDescription.textContent = currentClassPlan.description || 'Class Plan';
 
-  function renderLessonList() {
-      lessonListEl.innerHTML = '';
-      lessons.forEach(lesson => {
-          const li = document.createElement('li');
-          li.textContent = lesson.title;
-          li.tabIndex = 0;
-          li.dataset.lessonId = lesson.id;
-          li.classList.toggle('active', currentLesson && currentLesson.id === lesson.id);
-          li.addEventListener('click', () => selectLesson(lesson.id));
-          li.addEventListener('keydown', e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  selectLesson(lesson.id);
-              }
-          });
-          lessonListEl.appendChild(li);
-      });
-  }
+            const { data: classesData, error: classesError } = await supabaseClient
+                .from('CLASSES')
+                .select('*')
+                .eq('id_class_plan', currentClassPlan.id)
+                .order('title', { ascending: true });
 
-  async function selectLesson(lessonId) {
-      currentLesson = lessons.find(l => l.id === lessonId);
-      if (!currentLesson) return;
+            if (classesError) throw classesError;
+            lessons = classesData || [];
 
-      [...lessonListEl.children].forEach(li => {
-          li.classList.toggle('active', li.dataset.lessonId === lessonId);
-      });
+            if (lessons.length === 0) {
+                alert('No lessons found for this class plan.');
+                return;
+            }
 
-      activateSubTab('content');
+            renderLessonList();
+            selectLesson(lessons[0].id);
 
-      const { data: exercisesData, error: exercisesError } = await supabaseClient
-          .from('EXERCISES')
-          .select('*')
-          .eq('id_class', lessonId);
+        } catch (error) {
+            console.error('Error loading student data:', error);
+            alert('Error loading data. See console for details.');
+        }
+    }
 
-      if (exercisesError) {
-          console.error('Error loading exercises:', exercisesError);
-          exercises = [];
-      } else {
-          exercises = exercisesData || [];
-      }
+    function renderLessonList() {
+        lessonListEl.innerHTML = '';
+        lessons.forEach(lesson => {
+            const li = document.createElement('li');
+            li.textContent = lesson.title;
+            li.tabIndex = 0;
+            li.dataset.lessonId = lesson.id;
+            li.classList.toggle('active', currentLesson && currentLesson.id === lesson.id);
+            li.addEventListener('click', () => selectLesson(lesson.id));
+            li.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectLesson(lesson.id);
+                }
+            });
+            lessonListEl.appendChild(li);
+        });
+    }
 
-      renderContentTab();
-      renderExercisesTab();
-  }
+    async function selectLesson(lessonId) {
+        currentLesson = lessons.find(l => l.id === lessonId);
+        if (!currentLesson) return;
 
-  function activateSubTab(tabName) {
-      tabButtons.forEach(btn => {
-          const isActive = btn.dataset.tab === tabName;
-          btn.classList.toggle('active', isActive);
-          btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-          btn.tabIndex = isActive ? 0 : -1;
-      });
-      renderTabContent(tabName);
-  }
+        [...lessonListEl.children].forEach(li => {
+            li.classList.toggle('active', li.dataset.lessonId === lessonId);
+        });
 
-  tabButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-          activateSubTab(btn.dataset.tab);
-      });
-  });
+        activateSubTab('content');
 
-  function renderTabContent(tabName) {
-      switch (tabName) {
-          case 'content':
-              renderContentTab();
-              break;
-          case 'exercises':
-              renderExercisesTab();
-              break;
-          case 'homework':
-              renderHomeworkTab();
-              break;
-      }
-  }
+        const { data: exercisesData, error: exercisesError } = await supabaseClient
+            .from('EXERCISES')
+            .select('*')
+            .eq('id_class', lessonId);
 
-  function renderContentTab() {
-      if (!currentLesson) {
-          tabContentArea.innerHTML = '<p>No lesson selected.</p>';
-          return;
-      }
-      tabContentArea.innerHTML = `
-          <h3>${currentLesson.title}</h3>
-          <p><em>Type: ${currentLesson.type || 'N/A'}</em></p>
-          <p>${currentLesson.description || ''}</p>
-          <div>${currentLesson.content || ''}</div>
-      `;
-  }
+        if (exercisesError) {
+            console.error('Error loading exercises:', exercisesError);
+            exercises = [];
+        } else {
+            exercises = exercisesData || [];
+        }
 
-  function renderExercisesTab() {
-      if (!exercises || exercises.length === 0) {
-          tabContentArea.innerHTML = '<p>No exercises available for this lesson.</p>';
-          return;
-      }
-      let html = '';
-      exercises.forEach((exercise, idx) => {
-          html += `<div class="exercise-block" data-exercise-id="${exercise.id}" style="margin-bottom: 25px;">`;
-          html += `<h4>Exercise ${idx + 1} (Type: ${exercise.type || 'N/A'})</h4>`;
-          for (let i = 1; i <= 10; i++) {
-              const question = exercise[`question_${i}`];
-              if (question && question.trim() !== '') {
-                  html += `
-                      <div class="exercise-question">
-                          <label for="answer-${exercise.id}-${i}">${question}</label>
-                          <input type="text" id="answer-${exercise.id}-${i}" name="answer-${exercise.id}-${i}" />
-                      </div>
-                  `;
-              }
-          }
-          html += '</div>';
-      });
-      html += `<button id="btn-save-answers">Save Answers</button>`;
-      tabContentArea.innerHTML = html;
+        renderContentTab();
+        renderExercisesTab();
+    }
 
-      document.getElementById('btn-save-answers').addEventListener('click', saveAnswers);
-  }
+    function activateSubTab(tabName) {
+        tabButtons.forEach(btn => {
+            const isActive = btn.dataset.tab === tabName;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            btn.tabIndex = isActive ? 0 : -1;
+        });
+        renderTabContent(tabName);
+    }
 
-  function renderHomeworkTab() {
-      tabContentArea.innerHTML = `
-          <div class="chat-container" aria-label="Chat with AI Agent" style="height: 100%; display: flex; flex-direction: column;">
-              <h3>Chat with AI Agent</h3>
-              <div class="chat-messages" aria-live="polite" aria-atomic="true" style="flex: 1; overflow-y: auto;">
-                  <em>Chat here with the AI agent to ask questions and get instant help.</em>
-              </div>
-              <input type="text" class="chat-input" placeholder="Type your message..." aria-label="Type your message to the AI agent" />
-          </div>
-      `;
-  }
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            activateSubTab(btn.dataset.tab);
+        });
+    });
 
-  async function saveAnswers() {
-      if (!currentStudent) {
-          alert('Please submit your name first.');
-          return;
-      }
-      if (!exercises || exercises.length === 0) {
-          alert('No exercises to save.');
-          return;
-      }
+    function renderTabContent(tabName) {
+        switch (tabName) {
+            case 'content':
+                renderContentTab();
+                break;
+            case 'exercises':
+                renderExercisesTab();
+                break;
+            case 'homework':
+                renderHomeworkTab();
+                break;
+        }
+    }
 
-      try {
-          for (const exercise of exercises) {
-              const answerData = {
-                  id_exercise: exercise.id,
-              };
-              let hasAnswer = false;
-              for (let i = 1; i <= 10; i++) {
-                  const input = document.getElementById(`answer-${exercise.id}-${i}`);
-                  if (input && input.value.trim() !== '') {
-                      answerData[`answer_${i}`] = input.value.trim();
-                      hasAnswer = true;
-                  }
-              }
-              if (!hasAnswer) continue;
+    function renderContentTab() {
+        if (!currentLesson) {
+            tabContentArea.innerHTML = '<p>No lesson selected.</p>';
+            return;
+        }
+        tabContentArea.innerHTML = `
+            <h3>${currentLesson.title}</h3>
+            <p><em>Type: ${currentLesson.type || 'N/A'}</em></p>
+            <p>${currentLesson.description || ''}</p>
+            <div>${currentLesson.content || ''}</div>
+        `;
+    }
 
-              const { data: existingAnswers, error: fetchError } = await supabaseClient
-                  .from('ANSWERS')
-                  .select('*')
-                  .eq('id_exercise', exercise.id)
-                  .limit(1);
+    function renderExercisesTab() {
+        if (!exercises || exercises.length === 0) {
+            tabContentArea.innerHTML = '<p>No exercises available for this lesson.</p>';
+            return;
+        }
+        let html = '';
+        exercises.forEach((exercise, idx) => {
+            html += `<div class="exercise-block" data-exercise-id="${exercise.id}" style="margin-bottom: 25px;">`;
+            html += `<h4>Exercise ${idx + 1} (Type: ${exercise.type || 'N/A'})</h4>`;
+            for (let i = 1; i <= 10; i++) {
+                const question = exercise[`question_${i}`];
+                if (question && question.trim() !== '') {
+                    html += `
+                        <div class="exercise-question">
+                            <label for="answer-${exercise.id}-${i}">${question}</label>
+                            <input type="text" id="answer-${exercise.id}-${i}" name="answer-${exercise.id}-${i}" />
+                        </div>
+                    `;
+                }
+            }
+            html += '</div>';
+        });
+        html += `<button id="btn-save-answers">Save Answers</button>`;
+        tabContentArea.innerHTML = html;
 
-              if (fetchError) throw fetchError;
+        document.getElementById('btn-save-answers').addEventListener('click', saveAnswers);
+    }
 
-              if (existingAnswers && existingAnswers.length > 0) {
-                  const answerId = existingAnswers[0].id;
-                  const { error: updateError } = await supabaseClient
-                      .from('ANSWERS')
-                      .update(answerData)
-                      .eq('id', answerId);
+    function renderHomeworkTab() {
+        tabContentArea.innerHTML = `
+            <div class="chat-container" aria-label="Chat with AI Agent" style="height: 100%; display: flex; flex-direction: column;">
+                <h3>Chat with AI Agent</h3>
+                <div class="chat-messages" aria-live="polite" aria-atomic="true" style="flex: 1; overflow-y: auto;">
+                    <em>Chat here with the AI agent to ask questions and get instant help.</em>
+                </div>
+                <input type="text" class="chat-input" placeholder="Type your message..." aria-label="Type your message to the AI agent" />
+            </div>
+        `;
+    }
 
-                  if (updateError) throw updateError;
-              } else {
-                  const { error: insertError } = await supabaseClient
-                      .from('ANSWERS')
-                      .insert([answerData]);
+    async function saveAnswers() {
+        if (!currentStudent) {
+            alert('Please submit your name first.');
+            return;
+        }
+        if (!exercises || exercises.length === 0) {
+            alert('No exercises to save.');
+            return;
+        }
 
-                  if (insertError) throw insertError;
-              }
-          }
-          alert('Answers saved successfully.');
-      } catch (error) {
-          console.error('Error saving answers:', error);
-          alert('Error saving answers. See console for details.');
-      }
+        try {
+            for (const exercise of exercises) {
+                const answerData = {
+                    id_exercise: exercise.id,
+                };
+                let hasAnswer = false;
+                for (let i = 1; i <= 10; i++) {
+                    const input = document.getElementById(`answer-${exercise.id}-${i}`);
+                    if (input && input.value.trim() !== '') {
+                        answerData[`answer_${i}`] = input.value.trim();
+                        hasAnswer = true;
+                    }
+                }
+                if (!hasAnswer) continue;
+
+                const { data: existingAnswers, error: fetchError } = await supabaseClient
+                    .from('ANSWERS')
+                    .select('*')
+                    .eq('id_exercise', exercise.id)
+                    .limit(1);
+
+                if (fetchError) throw fetchError;
+
+                if (existingAnswers && existingAnswers.length > 0) {
+                    const answerId = existingAnswers[0].id;
+                    const { error: updateError } = await supabaseClient
+                        .from('ANSWERS')
+                        .update(answerData)
+                        .eq('id', answerId);
+
+                    if (updateError) throw updateError;
+                } else {
+                    const { error: insertError } = await supabaseClient
+                        .from('ANSWERS')
+                        .insert([answerData]);
+
+                    if (insertError) throw insertError;
+                }
+            }
+            alert('Answers saved successfully.');
+        } catch (error) {
+            console.error('Error saving answers:', error);
+            alert('Error saving answers. See console for details.');
+        }
+    }
+
+  } catch (error) {
+    console.error('Erro ao carregar SDK Supabase:', error);
   }
 });

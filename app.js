@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadStudentData(name) {
         try {
             const { data: students, error: studentError } = await supabaseClient
-                .from('STUDENT')
+                .from('student')
                 .select('*')
                 .ilike('nome', name)
                 .limit(1);
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             studentDisplayName.textContent = currentStudent.nome;
 
             const { data: classPlans, error: cpError } = await supabaseClient
-                .from('CLASS_PLAN')
+                .from('class_plan')
                 .select('*')
                 .eq('id_student', currentStudent.id);
 
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             classplanDescription.textContent = currentClassPlan.description || 'Class Plan';
 
             const { data: classesData, error: classesError } = await supabaseClient
-                .from('CLASSES')
+                .from('classes')
                 .select('*')
                 .eq('id_class_plan', currentClassPlan.id)
                 .order('title', { ascending: true });
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         activateSubTab('content');
 
         const { data: exercisesData, error: exercisesError } = await supabaseClient
-            .from('EXERCISES')
+            .from('exercises')
             .select('*')
             .eq('id_class', lessonId);
 
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!hasAnswer) continue;
 
                 const { data: existingAnswers, error: fetchError } = await supabaseClient
-                    .from('ANSWERS')
+                    .from('answers')
                     .select('*')
                     .eq('id_exercise', exercise.id)
                     .limit(1);
@@ -261,14 +261,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (existingAnswers && existingAnswers.length > 0) {
                     const answerId = existingAnswers[0].id;
                     const { error: updateError } = await supabaseClient
-                        .from('ANSWERS')
+                        .from('answers')
                         .update(answerData)
                         .eq('id', answerId);
 
                     if (updateError) throw updateError;
                 } else {
                     const { error: insertError } = await supabaseClient
-                        .from('ANSWERS')
+                        .from('answers')
                         .insert([answerData]);
 
                     if (insertError) throw insertError;

@@ -5,7 +5,7 @@ function loadSupabaseSdk() {
       return;
     }
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js';
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/umd/supabase.min.js';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('Failed to load Supabase SDK'));
     document.head.appendChild(script);

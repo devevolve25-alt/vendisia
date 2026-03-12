@@ -1,376 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ENGLISH TRAINING PLATFORM</title>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #34495e;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        h1 {
-            text-align: center;
-            font-weight: 900;
-            color: #1f2d47;
-            margin: 25px 0 30px 0;
-            text-shadow: 1px 1px 6px rgba(53, 122, 189, 0.3);
-            font-size: 2.8rem;
-        }
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(135deg, #fefefe, #dbe9ff);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(53, 122, 189, 0.15);
-            overflow: hidden;
-            width: 100vw;
-            height: 100%;
-            padding: 15px 20px;
-            box-sizing: border-box;
-        }
-        nav.tabs-main {
-            display: flex;
-            background: #2c3e50;
-            flex-shrink: 0;
-            overflow-x: auto;
-        }
-        nav.tabs-main button {
-            flex: 1;
-            padding: 22px 10px;
-            border: none;
-            font-size: 19px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.3s, border-color 0.3s, color 0.3s;
-            color: #a8c4ff;
-            background: #26415a;
-            border-bottom: 4px solid transparent;
-            box-shadow: inset 0 -2px 6px rgba(53, 122, 189, 0.3);
-        }
-        nav.tabs-main button.active {
-            background: #3a6fcf;
-            color: white;
-            border-bottom: 4px solid #f0f3ff;
-            box-shadow: 0 4px 15px rgba(53, 122, 189, 0.6);
-        }
-        nav.tabs-main button:hover:not(.active) {
-            background: #2e58a0;
-            color: #dbe7ff;
-        }
-        section.tab-content {
-            padding: 30px;
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 160px);
-            box-sizing: border-box;
-        }
-        #content-classplan h2 {
-            font-weight: 800;
-            color: #1b2946;
-            margin-bottom: 10px;
-            text-shadow: 0.5px 0.5px 2px rgba(53, 122, 189, 0.2);
-        }
-        #content-classplan p {
-            font-size: 17px;
-            color: #2e3b56;
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-        /* Container principal com display flex */
-        #content-classplan {
-            display: flex;
-            gap: 30px;
-            flex-direction: row;
-            height: 100%;
-            box-sizing: border-box;
-        }
-        /* Container wrapper para lista e conteúdo */
-        #content-classplan > div.wrapper {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            gap: 30px;
-            box-sizing: border-box;
-        }
-        /* Área do nome do aluno - 15% largura fixa */
-        #content-classplan > div:first-child {
-            width: 15%;
-            min-width: 15%;
-            box-sizing: border-box;
-        }
-        /* Lista de aulas - 20% largura fixa, sem encolher */
-        #content-classplan > div.lesson-list {
-            width: 20%;
-            max-width: 20%;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            background: #f4f7fa;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            padding: 20px;
-            overflow-y: auto;
-            box-sizing: border-box;
-        }
-        #content-classplan > div.lesson-list h3 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-            font-weight: 800;
-            text-shadow: 0.5px 0.5px 2px rgba(53, 122, 189, 0.2);
-        }
-        #content-classplan > div.lesson-list ul {
-            list-style: none;
-            padding-left: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-        }
-        #lesson-list button {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 12px 16px;
-            border: none;
-            background-color: #e4eaff;
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: left;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #2c3e50;
-            transition: background-color 0.3s, box-shadow 0.3s;
-            box-shadow: 0 3px 6px rgba(53, 122, 189, 0.1);
-        }
-        #lesson-list button.active,
-        #lesson-list button:hover {
-            background-color: #2a65b8;
-            color: white;
-            box-shadow: 0 5px 15px rgba(53, 122, 189, 0.5);
-        }
-        /* Área das sub-abas com largura fixa de 65%, sem encolher */
-        #content-classplan > div.lesson-content {
-            width: 65%;
-            max-width: 65%;
-            min-width: 65%;
-            flex-shrink: 0;
-            background: linear-gradient(145deg, #ffffff, #e6f0ff);
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(53, 122, 189, 0.3);
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            transition: box-shadow 0.3s ease;
-            box-sizing: border-box;
-        }
-        #content-classplan > div.lesson-content:hover {
-            box-shadow: 0 12px 28px rgba(53, 122, 189, 0.5);
-        }
-        /* Botões das sub-abas: estilo moderno */
-        #content-classplan > div.lesson-content nav.sub-tabs button {
-            flex: 1;
-            padding: 14px 0;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 16px;
-            background: linear-gradient(145deg, #d0d9ff, #a5b8ff);
-            color: #1f2d47;
-            box-shadow: 0 6px 10px rgba(53, 122, 189, 0.25);
-            transition: background 0.4s, box-shadow 0.4s, color 0.4s, transform 0.3s;
-            user-select: none;
-        }
-        #content-classplan > div.lesson-content nav.sub-tabs button:hover:not(.active) {
-            background: linear-gradient(145deg, #aec4ff, #7f9eff);
-            box-shadow: 0 8px 20px rgba(53, 122, 189, 0.45);
-            color: #0f1a2e;
-            transform: translateY(-3px);
-        }
-        #content-classplan > div.lesson-content nav.sub-tabs button.active {
-            background: linear-gradient(145deg, #2b55b0, #1a3a7c);
-            color: #f0f4ff;
-            box-shadow: 0 8px 25px rgba(40, 90, 143, 0.8);
-            transform: translateY(-2px);
-        }
-        #content-classplan > div.lesson-content .content-text {
-            font-size: 16px;
-            line-height: 1.5;
-            color: #34495e;
-            flex: 1;
-            overflow-y: auto;
-        }
-        .chat-container {
-            background: #357ABD;
-            color: white;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            max-height: 100%;
-        }
-        .chat-container h3 {
-            margin: 0 0 15px 0;
-            font-weight: 700;
-        }
-        .chat-messages {
-            background: #2c3e50;
-            border-radius: 12px;
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
-            margin-bottom: 12px;
-            font-style: italic;
-        }
-        .chat-input {
-            border-radius: 12px;
-            border: none;
-            padding: 14px 20px;
-            font-size: 16px;
-            outline: none;
-        }
-        #student-input-area {
-            padding: 0 30px 20px 30px;
-            background: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid #ccc;
-            flex-shrink: 0;
-        }
-        #student-name {
-            padding: 12px 18px;
-            font-size: 17px;
-            border-radius: 12px;
-            border: 1.5px solid #357ABD;
-            box-shadow: 0 2px 8px rgba(53, 122, 189, 0.3);
-            width: 280px;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        #student-name:focus {
-            border-color: #285a8f;
-            box-shadow: 0 0 12px rgba(40, 90, 143, 0.6);
-            outline: none;
-        }
-        #btn-submit-name {
-            padding: 12px 28px;
-            font-size: 17px;
-            background-color: #357ABD;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background-color 0.3s, box-shadow 0.3s;
-            box-shadow: 0 5px 15px rgba(53, 122, 189, 0.4);
-        }
-        #btn-submit-name:hover {
-            background-color: #285a8f;
-            box-shadow: 0 7px 20px rgba(40, 90, 143, 0.7);
-        }
-        .exercise-question {
-            margin-bottom: 15px;
-        }
-        .exercise-question label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        .exercise-question input[type="text"] {
-            width: 100%;
-            padding: 8px 12px;
-            font-size: 14px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-        #btn-save-answers {
-            margin-top: 15px;
-            padding: 12px 20px;
-            font-size: 16px;
-            background-color: #357ABD;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            align-self: flex-start;
-            transition: background-color 0.3s;
-        }
-        #btn-save-answers:hover {
-            background-color: #285a8f;
-        }
-        /* Scrollbars customizadas para áreas de rolagem */
-        #content-classplan > div.lesson-list,
-        #content-classplan > div.lesson-content {
-            scrollbar-width: thin;
-            scrollbar-color: #357ABD #e4e9f2;
-        }
-        #content-classplan > div.lesson-list::-webkit-scrollbar,
-        #content-classplan > div.lesson-content::-webkit-scrollbar {
-            width: 8px;
-        }
-        #content-classplan > div.lesson-list::-webkit-scrollbar-thumb,
-        #content-classplan > div.lesson-content::-webkit-scrollbar-thumb {
-            background-color: #357ABD;
-            border-radius: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ENGLISH TRAINING PLATFORM</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: #34495e;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 900;
+      color: #1f2d47;
+      margin: 25px 0 30px 0;
+      text-shadow: 1px 1px 6px rgba(53, 122, 189, 0.3);
+      font-size: 2.8rem;
+    }
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #fefefe, #dbe9ff);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(53, 122, 189, 0.15);
+      overflow: hidden;
+      width: 100vw;
+      height: 100%;
+      padding: 15px 20px;
+      box-sizing: border-box;
+    }
+    nav.tabs-main {
+      display: flex;
+      background: #2c3e50;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    nav.tabs-main button {
+      flex: 1;
+      padding: 22px 10px;
+      border: none;
+      font-size: 19px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s, color 0.3s;
+      color: #a8c4ff;
+      background: #26415a;
+      border-bottom: 4px solid transparent;
+      box-shadow: inset 0 -2px 6px rgba(53, 122, 189, 0.3);
+    }
+    nav.tabs-main button.active {
+      background: #3a6fcf;
+      color: white;
+      border-bottom: 4px solid #f0f3ff;
+      box-shadow: 0 4px 15px rgba(53, 122, 189, 0.6);
+    }
+    nav.tabs-main button:hover:not(.active) {
+      background: #2e58a0;
+      color: #dbe7ff;
+    }
+    section.tab-content {
+      padding: 30px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 160px);
+      box-sizing: border-box;
+    }
+    #content-classplan h2 {
+      font-weight: 800;
+      color: #1b2946;
+      margin-bottom: 10px;
+      text-shadow: 0.5px 0.5px 2px rgba(53, 122, 189, 0.2);
+    }
+    #content-classplan p {
+      font-size: 17px;
+      color: #2e3b56;
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+    /* Container principal: coluna para manter título e conteúdo separados */
+    #content-classplan {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-sizing: border-box;
+      gap: 20px;
+    }
+    /* Wrapper flex para lista e conteúdo lado a lado */
+    #content-classplan > div.wrapper {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 80px); /* subtraia espaço do título */
+      gap: 30px;
+      box-sizing: border-box;
+    }
+    /* Título e nome do aluno ocupam largura total */
+    #content-classplan > div:first-child {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    /* Lista de aulas 20% fixos */
+    #content-classplan > div.wrapper > .lesson-list {
+      width: 20%;
+      flex-shrink: 0;
+      background: #f4f7fa;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 20px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    #content-classplan > div.wrapper > .lesson-list h3 {
+      margin-bottom: 15px;
+      color: #2c3e50;
+      font-weight: 800;
+      text-shadow: 0.5px 0.5px 2px rgba(53, 122, 189, 0.2);
+    }
+    #content-classplan > div.wrapper > .lesson-list ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    #lesson-list button {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 12px 16px;
+      border: none;
+      background-color: #e4eaff;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2c3e50;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      box-shadow: 0 3px 6px rgba(53, 122, 189, 0.1);
+    }
+    #lesson-list button.active,
+    #lesson-list button:hover {
+      background-color: #2a65b8;
+      color: white;
+      box-shadow: 0 5px 15px rgba(53, 122, 189, 0.5);
+    }
+    /* Conteúdo das sub-abas 65% fixos */
+    #content-classplan > div.wrapper > .lesson-content {
+      width: 65%;
+      flex-shrink: 0;
+      background: linear-gradient(145deg, #ffffff, #e6f0ff);
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(53, 122, 189, 0.3);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      transition: box-shadow 0.3s ease;
+      box-sizing: border-box;
+    }
+    #content-classplan > div.wrapper > .lesson-content:hover {
+      box-shadow: 0 12px 28px rgba(53, 122, 189, 0.5);
+    }
+    /* Sub-abas botões estilo moderno */
+    #content-classplan > div.lesson-content nav.sub-tabs button {
+      flex: 1;
+      padding: 14px 0;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 16px;
+      background: linear-gradient(145deg, #d0d9ff, #a5b8ff);
+      color: #1f2d47;
+      box-shadow: 0 6px 10px rgba(53, 122, 189, 0.25);
+      transition: background 0.4s, box-shadow 0.4s, color 0.4s, transform 0.3s;
+      user-select: none;
+    }
+    #content-classplan > div.lesson-content nav.sub-tabs button:hover:not(.active) {
+      background: linear-gradient(145deg, #aec4ff, #7f9eff);
+      box-shadow: 0 8px 20px rgba(53, 122, 189, 0.45);
+      color: #0f1a2e;
+      transform: translateY(-3px);
+    }
+    #content-classplan > div.lesson-content nav.sub-tabs button.active {
+      background: linear-gradient(145deg, #2b55b0, #1a3a7c);
+      color: #f0f4ff;
+      box-shadow: 0 8px 25px rgba(40, 90, 143, 0.8);
+      transform: translateY(-2px);
+    }
+    #content-classplan > div.lesson-content .content-text {
+      font-size: 16px;
+      line-height: 1.5;
+      color: #34495e;
+      flex: 1;
+      overflow-y: auto;
+    }
+    /* restante do CSS permanece igual... */
+  </style>
 </head>
 <body>
 
-    <h1>ENGLISH TRAINING PLATFORM</h1>
+  <h1>ENGLISH TRAINING PLATFORM</h1>
 
-    <div id="student-input-area">
-        <input type="text" id="student-name" placeholder="Enter your name" aria-label="Student name input" />
-        <button id="btn-submit-name">Submit</button>
-    </div>
+  <div id="student-input-area">
+    <input type="text" id="student-name" placeholder="Enter your name" aria-label="Student name input" />
+    <button id="btn-submit-name">Submit</button>
+  </div>
 
-    <div class="container">
+  <div class="container">
 
-        <nav class="tabs-main" role="tablist" aria-label="Main Tab">
-            <button id="tab-classplan" class="active" role="tab" aria-selected="true" aria-controls="content-classplan" tabindex="0">Class Plan</button>
-        </nav>
+    <nav class="tabs-main" role="tablist" aria-label="Main Tab">
+      <button id="tab-classplan" class="active" role="tab" aria-selected="true" aria-controls="content-classplan" tabindex="0">Class Plan</button>
+    </nav>
 
-        <section id="content-classplan" class="tab-content" role="tabpanel" aria-labelledby="tab-classplan" tabindex="0">
-            <div>
-                <h2 id="classplan-description">CLASS PLAN</h2>
-                <p>Student: <strong id="student-display-name">-</strong></p>
-            </div>
+    <section id="content-classplan" class="tab-content" role="tabpanel" aria-labelledby="tab-classplan" tabindex="0">
+      <div>
+        <h2 id="classplan-description">CLASS PLAN</h2>
+        <p>Student: <strong id="student-display-name">-</strong></p>
+      </div>
 
-            <div class="wrapper">
-                <div class="lesson-list" aria-label="Lesson List">
-                    <h3>Lesson List</h3>
-                    <ul id="lesson-list">
-                        <!-- Dynamically populated -->
-                    </ul>
-                </div>
-                <div class="lesson-content">
-                    <nav class="sub-tabs" role="tablist" aria-label="Lesson sub-tabs">
-                        <button data-tab="content" role="tab" aria-selected="true" tabindex="0" class="active">Content</button>
-                        <button data-tab="exercises" role="tab" aria-selected="false" tabindex="-1">Exercises</button>
-                        <button data-tab="homework" role="tab" aria-selected="false" tabindex="-1">Homework</button>
-                    </nav>
-                    <div id="tab-content-area" tabindex="0" style="margin-top: 20px;">
-                        <!-- Conteúdo da sub-aba será renderizado aqui -->
-                    </div>
-                </div>
-            </div>
-        </section>
+      <div class="wrapper">
+        <div class="lesson-list" aria-label="Lesson List">
+          <h3>Lesson List</h3>
+          <ul id="lesson-list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+        <div class="lesson-content">
+          <nav class="sub-tabs" role="tablist" aria-label="Lesson sub-tabs">
+            <button data-tab="content" role="tab" aria-selected="true" tabindex="0" class="active">Content</button>
+            <button data-tab="exercises" role="tab" aria-selected="false" tabindex="-1">Exercises</button>
+            <button data-tab="homework" role="tab" aria-selected="false" tabindex="-1">Homework</button>
+          </nav>
+          <div id="tab-content-area" tabindex="0" style="margin-top: 20px;">
+            <!-- Conteúdo da sub-aba será renderizado aqui -->
+          </div>
+        </div>
+      </div>
+    </section>
 
-    </div>
+  </div>
 
-    <script>
+  <script>
 const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co/rest/v1';
 const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
 

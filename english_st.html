@@ -358,8 +358,8 @@ document.addEventListener('DOMContentLoaded', () => {
             currentClassPlan = classPlans[0];
             classplanDescription.textContent = 'CLASS PLAN';
 
-            // Buscar aulas do plano
-            const classesData = await fetchSupabase(`classes?id_class_plan=eq.${currentClassPlan.id}&id_student=eq.${currentStudent.id}&order=title.asc`);
+            // Buscar aulas do plano (removido filtro id_student)
+            const classesData = await fetchSupabase(`classes?id_class_plan=eq.${currentClassPlan.id}&order=title.asc`);
             lessons = classesData || [];
 
             if (lessons.length === 0) {
@@ -513,8 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             for (const exercise of exercises) {
                 const answerData = {
-                    id_exercise: exercise.id,
-                    id_student: currentStudent.id
+                    id_exercise: exercise.id
                 };
                 let hasAnswer = false;
                 for (let i = 1; i <= 10; i++) {
@@ -526,8 +525,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (!hasAnswer) continue;
 
-                // Verifica se já existe resposta para este exercício e estudante
-                const existingAnswers = await fetchSupabase(`answers?id_exercise=eq.${exercise.id}&id_student=eq.${currentStudent.id}&limit=1`);
+                // Verifica se já existe resposta para este exercício (sem filtro id_student)
+                const existingAnswers = await fetchSupabase(`answers?id_exercise=eq.${exercise.id}&limit=1`);
                 if (existingAnswers && existingAnswers.length > 0) {
                     const answerId = existingAnswers[0].id;
                     // Atualiza resposta existente

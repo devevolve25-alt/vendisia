@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ENGLISH TRAINING PLATFORM</title>
+    <style>
+        /* (Seu CSS permanece igual, omitido aqui para brevidade) */
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #34495e;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 20px 0;
+            flex-shrink: 0;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: hidden;
+            width: 100vw;
+            height: 100%;
+        }
+        nav.tabs-main {
+            display: flex;
+            background: #2c3e50;
+            flex-shrink: 0;
+        }
+        nav.tabs-main button {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            color: #a8c4ff;
+            background: #2c3e50;
+        }
+        nav.tabs-main button.active {
+            background: #357ABD;
+            color: white;
+        }
+        section.tab-content {
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 160px);
+            box-sizing: border-box;
+        }
+        #content-classplan h2 {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        #content-classplan p {
+            font-size: 18px;
+            color: #5d6d7e;
+            margin-bottom: 25px;
+        }
+        #content-classplan {
+            display: flex;
+            gap: 30px;
+            flex-direction: row;
+            height: 100%;
+        }
+        /* Ajustes de largura fixa conforme solicitado */
+        #content-classplan > div:first-child {
+            width: 15%;
+            min-width: 15%;
+            box-sizing: border-box;
+        }
+        #content-classplan > div.lesson-list {
+            width: 20%;
+            max-width: 20%;
+            background: #f4f7fa;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        #content-classplan > div.lesson-list h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        #content-classplan > div.lesson-list ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        #content-classplan > div.lesson-list ul li {
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+        #content-classplan > div.lesson-list ul li.active,
+        #content-classplan > div.lesson-list ul li:hover {
+            background-color: #d6e4ff;
+        }
+        #content-classplan > div.lesson-content {
+            width: 65%;
+            background: #fefefe;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        #content-classplan > div.lesson-content nav.sub-tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-shrink: 0;
+        }
+        #content-classplan > div.lesson-content nav.sub-tabs button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            background-color: #e4e9f2;
+            color: #2c3e50;
+        }
+        #content-classplan > div.lesson-content nav.sub-tabs button.active {
+            background-color: #357ABD;
+            color: white;
+        }
+        #content-classplan > div.lesson-content .content-text {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #34495e;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .chat-container {
+            background: #357ABD;
+            color: white;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-height: 100%;
+        }
+        .chat-container h3 {
+            margin: 0 0 15px 0;
+            font-weight: 700;
+        }
+        .chat-messages {
+            background: #2c3e50;
+            border-radius: 12px;
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        .chat-input {
+            border-radius: 12px;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            outline: none;
+        }
+        #student-input-area {
+            padding: 0 30px 20px 30px;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #ccc;
+            flex-shrink: 0;
+        }
+        #student-name {
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 250px;
+        }
+        #btn-submit-name {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #357ABD;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #btn-submit-name:hover {
+            background-color: #285a8f;
+        }
+        .exercise-question {
+            margin-bottom: 15px;
+        }
+        .exercise-question label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .exercise-question input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        #btn-save-answers {
+            margin-top: 15px;
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #357ABD;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            align-self: flex-start;
+            transition: background-color 0.3s;
+        }
+        #btn-save-answers:hover {
+            background-color: #285a8f;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ENGLISH TRAINING PLATFORM</h1>
+
+    <div id="student-input-area">
+        <input type="text" id="student-name" placeholder="Enter your name" aria-label="Student name input" />
+        <button id="btn-submit-name">Submit</button>
+    </div>
+
+    <div class="container">
+
+        <nav class="tabs-main" role="tablist" aria-label="Main Tab">
+            <button id="tab-classplan" class="active" role="tab" aria-selected="true" aria-controls="content-classplan" tabindex="0">Class Plan</button>
+        </nav>
+
+        <section id="content-classplan" class="tab-content" role="tabpanel" aria-labelledby="tab-classplan" tabindex="0">
+
+            <div>
+                <h2 id="classplan-description">CLASS PLAN</h2>
+                <p>Student: <strong id="student-display-name">-</strong></p>
+            </div>
+
+            <div style="display:flex; gap:30px; width: 85%; height: 100%;">
+
+                <div class="lesson-list" aria-label="Lesson List">
+                    <h3>Lesson List</h3>
+                    <ul id="lesson-list" style="list-style:none; padding-left:0; margin:0;">
+                        <!-- Dynamically populated -->
+                    </ul>
+                </div>
+
+                <div class="lesson-content">
+                    <nav class="sub-tabs" role="tablist" aria-label="Sub Tabs">
+                        <button class="active" role="tab" aria-selected="true" tabindex="0" data-tab="content">Content</button>
+                        <button role="tab" aria-selected="false" tabindex="-1" data-tab="exercises">Exercises</button>
+                        <button role="tab" aria-selected="false" tabindex="-1" data-tab="homework">Homework</button>
+                    </nav>
+                    <div id="tab-content-area">
+                        <!-- Dynamic content for content/exercises/homework -->
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+    <script src="app.js" defer></script>
+
+</body>
+</html>

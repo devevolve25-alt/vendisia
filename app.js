@@ -1,8 +1,20 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
 
+function loadSupabaseScript() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Supabase script'));
+    document.head.appendChild(script);
+  });
+}
+
+loadSupabaseScript().then(() => {
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  document.addEventListener('DOMContentLoaded', () => {
     const studentNameInput = document.getElementById('student-name');
     const btnSubmitName = document.getElementById('btn-submit-name');
     const studentDisplayName = document.getElementById('student-display-name');

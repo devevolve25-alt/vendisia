@@ -313,6 +313,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLesson = null;
     let exercises = [];
 
+    // Inicializa sub-aba content vazia no carregamento
+    tabContentArea.innerHTML = '';
+
     btnSubmitName.addEventListener('click', async () => {
         const name = studentNameInput.value.trim();
         if (!name) {
@@ -368,7 +371,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             renderLessonList();
-            selectLesson(lessons[0].id);
+            // Não seleciona nenhuma aula automaticamente para deixar content vazio no início
+            currentLesson = null;
+            tabContentArea.innerHTML = '';
 
         } catch (error) {
             console.error('Error loading student data:', error);
@@ -376,22 +381,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Renderiza a lista de aulas como botões
     function renderLessonList() {
         lessonListEl.innerHTML = '';
         lessons.forEach(lesson => {
-            const li = document.createElement('li');
-            li.textContent = lesson.title;
-            li.tabIndex = 0;
-            li.dataset.lessonId = lesson.id;
-            li.classList.toggle('active', currentLesson && currentLesson.id === lesson.id);
-            li.addEventListener('click', () => selectLesson(lesson.id));
-            li.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    selectLesson(lesson.id);
-                }
-            });
-            lessonListEl.appendChild(li);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = lesson.title;
+            btn.dataset.lessonId = lesson.id;
+            btn.classList.toggle('active', currentLesson && currentLesson.id === lesson.id);
+            btn.addEventListener('click', () => selectLesson(lesson.id));
+            lessonListEl.appendChild(btn);
         });
     }
 
@@ -399,12 +399,18 @@ document.addEventListener('DOMContentLoaded', () => {
         currentLesson = lessons.find(l => l.id === lessonId);
         if (!currentLesson) return;
 
-        [...lessonListEl.children].forEach(li => {
-            li.classList.toggle('active', li.dataset.lessonId === lessonId);
+        // Atualiza estado ativo dos botões
+        [...lessonListEl.children].forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lessonId === lessonId);
         });
 
+        // Ativa a sub-aba 'content' ao selecionar aula
         activateSubTab('content');
 
+        // Renderiza conteúdo da aula na sub-aba 'content'
+        renderContentTab();
+
+        // Carrega exercícios da aula (se necessário)
         try {
             const exercisesData = await fetchSupabase(`exercises?id_class=eq.${lessonId}`);
             exercises = exercisesData || [];
@@ -412,9 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error loading exercises:', exError);
             exercises = [];
         }
-
-        renderContentTab();
-        renderExercisesTab();
     }
 
     function activateSubTab(tabName) {
@@ -449,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderContentTab() {
         if (!currentLesson) {
-            tabContentArea.innerHTML = '<p>No lesson selected.</p>';
+            tabContentArea.innerHTML = '';
             return;
         }
         tabContentArea.innerHTML = `

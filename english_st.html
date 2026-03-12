@@ -169,7 +169,7 @@
     #content-classplan > div.wrapper > .lesson-content:hover {
       box-shadow: 0 12px 28px rgba(53, 122, 189, 0.5);
     }
-    /* Estilo aplicado aos botões das sub-abas pela nova classe */
+    /* Botões das sub-abas com classe */
     #content-classplan > div.lesson-content nav.sub-tabs button.subtab-button {
       flex: 1;
       padding: 14px 0;
@@ -203,35 +203,106 @@
       flex: 1;
       overflow-y: auto;
     }
+    /* Chat container aprimorado */
     .chat-container {
-      background: #357ABD;
-      color: white;
-      border-radius: 15px;
+      background: linear-gradient(145deg, #2c3e50, #4a6fa5);
+      color: #f0f4ff;
+      border-radius: 20px;
       display: flex;
       flex-direction: column;
       height: 100%;
       max-height: 100%;
+      box-shadow: 0 8px 25px rgba(40, 90, 143, 0.7);
+      padding: 20px;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     .chat-container h3 {
-      margin: 0 0 15px 0;
-      font-weight: 700;
+      margin: 0 0 20px 0;
+      font-weight: 800;
+      font-size: 1.8rem;
+      text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
+      user-select: none;
     }
     .chat-messages {
-      background: #2c3e50;
-      border-radius: 12px;
       flex: 1;
-      padding: 15px;
       overflow-y: auto;
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
-      margin-bottom: 12px;
-      font-style: italic;
+      padding: 15px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 0 12px rgba(255,255,255,0.15);
+      margin-bottom: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: #a5b8ff transparent;
     }
-    .chat-input {
-      border-radius: 12px;
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background-color: #a5b8ff;
+      border-radius: 10px;
+    }
+    .chat-message {
+      margin-bottom: 15px;
+      padding: 12px 18px;
+      border-radius: 20px;
+      max-width: 75%;
+      line-height: 1.4;
+      font-size: 1rem;
+      user-select: text;
+      word-wrap: break-word;
+    }
+    .chat-message.user {
+      background: linear-gradient(145deg, #adc8ff, #7a9dff);
+      color: #1a2c4f;
+      align-self: flex-end;
+      box-shadow: 0 3px 10px rgba(53, 122, 189, 0.4);
+    }
+    .chat-message.agent {
+      background: linear-gradient(145deg, #4d6db3, #3451a1);
+      color: #e1e8ff;
+      align-self: flex-start;
+      box-shadow: 0 3px 10px rgba(40, 90, 143, 0.7);
+    }
+    .chat-input-area {
+      display: flex;
+      gap: 12px;
+    }
+    .chat-input-area input.chat-input {
+      flex: 1;
+      border-radius: 15px;
       border: none;
       padding: 14px 20px;
-      font-size: 16px;
+      font-size: 1rem;
       outline: none;
+      box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.15);
+      color: #f0f4ff;
+      transition: background 0.3s ease;
+    }
+    .chat-input-area input.chat-input::placeholder {
+      color: rgba(240, 244, 255, 0.7);
+    }
+    .chat-input-area input.chat-input:focus {
+      background: rgba(255,255,255,0.3);
+    }
+    .chat-input-area button.send-button {
+      background: linear-gradient(145deg, #a5b8ff, #738eff);
+      border: none;
+      border-radius: 15px;
+      padding: 0 24px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1a2c4f;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(53, 122, 189, 0.7);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+    .chat-input-area button.send-button:hover {
+      background: linear-gradient(145deg, #7a9dff, #4d6db3);
+      color: #f0f4ff;
+      box-shadow: 0 8px 20px rgba(40, 90, 143, 0.9);
     }
     #student-input-area {
       padding: 0 30px 20px 30px;
@@ -271,36 +342,6 @@
     #btn-submit-name:hover {
       background-color: #285a8f;
       box-shadow: 0 7px 20px rgba(40, 90, 143, 0.7);
-    }
-    .exercise-question {
-      margin-bottom: 15px;
-    }
-    .exercise-question label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-    .exercise-question input[type="text"] {
-      width: 100%;
-      padding: 8px 12px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    #btn-save-answers {
-      margin-top: 15px;
-      padding: 12px 20px;
-      font-size: 16px;
-      background-color: #357ABD;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      align-self: flex-start;
-      transition: background-color 0.3s;
-    }
-    #btn-save-answers:hover {
-      background-color: #285a8f;
     }
     /* Scrollbars customizadas para áreas de rolagem */
     #content-classplan > div.wrapper > .lesson-list,
@@ -344,7 +385,7 @@
         <div class="lesson-list" aria-label="Lesson List">
           <h3>Lesson List</h3>
           <ul id="lesson-list">
-            <!-- Dynamically populated -->
+            <!-- Dinâmico -->
           </ul>
         </div>
         <div class="lesson-content">
@@ -353,7 +394,7 @@
             <button data-tab="exercises" role="tab" aria-selected="false" tabindex="-1" class="subtab-button">Exercises</button>
             <button data-tab="homework" role="tab" aria-selected="false" tabindex="-1" class="subtab-button">Homework</button>
           </nav>
-          <div id="tab-content-area" tabindex="0" style="margin-top: 20px;">
+          <div id="tab-content-area" tabindex="0" style="margin-top: 20px; height: 100%; display: flex; flex-direction: column;">
             <!-- Conteúdo da sub-aba será renderizado aqui -->
           </div>
         </div>
@@ -363,264 +404,302 @@
   </div>
 
   <script>
-const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co/rest/v1';
-const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
+    const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co/rest/v1';
+    const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
 
-document.addEventListener('DOMContentLoaded', () => {
-    const studentNameInput = document.getElementById('student-name');
-    const btnSubmitName = document.getElementById('btn-submit-name');
-    const studentDisplayName = document.getElementById('student-display-name');
-    const classplanDescription = document.getElementById('classplan-description');
-    const lessonListEl = document.getElementById('lesson-list');
-    const tabButtons = document.querySelectorAll('.lesson-content nav.sub-tabs button');
-    const tabContentArea = document.getElementById('tab-content-area');
+    document.addEventListener('DOMContentLoaded', () => {
+      const studentNameInput = document.getElementById('student-name');
+      const btnSubmitName = document.getElementById('btn-submit-name');
+      const studentDisplayName = document.getElementById('student-display-name');
+      const lessonListEl = document.getElementById('lesson-list');
+      const tabButtons = document.querySelectorAll('.lesson-content nav.sub-tabs button.subtab-button');
+      const tabContentArea = document.getElementById('tab-content-area');
 
-    let currentStudent = null;
-    let currentClassPlan = null;
-    let lessons = [];
-    let currentLesson = null;
-    let exercises = [];
+      let currentStudent = null;
+      let currentClassPlan = null;
+      let lessons = [];
+      let currentLesson = null;
+      let exercises = [];
 
-    // Inicializa sub-aba content vazia no carregamento - 4
-    tabContentArea.innerHTML = '';
+      tabContentArea.innerHTML = '';
 
-    btnSubmitName.addEventListener('click', async () => {
+      btnSubmitName.addEventListener('click', async () => {
         const name = studentNameInput.value.trim();
         if (!name) {
-            alert('Please enter your name.');
-            return;
+          alert('Please enter your name.');
+          return;
         }
         await loadStudentData(name);
-    });
+      });
 
-    async function fetchSupabase(endpoint, options = {}) {
+      async function fetchSupabase(endpoint, options = {}) {
         const url = `${SUPABASE_URL}/${endpoint}`;
         const headers = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            ...options.headers
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          ...options.headers
         };
         const response = await fetch(url, { ...options, headers });
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Supabase error: ${response.status} ${response.statusText} - ${errorText}`);
+          const errorText = await response.text();
+          throw new Error(`Supabase error: ${response.status} ${response.statusText} - ${errorText}`);
         }
         return response.json();
-    }
+      }
 
-    async function loadStudentData(name) {
+      async function loadStudentData(name) {
         try {
-            // Buscar estudante (ilike para case-insensitive)
-            const students = await fetchSupabase(`student?nome=ilike.*${encodeURIComponent(name)}*&limit=1`);
-            if (!students || students.length === 0) {
-                alert('Student not found.');
-                return;
-            }
-            currentStudent = students[0];
-            studentDisplayName.textContent = currentStudent.nome;
+          const students = await fetchSupabase(`student?nome=ilike.*${encodeURIComponent(name)}*&limit=1`);
+          if (!students || students.length === 0) {
+            alert('Student not found.');
+            return;
+          }
+          currentStudent = students[0];
+          studentDisplayName.textContent = currentStudent.nome;
 
-            // Buscar planos de aula do estudante
-            const classPlans = await fetchSupabase(`class_plan?id_student=eq.${currentStudent.id}`);
-            if (!classPlans || classPlans.length === 0) {
-                alert('No class plans found for this student.');
-                return;
-            }
-            currentClassPlan = classPlans[0];
-            classplanDescription.textContent = 'CLASS PLAN';
+          const classPlans = await fetchSupabase(`class_plan?id_student=eq.${currentStudent.id}`);
+          if (!classPlans || classPlans.length === 0) {
+            alert('No class plans found for this student.');
+            return;
+          }
+          currentClassPlan = classPlans[0];
 
-            // Buscar aulas do plano (removido filtro id_student)
-            const classesData = await fetchSupabase(`classes?id_class_plan=eq.${currentClassPlan.id}&order=title.asc`);
-            lessons = classesData || [];
+          const classesData = await fetchSupabase(`classes?id_class_plan=eq.${currentClassPlan.id}&order=title.asc`);
+          lessons = classesData || [];
 
-            if (lessons.length === 0) {
-                alert('No lessons found for this class plan.');
-                return;
-            }
+          if (lessons.length === 0) {
+            alert('No lessons found for this class plan.');
+            return;
+          }
 
-            renderLessonList();
-            // Não seleciona nenhuma aula automaticamente para deixar content vazio no início
-            currentLesson = null;
-            tabContentArea.innerHTML = '';
+          renderLessonList();
+          currentLesson = null;
+          tabContentArea.innerHTML = '';
 
         } catch (error) {
-            console.error('Error loading student data:', error);
-            alert('Error loading data. See console for details.');
+          console.error('Error loading student data:', error);
+          alert('Error loading data. See console for details.');
         }
-    }
+      }
 
-    // Renderiza a lista de aulas como botões
-    function renderLessonList() {
+      function renderLessonList() {
         lessonListEl.innerHTML = '';
         lessons.forEach(lesson => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.textContent = lesson.title;
-            btn.dataset.lessonId = lesson.id;
-            btn.classList.toggle('active', currentLesson && currentLesson.id === lesson.id);
-            btn.addEventListener('click', () => selectLesson(lesson.id));
-            lessonListEl.appendChild(btn);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = lesson.title;
+          btn.dataset.lessonId = lesson.id;
+          btn.classList.toggle('active', currentLesson && currentLesson.id === lesson.id);
+          btn.addEventListener('click', () => selectLesson(lesson.id));
+          lessonListEl.appendChild(btn);
         });
-    }
+      }
 
-    async function selectLesson(lessonId) {
+      async function selectLesson(lessonId) {
         currentLesson = lessons.find(l => l.id === lessonId);
         if (!currentLesson) return;
 
-        // Atualiza estado ativo dos botões
         [...lessonListEl.children].forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lessonId === lessonId);
+          btn.classList.toggle('active', btn.dataset.lessonId === lessonId);
         });
 
-        // Ativa a sub-aba 'content' ao selecionar aula
         activateSubTab('content');
-
-        // Renderiza conteúdo da aula na sub-aba 'content'
         renderContentTab();
 
-        // Carrega exercícios da aula (se necessário)
         try {
-            const exercisesData = await fetchSupabase(`exercises?id_class=eq.${lessonId}`);
-            exercises = exercisesData || [];
+          const exercisesData = await fetchSupabase(`exercises?id_class=eq.${lessonId}`);
+          exercises = exercisesData || [];
         } catch (exError) {
-            console.error('Error loading exercises:', exError);
-            exercises = [];
+          console.error('Error loading exercises:', exError);
+          exercises = [];
         }
-    }
+      }
 
-    function activateSubTab(tabName) {
+      function activateSubTab(tabName) {
         tabButtons.forEach(btn => {
-            const isActive = btn.dataset.tab === tabName;
-            btn.classList.toggle('active', isActive);
-            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-            btn.tabIndex = isActive ? 0 : -1;
+          const isActive = btn.dataset.tab === tabName;
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+          btn.tabIndex = isActive ? 0 : -1;
         });
         renderTabContent(tabName);
-    }
+      }
 
-    tabButtons.forEach(btn => {
+      tabButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            activateSubTab(btn.dataset.tab);
+          activateSubTab(btn.dataset.tab);
         });
-    });
+      });
 
-    function renderTabContent(tabName) {
+      function renderTabContent(tabName) {
         switch (tabName) {
-            case 'content':
-                renderContentTab();
-                break;
-            case 'exercises':
-                renderExercisesTab();
-                break;
-            case 'homework':
-                renderHomeworkTab();
-                break;
+          case 'content':
+            renderContentTab();
+            break;
+          case 'exercises':
+            renderExercisesTab();
+            break;
+          case 'homework':
+            renderHomeworkTab();
+            break;
         }
-    }
+      }
 
-    function renderContentTab() {
+      function renderContentTab() {
         if (!currentLesson) {
-            tabContentArea.innerHTML = '';
-            return;
+          tabContentArea.innerHTML = '';
+          return;
         }
         tabContentArea.innerHTML = `
-            <h3>${currentLesson.title}</h3>
-            <p><em>Type: ${currentLesson.type || 'N/A'}</em></p>
-            <p>${currentLesson.description || ''}</p>
-            <div>${currentLesson.content || ''}</div>
+          <h3>${currentLesson.title}</h3>
+          <p><em>Type: ${currentLesson.type || 'N/A'}</em></p>
+          <p>${currentLesson.description || ''}</p>
+          <div>${currentLesson.content || ''}</div>
         `;
-    }
+      }
 
-    function renderExercisesTab() {
+      function renderExercisesTab() {
         if (!exercises || exercises.length === 0) {
-            tabContentArea.innerHTML = '<p>No exercises available for this lesson.</p>';
-            return;
+          tabContentArea.innerHTML = '<p>No exercises available for this lesson.</p>';
+          return;
         }
         let html = '';
         exercises.forEach((exercise, idx) => {
-            html += `<div class="exercise-block" data-exercise-id="${exercise.id}" style="margin-bottom: 25px;">`;
-            html += `<h4>Exercise ${idx + 1} (Type: ${exercise.type || 'N/A'})</h4>`;
-            for (let i = 1; i <= 10; i++) {
-                const question = exercise[`question_${i}`];
-                if (question && question.trim() !== '') {
-                    html += `
-                        <div class="exercise-question">
-                            <label for="answer-${exercise.id}-${i}">${question}</label>
-                            <input type="text" id="answer-${exercise.id}-${i}" name="answer-${exercise.id}-${i}" />
-                        </div>
-                    `;
-                }
+          html += `<div class="exercise-block" data-exercise-id="${exercise.id}" style="margin-bottom: 25px;">`;
+          html += `<h4>Exercise ${idx + 1} (Type: ${exercise.type || 'N/A'})</h4>`;
+          for (let i = 1; i <= 10; i++) {
+            const question = exercise[`question_${i}`];
+            if (question && question.trim() !== '') {
+              html += `
+                <div class="exercise-question">
+                  <label for="answer-${exercise.id}-${i}">${question}</label>
+                  <input type="text" id="answer-${exercise.id}-${i}" name="answer-${exercise.id}-${i}" />
+                </div>
+              `;
             }
-            html += '</div>';
+          }
+          html += '</div>';
         });
         html += `<button id="btn-save-answers">Save Answers</button>`;
         tabContentArea.innerHTML = html;
 
         document.getElementById('btn-save-answers').addEventListener('click', saveAnswers);
-    }
+      }
 
-    function renderHomeworkTab() {
-        tabContentArea.innerHTML = `
-            <div class="chat-container" aria-label="Chat with AI Agent" style="height: 100%; display: flex; flex-direction: column;">
-                <h3>Chat with AI Agent</h3>
-                <div class="chat-messages" aria-live="polite" aria-atomic="true" style="flex: 1; overflow-y: auto;">
-                    <em>Chat here with the AI agent to ask questions and get instant help.</em>
-                </div>
-                <input type="text" class="chat-input" placeholder="Type your message..." aria-label="Type your message to the AI agent" />
-            </div>
-        `;
-    }
-
-    async function saveAnswers() {
+      async function saveAnswers() {
         if (!currentStudent) {
-            alert('Please submit your name first.');
-            return;
+          alert('Please submit your name first.');
+          return;
         }
         if (!exercises || exercises.length === 0) {
-            alert('No exercises to save.');
-            return;
+          alert('No exercises to save.');
+          return;
         }
 
         try {
-            for (const exercise of exercises) {
-                const answerData = {
-                    id_exercise: exercise.id
-                };
-                let hasAnswer = false;
-                for (let i = 1; i <= 10; i++) {
-                    const input = document.getElementById(`answer-${exercise.id}-${i}`);
-                    if (input && input.value.trim() !== '') {
-                        answerData[`answer_${i}`] = input.value.trim();
-                        hasAnswer = true;
-                    }
-                }
-                if (!hasAnswer) continue;
-
-                // Verifica se já existe resposta para este exercício (sem filtro id_student)
-                const existingAnswers = await fetchSupabase(`answers?id_exercise=eq.${exercise.id}&limit=1`);
-                if (existingAnswers && existingAnswers.length > 0) {
-                    const answerId = existingAnswers[0].id;
-                    // Atualiza resposta existente
-                    await fetchSupabase(`answers?id=eq.${answerId}`, {
-                        method: 'PATCH',
-                        body: JSON.stringify(answerData)
-                    });
-                } else {
-                    // Insere nova resposta
-                    await fetchSupabase(`answers`, {
-                        method: 'POST',
-                        body: JSON.stringify(answerData)
-                    });
-                }
+          for (const exercise of exercises) {
+            const answerData = {
+              id_exercise: exercise.id
+            };
+            let hasAnswer = false;
+            for (let i = 1; i <= 10; i++) {
+              const input = document.getElementById(`answer-${exercise.id}-${i}`);
+              if (input && input.value.trim() !== '') {
+                answerData[`answer_${i}`] = input.value.trim();
+                hasAnswer = true;
+              }
             }
-            alert('Answers saved successfully.');
+            if (!hasAnswer) continue;
+
+            const existingAnswers = await fetchSupabase(`answers?id_exercise=eq.${exercise.id}&limit=1`);
+            if (existingAnswers && existingAnswers.length > 0) {
+              const answerId = existingAnswers[0].id;
+              await fetchSupabase(`answers?id=eq.${answerId}`, {
+                method: 'PATCH',
+                body: JSON.stringify(answerData)
+              });
+            } else {
+              await fetchSupabase(`answers`, {
+                method: 'POST',
+                body: JSON.stringify(answerData)
+              });
+            }
+          }
+          alert('Answers saved successfully.');
         } catch (error) {
-            console.error('Error saving answers:', error);
-            alert('Error saving answers. See console for details.');
+          console.error('Error saving answers:', error);
+          alert('Error saving answers. See console for details.');
         }
-    }
-});
-    </script>
+      }
+
+      // Nova função para renderizar chat funcional e estilizado na aba homework
+      function renderHomeworkTab() {
+        tabContentArea.innerHTML = `
+          <div class="chat-container" aria-label="Chat with AI Agent" style="flex: 1; display: flex; flex-direction: column;">
+            <h3>Chat with AI Agent</h3>
+            <div class="chat-messages" aria-live="polite" aria-atomic="true"></div>
+            <div class="chat-input-area">
+              <input type="text" class="chat-input" placeholder="Type your message..." aria-label="Type your message to the AI agent" />
+              <button class="send-button" aria-label="Send message">Send</button>
+            </div>
+          </div>
+        `;
+
+        const messagesContainer = tabContentArea.querySelector('.chat-messages');
+        const input = tabContentArea.querySelector('.chat-input');
+        const sendButton = tabContentArea.querySelector('.send-button');
+
+        // Histórico simples de mensagens
+        const chatHistory = [];
+
+        function addMessage(text, sender) {
+          chatHistory.push({ text, sender });
+          const msgEl = document.createElement('div');
+          msgEl.classList.add('chat-message', sender);
+          msgEl.textContent = text;
+          messagesContainer.appendChild(msgEl);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function simulateAIResponse(userText) {
+          let response = "Sorry, I didn't understand that. Please ask something else.";
+          const txt = userText.toLowerCase();
+
+          if (txt.includes('hello') || txt.includes('hi')) {
+            response = 'Hello! How can I assist you with your homework today?';
+          } else if (txt.includes('help')) {
+            response = 'Sure! Ask me any question about your lessons or exercises.';
+          } else if (txt.includes('thank')) {
+            response = 'You\'re welcome! Feel free to ask more.';
+          }
+
+          return response;
+        }
+
+        function sendMessage() {
+          const text = input.value.trim();
+          if (!text) return;
+          addMessage(text, 'user');
+          input.value = '';
+          setTimeout(() => {
+            const aiReply = simulateAIResponse(text);
+            addMessage(aiReply, 'agent');
+          }, 700);
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+            sendMessage();
+          }
+        });
+
+        // Mensagem inicial do assistente
+        addMessage('Hi! I am your AI homework assistant. Ask me anything.', 'agent');
+      }
+    });
+  </script>
 
 </body>
 </html>

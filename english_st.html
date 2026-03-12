@@ -262,35 +262,21 @@
         </nav>
 
         <section id="content-classplan" class="tab-content" role="tabpanel" aria-labelledby="tab-classplan" tabindex="0">
+    <div>
+        <h2 id="classplan-description">CLASS PLAN</h2>
+        <p>Student: <strong id="student-display-name">-</strong></p>
+    </div>
 
-            <div>
-                <h2 id="classplan-description">CLASS PLAN</h2>
-                <p>Student: <strong id="student-display-name">-</strong></p>
-            </div>
-
-            <div style="display:flex; gap:30px; width: 85%; height: 100%;">
-
-                <div class="lesson-list" aria-label="Lesson List">
-                    <h3>Lesson List</h3>
-                    <ul id="lesson-list" style="list-style:none; padding-left:0; margin:0;">
-                        <!-- Dynamically populated -->
-                    </ul>
-                </div>
-
-                <div class="lesson-content">
-                    <nav class="sub-tabs" role="tablist" aria-label="Sub Tabs">
-                        <button class="active" role="tab" aria-selected="true" tabindex="0" data-tab="content">Content</button>
-                        <button role="tab" aria-selected="false" tabindex="-1" data-tab="exercises">Exercises</button>
-                        <button role="tab" aria-selected="false" tabindex="-1" data-tab="homework">Homework</button>
-                    </nav>
-                    <div id="tab-content-area">
-                        <!-- Dynamic content for content/exercises/homework -->
-                    </div>
-                </div>
-
-            </div>
-
-        </section>
+    <div style="display:flex; gap:30px; width: 85%; height: 100%;">
+        <div class="lesson-list" aria-label="Lesson List">
+            <h3>Lesson List</h3>
+            <ul id="lesson-list" style="list-style:none; padding-left:0; margin:0;">
+                <!-- Dynamically populated -->
+            </ul>
+        </div>
+        <!-- restante -->
+    </div>
+</section>
 
     </div>
 

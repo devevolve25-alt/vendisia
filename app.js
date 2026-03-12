@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const studentNameInput = document.getElementById('student-name');
     const btnSubmitName = document.getElementById('btn-submit-name');
@@ -27,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadStudentData(name) {
         try {
-            // Find student by name (case insensitive)
             const { data: students, error: studentError } = await supabaseClient
                 .from('STUDENT')
                 .select('*')
@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentStudent = students[0];
             studentDisplayName.textContent = currentStudent.nome;
 
-            // Load class plans for student
             const { data: classPlans, error: cpError } = await supabaseClient
                 .from('CLASS_PLAN')
                 .select('*')
@@ -55,17 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // For simplicity, pick the first class plan
             currentClassPlan = classPlans[0];
-            // Set static text instead of description field
             classplanDescription.textContent = 'CLASS PLAN';
 
-            // Load lessons for class plan filtered by id_class_plan and id_student
             const { data: classesData, error: classesError } = await supabaseClient
                 .from('CLASSES')
                 .select('*')
                 .eq('id_class_plan', currentClassPlan.id)
-                .eq('id_student', currentStudent.id)  // Added filter by student id
+                .eq('id_student', currentStudent.id)
                 .order('title', { ascending: true });
 
             if (classesError) throw classesError;
@@ -108,15 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
         currentLesson = lessons.find(l => l.id === lessonId);
         if (!currentLesson) return;
 
-        // Update active class in lesson list
         [...lessonListEl.children].forEach(li => {
             li.classList.toggle('active', li.dataset.lessonId === lessonId);
         });
 
-        // Reset sub-tabs to Content
         activateSubTab('content');
 
-        // Load exercises for this lesson
         const { data: exercisesData, error: exercisesError } = await supabaseClient
             .from('EXERCISES')
             .select('*')
@@ -181,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tabContentArea.innerHTML = '<p>No exercises available for this lesson.</p>';
             return;
         }
-        // Render all exercises with their questions and inputs for answers
         let html = '';
         exercises.forEach((exercise, idx) => {
             html += `<div class="exercise-block" data-exercise-id="${exercise.id}" style="margin-bottom: 25px;">`;
@@ -240,20 +232,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         hasAnswer = true;
                     }
                 }
-                if (!hasAnswer) continue; // Skip if no answers for this exercise
+                if (!hasAnswer) continue;
 
-                // Check if answer record exists for this exercise and student
                 const { data: existingAnswers, error: fetchError } = await supabaseClient
                     .from('ANSWERS')
                     .select('*')
                     .eq('id_exercise', exercise.id)
-                    .eq('id_student', currentStudent.id) // Added filter by student id
+                    .eq('id_student', currentStudent.id)
                     .limit(1);
 
                 if (fetchError) throw fetchError;
 
                 if (existingAnswers && existingAnswers.length > 0) {
-                    // Update existing answer
                     const answerId = existingAnswers[0].id;
                     const { error: updateError } = await supabaseClient
                         .from('ANSWERS')
@@ -262,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (updateError) throw updateError;
                 } else {
-                    // Insert new answer with student id
                     answerData.id_student = currentStudent.id;
                     const { error: insertError } = await supabaseClient
                         .from('ANSWERS')

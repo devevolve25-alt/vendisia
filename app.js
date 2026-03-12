@@ -276,4 +276,5 @@ loadSupabaseScript().then(() => {
         } catch (error) {
             console.error('Error saving answers:', error);
             alert('Error saving answers. See console for details.');
-       });
+        }
+    }

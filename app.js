@@ -278,3 +278,5 @@ loadSupabaseScript().then(() => {
             alert('Error saving answers. See console for details.');
         }
     }
+     }); // fecha DOMContentLoaded
+});   // fecha then do loadSupabaseScript

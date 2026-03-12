@@ -4,7 +4,7 @@ const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
 function loadSupabaseScript() {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js';
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/supabase.min.js';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('Failed to load Supabase script'));
     document.head.appendChild(script);

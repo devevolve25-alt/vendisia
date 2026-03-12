@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadStudentData(name) {
         try {
             // Buscar estudante (ilike para case-insensitive)
-            const students = await fetchSupabase(`STUDENT?nome=ilike.*${encodeURIComponent(name)}*&limit=1`);
+            const students = await fetchSupabase(`student?nome=ilike.*${encodeURIComponent(name)}*&limit=1`);
             if (!students || students.length === 0) {
                 alert('Student not found.');
                 return;
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
             studentDisplayName.textContent = currentStudent.nome;
 
             // Buscar planos de aula do estudante
-            const classPlans = await fetchSupabase(`CLASS_PLAN?id_student=eq.${currentStudent.id}`);
+            const classPlans = await fetchSupabase(`class_plan?id_student=eq.${currentStudent.id}`);
             if (!classPlans || classPlans.length === 0) {
                 alert('No class plans found for this student.');
                 return;
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             classplanDescription.textContent = 'CLASS PLAN';
 
             // Buscar aulas do plano
-            const classesData = await fetchSupabase(`CLASSES?id_class_plan=eq.${currentClassPlan.id}&id_student=eq.${currentStudent.id}&order=title.asc`);
+            const classesData = await fetchSupabase(`classes?id_class_plan=eq.${currentClassPlan.id}&id_student=eq.${currentStudent.id}&order=title.asc`);
             lessons = classesData || [];
 
             if (lessons.length === 0) {
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         activateSubTab('content');
 
         try {
-            const exercisesData = await fetchSupabase(`EXERCISES?id_class=eq.${lessonId}`);
+            const exercisesData = await fetchSupabase(`exercises?id_class=eq.${lessonId}`);
             exercises = exercisesData || [];
         } catch (exError) {
             console.error('Error loading exercises:', exError);
@@ -527,17 +527,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!hasAnswer) continue;
 
                 // Verifica se já existe resposta para este exercício e estudante
-                const existingAnswers = await fetchSupabase(`ANSWERS?id_exercise=eq.${exercise.id}&id_student=eq.${currentStudent.id}&limit=1`);
+                const existingAnswers = await fetchSupabase(`answers?id_exercise=eq.${exercise.id}&id_student=eq.${currentStudent.id}&limit=1`);
                 if (existingAnswers && existingAnswers.length > 0) {
                     const answerId = existingAnswers[0].id;
                     // Atualiza resposta existente
-                    await fetchSupabase(`ANSWERS?id=eq.${answerId}`, {
+                    await fetchSupabase(`answers?id=eq.${answerId}`, {
                         method: 'PATCH',
                         body: JSON.stringify(answerData)
                     });
                 } else {
                     // Insere nova resposta
-                    await fetchSupabase(`ANSWERS`, {
+                    await fetchSupabase(`answers`, {
                         method: 'POST',
                         body: JSON.stringify(answerData)
                     });

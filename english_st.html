@@ -80,15 +80,25 @@
             flex-direction: row;
             height: 100%;
         }
-        /* Ajustes de largura fixa conforme solicitado */
+        /* Container wrapper para lista e conteúdo */
+        #content-classplan > div.wrapper {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            gap: 30px;
+        }
+        /* Área do nome do aluno - 15% largura fixa */
         #content-classplan > div:first-child {
             width: 15%;
             min-width: 15%;
             box-sizing: border-box;
         }
+        /* Lista de aulas - 20% largura fixa */
         #content-classplan > div.lesson-list {
             width: 20%;
             max-width: 20%;
+            display: flex;
+            flex-direction: column;
             background: #f4f7fa;
             border-radius: 15px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -103,8 +113,10 @@
             list-style: none;
             padding-left: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
         }
-        #content-classplan > div.lesson-list ul button {
+        #lesson-list button {
             width: 100%;
             margin-bottom: 8px;
             padding: 8px 12px;
@@ -116,9 +128,10 @@
             font-size: 1rem;
             font-weight: 600;
             transition: background-color 0.3s;
+            display: block;
         }
-        #content-classplan > div.lesson-list ul button.active,
-        #content-classplan > div.lesson-list ul button:hover {
+        #lesson-list button.active,
+        #lesson-list button:hover {
             background-color: #357ABD;
             color: white;
         }
@@ -273,15 +286,15 @@
                 <p>Student: <strong id="student-display-name">-</strong></p>
             </div>
 
-            <div style="display:flex; gap:30px; width: 85%; height: 100%;">
+            <div class="wrapper">
                 <div class="lesson-list" aria-label="Lesson List">
                     <h3>Lesson List</h3>
-                    <ul id="lesson-list" style="list-style:none; padding-left:0; margin:0;">
+                    <ul id="lesson-list">
                         <!-- Dynamically populated -->
                     </ul>
                 </div>
-                <div class="lesson-content" style="width: 65%; background: #fefefe; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 20px; display: flex; flex-direction: column; overflow-y: auto;">
-                    <nav class="sub-tabs" role="tablist" aria-label="Lesson sub-tabs" style="display: flex; gap: 20px; margin-bottom: 25px; flex-shrink: 0;">
+                <div class="lesson-content">
+                    <nav class="sub-tabs" role="tablist" aria-label="Lesson sub-tabs">
                         <button data-tab="content" role="tab" aria-selected="true" tabindex="0" class="active">Content</button>
                         <button data-tab="exercises" role="tab" aria-selected="false" tabindex="-1">Exercises</button>
                         <button data-tab="homework" role="tab" aria-selected="false" tabindex="-1">Homework</button>
@@ -382,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Renderiza a lista de aulas como botões 
+    // Renderiza a lista de aulas como botões
     function renderLessonList() {
         lessonListEl.innerHTML = '';
         lessons.forEach(lesson => {

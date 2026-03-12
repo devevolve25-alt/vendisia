@@ -302,7 +302,8 @@
 
     const SUPABASE_URL = 'https://htsorgukdbfuuypiuksm.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_8bpn_JEYZU2YzVMC5UK3CA_9Kn4LPdm';
-
+    // Crie a instância do cliente Supabase
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
 
     document.addEventListener('DOMContentLoaded', () => {

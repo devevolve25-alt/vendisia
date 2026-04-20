@@ -1,106 +1,222 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VendisIA | Atendimento e Agendamento Inteligente 24/7</title>
-    <!-- NOVO: Meta Descrição para SEO -->
-    <meta name="description" content="VendisIA: Atendimento e agendamento inteligente 24/7 para salões, barbearias e clínicas. Automatize seu negócio e aumente lucros com IA.">
-    
-    <link rel="stylesheet" href="style.css">
-</head>
-    
-<body>
-    <header class="main-header">
-    <div class="brand-container">
-        <img src="merc_face.png" alt="Logo" class="logo-img">
-        <span class="brand-text">
-            VENDISIA | <span style="color: #d4af37;">IA ECOSYSTEM</span>
-        </span>
-    </div>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VendisIA - Responda Clientes no WhatsApp Mesmo Produzindo</title>
 
-    <div class="nav-container">
-        <a href="acesso.html?modo=login" class="btn-acesso">
-            ACESSAR SISTEMA
-        </a>
-    </div>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@700;900&family=Merriweather&display=swap" rel="stylesheet" />
+
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box;}
+
+    body {
+      font-family: 'Merriweather', serif;
+      background: #f5f1ea;
+      color: #3e2c25;
+      text-align: center;
+    }
+
+    header {
+      background: #2e7d32;
+      color: white;
+      padding: 80px 20px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 20px;
+    }
+
+    p.lead {
+      font-size: 1.3rem;
+      max-width: 700px;
+      margin: 0 auto 30px;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      border-radius: 30px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin: 10px;
+      font-size: 1rem;
+    }
+
+    .btn-primary {
+      background: #43a047;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2e7d32;
+    }
+
+    section {
+      margin: 60px 0;
+      padding: 0 15px;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #2e7d32;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    @media(min-width:768px){
+      .grid-2 {grid-template-columns:1fr 1fr;}
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    footer {
+      background: #3e2c25;
+      color: white;
+      padding: 20px;
+      margin-top: 40px;
+    }
+
+    /* MOBILE OTIMIZAÇÃO */
+    @media(max-width:768px){
+      header {
+        padding: 50px 15px;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      p.lead {
+        font-size: 1.1rem;
+      }
+    }
+
+    /* BOTÃO FIXO WHATSAPP */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25D366;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 50px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Responda seus clientes no WhatsApp automaticamente — mesmo enquanto você está na produção</h1>
+  
+  <p class="lead">
+    Nunca mais perca venda por demora. Seus clientes recebem resposta na hora, fazem pedidos e tiram dúvidas sem você parar o trabalho.
+  </p>
+
+  <button class="btn btn-primary" onclick="window.open('https://wa.me/55SEUNUMERO','_blank')">
+    Falar no WhatsApp agora
+  </button>
 </header>
 
-    <div class="container">
-        <h1>✨ <span class="highlight">VendisIA:</span> Seu Negócio Atendido 24/7.<br>Sempre. Sem Esforço. Sempre Lucrando. ✨</h1>
+<!-- PROBLEMA -->
+<section>
+  <h2>Isso acontece com você?</h2>
 
-        <div class="section-intro">
-            <p>Imagine ter seu WhatsApp livre, sua agenda perfeitamente organizada e seu negócio operando com uma <span class="highlight">eficiência inigualável</span>, 24 horas por dia, 7 dias por semana. A <span class="highlight">VendisIA</span> não é apenas uma promessa; é a sua nova realidade.</p>
-            <p>Estamos redefinindo o padrão de atendimento para <span class="highlight">clínicas, salões, barbearias e todos os negócios que valorizam cada agendamento</span>. Prepare-se para uma transformação digital que colocará você anos-luz à frente da concorrência.</p>
-        </div>
+  <div class="grid grid-2">
+    <div class="box">Clientes mandam mensagem e você responde horas depois</div>
+    <div class="box">Pedidos se perdem no meio das conversas</div>
+    <div class="box">Você precisa escolher entre produzir ou atender</div>
+    <div class="box">Vendas são perdidas por demora</div>
+  </div>
+</section>
 
-        <div class="section-box">
-            <h2>Cansado de Deixar Dinheiro na Mesa?</h2>
-            <p>Seu tempo é ouro. Cada minuto gasto no WhatsApp, respondendo perguntas repetitivas ou gerenciando a agenda manualmente, é um minuto que você <span class="highlight">não está dedicando ao crescimento do seu negócio</span> ou à sua vida pessoal. Você reconhece esta cena?</p>
-            <ul>
-                <li><span><span class="highlight">O cliente potencial que desistiu</span> porque a resposta demorou demais, migrando para a concorrência?</span></li>
-                <li><span><span class="highlight\">As inúmeras horas perdidas</span> pela sua equipe com agendamentos e reagendamentos, desviando o foco do atendimento de excelência?</span></li>
-                <li><span><span class="highlight\">A frustração de conflitos de horários</span> ou a subutilização da sua capacidade de atendimento?</span></li>
-                <li><span><span class="highlight\">A dificuldade de ter uma visão financeira clara</span> e instantânea do seu fluxo de agendamentos e recebimentos?</span></li>
-            </ul>
-            <p>Esses não são apenas "desafios". São <span class="highlight">oportunidades de lucro perdidas</span>. A <span class="highlight">VendisIA</span> chegou para blindar seu negócio contra essas perdas e catapultar seus resultados!</p>
-        </div>
+<!-- SOLUÇÃO -->
+<section>
+  <h2>Como funciona</h2>
 
-        <div class="section-box">
-            <h2>Desbloqueie o Poder da Inteligência Artificial a Serviço do Seu Negócio</h2>
-            <p>A <span class="highlight">VendisIA</span> é a plataforma de atendimento e agendamento que transcende o convencional. Desenvolvida para a realidade de pequenos e médios negócios, ela entrega uma <span class="highlight">automação impecável</span>, liberando o recurso mais valioso: <span class="highlight">você e sua equipe</span>, para focar no que realmente importa: a paixão pelo seu trabalho e o crescimento estratégico.</p>
+  <div class="grid grid-2">
+    <div class="box">Cliente manda mensagem</div>
+    <div class="box">Recebe resposta imediata</div>
+    <div class="box">Faz pedido direto</div>
+    <div class="box">Tudo fica organizado</div>
+  </div>
+</section>
 
-            <h3>Funcionalidades que Redefinem a Gestão do Seu Negócio:</h3>
-            <ul>
-                <li><span><span class="highlight">Atendimento e Agendamento Online Inteligente (24/7):</span> Sua IA pessoal que nunca dorme! Clientes agendam, tiram dúvidas e recebem informações instantaneamente, a qualquer hora.</span></li>
-                <li><span><span class="highlight">Descrição Detalhada e Imersiva de Serviços:</span> Apresente seus serviços com profissionalismo e clareza total, com fotos, descrições ricas e preços. Dê autonomia ao seu cliente.</span></li>
-                <li><span><span class="highlight">Dashboard de Controle Financeiro Estratégico:</span> Tenha as rédeas da sua saúde financeira. Acompanhe recebimentos, projeções e desempenho em tempo real.</span></li>
-                <li><span><span class="highlight">Agenda Online Otimizada e Sem Conflitos:</span> Gerencie seus horários, profissionais e recursos com precisão cirúrgica. Máxima eficiência.</span></li>
-            </ul>
-        </div>
+<!-- ANTES VS DEPOIS -->
+<section>
+  <h2>Antes e Depois</h2>
 
-        <div class="section-box">
-            <h2>O Coração da Sua Operação Batendo 24 Horas Por Dia: A <span class="highlight">MercurIA</span></h2>
-            <p>O grande diferencial? A <span class="highlight">MercurIA</span> é mais que um atendente. É o seu concierge digital que não conhece limites de horário. Seu cliente estará <span class="highlight">sempre informado, sempre bem atendido</span>. Seja um agendamento de última hora à meia-noite ou uma dúvida sobre um procedimento no domingo de manhã.</p>
-            <p><span class="highlight">Liberte seu WhatsApp</span> de mensagens incessantes. Conceda à sua equipe a <span class="highlight">tranquilidade para focar no atendimento presencial</span>.</p>
-        </div>
-
-        <div class="section-box">
-            <h2>VendisIA: A Solução Inteligente Para o Seu Segmento:</h2>
-            <ul>
-                <li><span><span class="highlight">Clínicas Médicas, Odontológicas e de Fisioterapia.</span></span></li>
-                <li><span><span class="highlight">Salões de Beleza, Spas e Estúdios de Pilates/Yoga.</span></span></li>
-                <li><span><span class="highlight">Barbearias Modernas e Estúdios de Tatuagem.</span></span></li>
-                <li><span><span class="highlight">Consultórios de Psicologia e Terapia.</span></span></li>
-                <li><span><span class="highlight">Qualquer negócio que precise de agendamento profissional.</span></span></li>
-            </ul>
-        </div>
-
-        <a href="https://vendisia.ia.br/chat.html" class="cta-button">Fale Com a MercurIA Agora e Transforme Seu Negócio!</a>
-
-        <div class="section-box">
-            <h2>O Custo da Inação é Alto Demais. A VendisIA é o Seu Próximo Salto!</h2>
-            <p>A cada dia que seu negócio depende de métodos antigos, você não apenas perde tempo, mas <span class="highlight">perde clientes e dinheiro para a concorrência</span>.</p>
-            <p>A <span class="highlight">VendisIA não é um gasto; é um investimento estratégico</span> que se paga rapidamente em eficiência.</p>
-
-            <h3>Depoimentos de Sucesso:</h3>
-            <div class="testimonial">
-                <p>"Antes da VendisIA, meu WhatsApp era um caos. Agora, os agendamentos fluem 24/7, sem que eu precise mover um dedo. Minha produtividade explodiu!"</p>
-                <p><strong>– Dra. Ana Paula, Clínica Estética Essencial</strong></p>
-            </div>
-            <div class="testimonial">
-                <p>"Ter a agenda e o financeiro integrados e automatizados mudou meu jogo. É a parceria perfeita!"</p>
-                <p><strong>– Marcos Rocha, Barbearia Old School Style</strong></p>
-            </div>
-        </div>
-
-        <a href="https://vendisia.ia.br/chat.html" class="cta-button">Quero Minha MercurIA 24/7 e Mais Lucros AGORA!</a>
-
+  <div class="grid grid-2">
+    <div class="box">
+      <h3>❌ Antes</h3>
+      <p>Mensagens acumuladas e vendas perdidas</p>
     </div>
-    
-    <footer>
-        <p>© 2026 Vendisia. Todos os direitos reservados. Impulsionando seu negócio com inteligência artificial.</p>
-    </footer>
+
+    <div class="box">
+      <h3>✅ Depois</h3>
+      <p>Respostas rápidas e mais pedidos todos os dias</p>
+    </div>
+  </div>
+</section>
+
+<!-- DEMONSTRAÇÃO -->
+<section>
+  <h2>Veja como funciona na prática</h2>
+
+  <div class="box">
+    <p><strong>Cliente:</strong> Tem queijo disponível?</p>
+    <p><strong>Sistema:</strong> Temos sim! Veja👇</p>
+    <p>🧀 Queijo fresco - R$30</p>
+    <p>🧀 Queijo curado - R$45</p>
+
+    <br>
+
+    <p><strong>Cliente:</strong> Quero 2 frescos</p>
+    <p><strong>Sistema:</strong> Perfeito! Para qual dia deseja entrega?</p>
+
+    <br>
+
+    <p><strong>Cliente:</strong> Amanhã</p>
+    <p><strong>Sistema:</strong> Pedido confirmado ✅</p>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section>
+  <h2>Quer parar de perder vendas?</h2>
+
+  <p class="lead">
+    Deixe o WhatsApp trabalhar por você enquanto você cuida da produção.
+  </p>
+
+  <button class="btn btn-primary" onclick="window.open('https://wa.me/55SEUNUMERO','_blank')">
+    Começar agora
+  </button>
+</section>
+
+<footer>
+  <p>© 2026 VendisIA</p>
+</footer>
+
+<!-- BOTÃO FIXO -->
+<a href="https://wa.me/55SEUNUMERO" target="_blank" class="whatsapp-float">
+  WhatsApp
+</a>
 
 </body>
 </html>
